@@ -61,19 +61,17 @@ class TextDebounce: ObservableObject {
 
 /// A muted, earthy sidebar colour with a light/dark pair: deeper on the light
 /// sidebar, lifted on the dark one so the glyph keeps its weight either way.
-/// Skin / stone / clay / sage / terracotta tones instead of saturated system
+/// Skin / stone / ochre / plum tones instead of saturated system
 /// colours. File-type tabs use the file-type colours from `Palette` instead.
 struct SidebarHue {
-    static let sage = rgb(0.39, 0.49, 0.26, 0.60, 0.66, 0.50)
     static let dustyBlue = rgb(0.24, 0.43, 0.63, 0.53, 0.64, 0.75)
-    static let periwinkle = rgb(0.41, 0.37, 0.68, 0.62, 0.60, 0.80)
+    static let violet = rgb(0.52, 0.32, 0.75, 0.70, 0.58, 0.88)
+    static let orchid = rgb(0.70, 0.25, 0.70, 0.85, 0.55, 0.85)
     static let skin = rgb(0.74, 0.47, 0.30, 0.80, 0.64, 0.52)
     static let plum = rgb(0.58, 0.30, 0.55, 0.68, 0.55, 0.67)
     static let mutedTeal = rgb(0.15, 0.50, 0.45, 0.47, 0.68, 0.63)
-    static let clay = rgb(0.63, 0.40, 0.24, 0.72, 0.57, 0.46)
     static let stone = rgb(0.45, 0.43, 0.37, 0.66, 0.64, 0.57)
     static let ochre = rgb(0.78, 0.56, 0.16, 0.83, 0.68, 0.40)
-    static let dustyRose = rgb(0.76, 0.39, 0.40, 0.80, 0.60, 0.58)
 
     let light: Color
     let dark: Color
@@ -2169,7 +2167,7 @@ struct IconPickerView: View {
 
 }
 
-struct DropZoneSettingsView: View {
+struct ResultsSettingsView: View {
     @Default(.enableDragAndDrop) var enableDragAndDrop
     @Default(.onlyShowDropZoneOnOption) var onlyShowDropZoneOnOption
     @Default(.autoCopyToClipboard) var autoCopyToClipboard
@@ -2295,6 +2293,16 @@ struct DropZoneSettingsView: View {
                 .frame(maxWidth: 780)
                 .frame(maxWidth: .infinity)
                 .id("automation")
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: 0) {
+                    SectionHeader(title: "Floating results", subtitle: "The thumbnail, progress and actions shown for each optimised file")
+                    FloatingSettingsView()
+                }
+                .padding(.horizontal, Space.xl)
+                .frame(maxWidth: 780)
+                .frame(maxWidth: .infinity)
             }
             .padding(.top)
         }
@@ -2402,7 +2410,7 @@ struct FloatingSettingsView: View {
         Form {
             Toggle(isOn: $enableFloatingResults) {
                 Text("Show floating results").regular(TextSize.body)
-                    + Text("\n\nDisabling this will make Polc run in an UI-less mode, but keep optimising files in the background. Drop zone can be disabled separately in the Drop zone tab")
+                    + Text("\n\nDisabling this will make Polc run in an UI-less mode, but keep optimising files in the background. Drop zone can be disabled separately in the Drop zone section above")
                     .round(TextSize.caption, weight: .regular)
                     .foregroundColor(.secondary)
             }
@@ -2524,9 +2532,7 @@ struct FloatingSettingsView: View {
 
     var body: some View {
         HStack(alignment: .top) {
-            ScrollView(.vertical, showsIndicators: false) {
-                settings
-            }
+            settings
 
             VStack {
                 if compact {
@@ -2977,7 +2983,7 @@ struct HighlightedFolderRequest: Equatable {
 }
 
 class SettingsViewManager: ObservableObject {
-    @Published var tab: SettingsView.Tabs = SWIFTUI_PREVIEW ? .floating : .general
+    @Published var tab: SettingsView.Tabs = SWIFTUI_PREVIEW ? .results : .general
     @Published var searchQuery = ""
     /// The entry id a search result asked to jump to. See `SettingsSearchAnchor`.
     @Published var highlightedEntry: String? = nil
@@ -2991,7 +2997,7 @@ class SettingsViewManager: ObservableObject {
     @Published var scrollToAutomation = false
     @Published var highlightFolder: HighlightedFolderRequest?
     /// Set by a preset-zone menu in the inline preview to open (and scroll to) that zone's editor row in
-    /// the same Preset Zones tab. Cleared once the row has reacted.
+    /// the same Results tab. Cleared once the row has reacted.
     @Published var editingPresetZoneID: String?
     /// Set by a floating result's "Pipeline: …" context-menu entry to open the Pipelines tab, scroll to
     /// the saved pipeline that ran on it and flash a highlight border. Cleared once the row has reacted.
@@ -3027,7 +3033,7 @@ struct SettingsSidebarRow: View {
 
 struct SettingsView: View {
     enum Tabs: Int, Hashable, CaseIterable, Identifiable {
-        case general, clipboard, files, video, audio, images, pdf, dropzone, floating, keys, pipelines, automation, mcp, about
+        case general, clipboard, files, video, audio, images, pdf, results, keys, pipelines, mcp, about
 
         var id: Int {
             rawValue
@@ -3050,11 +3056,9 @@ struct SettingsView: View {
             case .audio: "Audio"
             case .images: "Images"
             case .pdf: "PDF"
-            case .dropzone: "Drop Zone"
-            case .floating: "Floating Results"
+            case .results: "Results"
             case .keys: "Keyboard Shortcuts"
             case .pipelines: "Pipelines"
-            case .automation: "Automation"
             case .mcp: "MCP"
             case .about: "About"
             }
@@ -3069,11 +3073,9 @@ struct SettingsView: View {
             case .audio: "waveform"
             case .images: "photo"
             case .pdf: "doc"
-            case .dropzone: "square.stack.3d.up"
-            case .floating: "rectangle.stack"
+            case .results: "rectangle.stack"
             case .keys: "command.square"
             case .pipelines: "arrow.triangle.branch"
-            case .automation: "hammer"
             case .mcp: "sparkles"
             case .about: "info.circle"
             }
@@ -3088,11 +3090,9 @@ struct SettingsView: View {
             case .audio: SidebarHue(light: Palette.audio, dark: Palette.audio)
             case .images: SidebarHue(light: Palette.image, dark: Palette.image)
             case .pdf: SidebarHue(light: Palette.pdf, dark: Palette.pdf)
-            case .dropzone: .ochre
-            case .floating: .dustyRose
-            case .keys: .clay
-            case .pipelines: .periwinkle
-            case .automation: .sage
+            case .results: .ochre
+            case .keys: .violet
+            case .pipelines: .orchid
             case .mcp: .mutedTeal
             case .about: .plum
             }
@@ -3101,8 +3101,8 @@ struct SettingsView: View {
 
     static let topTabs: [Tabs] = [.general, .clipboard, .files]
     static let fileTypeTabs: [Tabs] = [.video, .audio, .images, .pdf]
-    static let dropTabs: [Tabs] = [.dropzone, .floating]
-    static let automationTabs: [Tabs] = [.keys, .pipelines, .automation, .mcp]
+    static let dropTabs: [Tabs] = [.results]
+    static let automationTabs: [Tabs] = [.keys, .pipelines, .mcp]
     static let supportTabs: [Tabs] = [.about]
 
     @ObservedObject var svm = settingsViewManager
@@ -3331,11 +3331,9 @@ struct SettingsView: View {
         case .audio: AudioSettingsView()
         case .images: ImagesSettingsView()
         case .pdf: PDFSettingsView()
-        case .dropzone: DropZoneSettingsView()
-        case .floating: FloatingSettingsView()
+        case .results: ResultsSettingsView()
         case .keys: KeysSettingsView()
         case .pipelines: PipelinesSettingsView()
-        case .automation: AutomationSettingsView()
         case .mcp: MCPSettingsView()
         case .about:
             AboutSettingsView()

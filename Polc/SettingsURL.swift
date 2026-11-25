@@ -15,11 +15,11 @@ enum SettingsURL {
         guard ["polc", FORMER_URL_SCHEME].contains(url.scheme), url.host == "settings" else { return false }
 
         let parts = url.pathComponents.filter { $0 != "/" }
-        let namedTab = parts.first.flatMap { tab(named: $0) }
-        let pathRow: String? = parts.count > 1 ? parts[1] : (namedTab == nil ? parts.first : nil)
-        let row = pathRow ?? URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "highlight" }?.value
+        let named = parts.first.flatMap { destination(named: $0) }
+        let pathRow: String? = parts.count > 1 ? parts[1] : (named == nil ? parts.first : nil)
+        let row = pathRow ?? URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "highlight" }?.value ?? named?.row
         let indexedTab: SettingsView.Tabs? = row.flatMap { id in SettingsSearchIndex.all.first { $0.id == id }?.tab }
-        if let tab = indexedTab ?? namedTab {
+        if let tab = indexedTab ?? named?.tab {
             settingsViewManager.tab = tab
         }
         if let row, !row.isEmpty {
@@ -40,14 +40,22 @@ enum SettingsURL {
         return components.string ?? "polc://settings/\(entry.tab)/\(entry.id)"
     }
 
-    /// A tab by its case name ("presetZones") or its title ("Preset zones"), in any case, spaces and
+    private static let formerTabs: [String: (tab: SettingsView.Tabs, row: String?)] = [
+        "dropzone": (.results, nil),
+        "presetzones": (.results, "presetZones.presetzones.presetZones"),
+        "floating": (.results, "floating.main.enableFloatingResults"),
+        "floatingresults": (.results, "floating.main.enableFloatingResults"),
+        "automation": (.pipelines, "automation.automation.pipelines"),
+    ]
+
+    /// A tab by its case name ("pipelines") or its title ("Pipelines"), in any case, spaces and
     /// dashes ignored.
-    @MainActor private static func tab(named raw: String) -> SettingsView.Tabs? {
+    @MainActor private static func destination(named raw: String) -> (tab: SettingsView.Tabs, row: String?)? {
         let wanted = normalized(raw)
-        if wanted == "presetzones" {
-            return .dropzone
+        if let former = formerTabs[wanted] {
+            return former
         }
-        return SettingsView.Tabs.allCases.first { normalized("\($0)") == wanted || normalized($0.title) == wanted }
+        return SettingsView.Tabs.allCases.first { normalized("\($0)") == wanted || normalized($0.title) == wanted }.map { ($0, nil) }
     }
 
     private static func normalized(_ s: String) -> String {

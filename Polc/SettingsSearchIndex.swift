@@ -285,135 +285,135 @@ enum SettingsSearchIndex {
             id: "dropzone.dropzone.enableDragAndDrop", keys: ["enableDragAndDrop"],
             title: "Enable drop zone",
             subtitle: "Allows dragging files, paths and URLs to a global drop zone for optimisation",
-            keywords: ["drop zone", "drag", "drop"], tab: .dropzone, section: "Drop zone"
+            keywords: ["drop zone", "drag", "drop"], tab: .results, section: "Drop zone"
         ),
         SettingEntry(
             id: "dropzone.dropzone.onlyShowDropZoneOnOption", keys: ["onlyShowDropZoneOnOption"],
             title: "Require pressing ⌥ Option to show drop zone",
             subtitle: "Hide drop zone by default to avoid distractions while dragging files, show it by manually pressing ⌥ Option once",
-            keywords: [], tab: .dropzone, section: "Drop zone"
+            keywords: [], tab: .results, section: "Drop zone"
         ),
         SettingEntry(
             id: "dropzone.dropzone.autoCopyToClipboard", keys: ["autoCopyToClipboard"],
             title: "Auto Copy optimised files to clipboard",
             subtitle: "Copy files resulting from drop zone or file watch optimisation so they can be pasted right after optimisation ends",
-            keywords: [], tab: .dropzone, section: "Drop zone"
+            keywords: [], tab: .results, section: "Drop zone"
         ),
         SettingEntry(
             id: "dropzone.batchmode.useBatchModeForFolders", keys: ["useBatchModeForFolders"],
             title: "Use batch mode for large drops",
             subtitle: "Dropping many files at once (or a folder with many files) opens a single batch window that optimises them all efficiently. Originals are backed up first and can be restored.",
-            keywords: [], tab: .dropzone, section: "Batch mode"
+            keywords: [], tab: .results, section: "Batch mode"
         ),
         SettingEntry(
             id: "dropzone.batchmode.batchModeFileCountThreshold", keys: ["batchModeFileCountThreshold"],
             title: "Batch mode file threshold",
             subtitle: "Drops with more files than this use batch mode",
-            keywords: [], tab: .dropzone, section: "Batch mode"
+            keywords: [], tab: .results, section: "Batch mode"
         ),
 
         SettingEntry(
             id: "presetZones.showingpresetzones.onlyShowPresetZonesOnControlTapped", keys: ["onlyShowPresetZonesOnControlTapped"],
             title: "Show preset zones by holding or tapping Control",
             subtitle: "Hold reveals them while the key is down; tap leaves them up",
-            keywords: [], tab: .dropzone, section: "Showing preset zones"
+            keywords: [], tab: .results, section: "Showing preset zones"
         ),
 
         SettingEntry(
             id: "floating.main.enableFloatingResults", keys: ["enableFloatingResults"],
             title: "Show floating results",
-            subtitle: "Disabling this will make Polc run in an UI-less mode, but keep optimising files in the background. Drop zone can be disabled separately in the Drop zone tab",
-            keywords: [], tab: .floating, section: ""
+            subtitle: "Disabling this will make Polc run in an UI-less mode, but keep optimising files in the background. Drop zone can be disabled separately in the Drop zone section above",
+            keywords: [], tab: .results, section: "Floating results"
         ),
         SettingEntry(
             id: "floating.layout.floatingResultsCorner", keys: ["floatingResultsCorner"],
             title: "Position on screen",
             subtitle: "Which corner floating results appear in",
-            keywords: [], tab: .floating, section: "Layout"
+            keywords: [], tab: .results, section: "Layout"
         ),
         SettingEntry(
             id: "floating.layout.followCursorScreen", keys: ["followCursorScreen"],
             title: "Follow the cursor across screens",
             subtitle: "When the cursor stays on another screen for a couple of seconds, move the results to that screen",
-            keywords: [], tab: .floating, section: "Layout"
+            keywords: [], tab: .results, section: "Layout"
         ),
         SettingEntry(
             id: "floating.layout.hideFloatingResultTooltips", keys: ["hideFloatingResultTooltips"],
             title: "Hide button tooltips",
             subtitle: "Don't show the action name labels that pop up while hovering result buttons",
-            keywords: [], tab: .floating, section: "Layout"
+            keywords: [], tab: .results, section: "Layout"
         ),
         SettingEntry(
             id: "floating.layout.alwaysShowCompactResults", keys: ["alwaysShowCompactResults"],
             title: "Always use compact layout",
             subtitle: "By default, the layout switches to compact automatically when there are more than 5 results on the screen",
-            keywords: [], tab: .floating, section: "Layout"
+            keywords: [], tab: .results, section: "Layout"
         ),
         SettingEntry(
             id: "floating.fulllayout.formatPickerStyle", keys: ["formatPickerStyle"],
             title: "Change format by",
             subtitle: "How the format control on a floating result behaves",
-            keywords: [], tab: .floating, section: "Full layout"
+            keywords: [], tab: .results, section: "Full layout"
         ),
         SettingEntry(
             id: "floating.fulllayout.showCopyClearButtons", keys: ["showCopyClearButtons"],
             title: "Show Copy all and Clear all buttons",
             subtitle: "",
-            keywords: [], tab: .floating, section: "Full layout"
+            keywords: [], tab: .results, section: "Full layout"
         ),
         SettingEntry(
             id: "floating.fulllayout.dismissFloatingResultOnDrop", keys: ["dismissFloatingResultOnDrop"],
             title: "Dismiss result on drag and drop outside",
             subtitle: "",
-            keywords: [], tab: .floating, section: "Full layout"
+            keywords: [], tab: .results, section: "Full layout"
         ),
         SettingEntry(
             id: "floating.fulllayout.dismissFloatingResultOnUpload", keys: ["dismissFloatingResultOnUpload"],
             title: "Dismiss result on upload to Dropshare",
             subtitle: "",
-            keywords: [], tab: .floating, section: "Full layout"
+            keywords: [], tab: .results, section: "Full layout"
         ),
         SettingEntry(
             id: "floating.fulllayout.autoHideFloatingResults", keys: ["autoHideFloatingResults"],
             title: "Auto hide floating results",
             subtitle: "",
-            keywords: [], tab: .floating, section: "Full layout"
+            keywords: [], tab: .results, section: "Full layout"
         ),
         SettingEntry(
             id: "floating.fulllayout.autoHideFloatingResultsAfter", keys: ["autoHideFloatingResultsAfter"],
             title: "Auto hide file results after",
             subtitle: "Seconds before a file result disappears",
-            keywords: [], tab: .floating, section: "Full layout"
+            keywords: [], tab: .results, section: "Full layout"
         ),
         SettingEntry(
             id: "floating.fulllayout.autoHideClipboardResultAfter", keys: ["autoHideClipboardResultAfter"],
             title: "Auto hide clipboard results after",
             subtitle: "Seconds before a clipboard result disappears",
-            keywords: [], tab: .floating, section: "Full layout"
+            keywords: [], tab: .results, section: "Full layout"
         ),
         SettingEntry(
             id: "floating.compactlayout.showCompactImages", keys: ["showCompactImages"],
             title: "Show images in compact results",
             subtitle: "",
-            keywords: [], tab: .floating, section: "Compact layout"
+            keywords: [], tab: .results, section: "Compact layout"
         ),
         SettingEntry(
             id: "floating.compactlayout.dismissCompactResultOnDrop", keys: ["dismissCompactResultOnDrop"],
             title: "Dismiss compact result on drag and drop outside",
             subtitle: "",
-            keywords: [], tab: .floating, section: "Compact layout"
+            keywords: [], tab: .results, section: "Compact layout"
         ),
         SettingEntry(
             id: "floating.compactlayout.dismissCompactResultOnUpload", keys: ["dismissCompactResultOnUpload"],
             title: "Dismiss compact result on upload to Dropshare",
             subtitle: "",
-            keywords: [], tab: .floating, section: "Compact layout"
+            keywords: [], tab: .results, section: "Compact layout"
         ),
         SettingEntry(
             id: "floating.compactlayout.autoClearAllCompactResultsAfter", keys: ["autoClearAllCompactResultsAfter"],
             title: "Auto clear all compact results after",
             subtitle: "Seconds before every compact result is cleared",
-            keywords: [], tab: .floating, section: "Compact layout"
+            keywords: [], tab: .results, section: "Compact layout"
         ),
 
         SettingEntry(
@@ -809,13 +809,13 @@ enum SettingsSearchIndex {
             id: "floating.main.floatingResultActions", keys: ["floatingResultActions"],
             title: "Action buttons",
             subtitle: "",
-            keywords: ["floating result", "grid", "icons", "share", "quicklook", "customise", "reorder", "remove", "add", "toolbar", "aggressive", "downscale"], tab: .floating, section: ""
+            keywords: ["floating result", "grid", "icons", "share", "quicklook", "customise", "reorder", "remove", "add", "toolbar", "aggressive", "downscale"], tab: .results, section: "Floating results"
         ),
         SettingEntry(
             id: "floating.main.compactResultActions", keys: ["compactResultActions"],
             title: "Side actions",
             subtitle: "",
-            keywords: ["compact result", "icons", "buttons", "row", "customise", "add", "remove", "quicklook", "share", "crop", "show in finder", "save as"], tab: .floating, section: ""
+            keywords: ["compact result", "icons", "buttons", "row", "customise", "add", "remove", "quicklook", "share", "crop", "show in finder", "save as"], tab: .results, section: "Floating results"
         ),
         SettingEntry(
             id: "images.watchpaths.dirsHideFloatingResult", keys: [],
@@ -827,7 +827,7 @@ enum SettingsSearchIndex {
             id: "presetZones.presetzones.presetZones", keys: [],
             title: "Preset zones",
             subtitle: "Hold or tap ⌃ Control while dragging to show a zone per file type. Click a zone to assign or create a pipeline.",
-            keywords: ["drop target", "quadrant", "corner", "control key", "image", "video", "audio", "pdf", "automation"], tab: .dropzone, section: "Preset zones"
+            keywords: ["drop target", "quadrant", "corner", "control key", "image", "video", "audio", "pdf", "automation"], tab: .results, section: "Preset zones"
         ),
         SettingEntry(
             id: "pipelines.savedpipelines.library", keys: [],
@@ -839,7 +839,7 @@ enum SettingsSearchIndex {
             id: "automation.automation.pipelines", keys: [],
             title: "Automation",
             subtitle: "Run actions on files after or before optimisation: convert, crop, copy, rename and more",
-            keywords: ["pipeline", "watch", "folder", "clipboard", "drop zone", "per type", "rules", "after optimisation", "before optimisation"], tab: .automation, section: "Automation"
+            keywords: ["pipeline", "watch", "folder", "clipboard", "drop zone", "per type", "rules", "after optimisation", "before optimisation"], tab: .pipelines, section: "Automation"
         ),
         SettingEntry(
             id: "about.about.version", keys: [],

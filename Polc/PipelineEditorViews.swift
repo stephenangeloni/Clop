@@ -195,7 +195,7 @@ struct PipelineEditorRow: View {
             }
 
             if case .dropZone = source {
-                Button(action: { settingsViewManager.tab = .dropzone }) {
+                Button(action: { settingsViewManager.tab = .results }) {
                     HStack(spacing: Space.xxs) {
                         Text("Want different pipelines for specific drop targets?")
                         Text("Use Preset Zones")
@@ -1417,15 +1417,15 @@ struct SavedPipelineRow: View {
             svm.tab = .clipboard
             svm.scrollToAutomation = true
         case .dropZone:
-            svm.tab = .dropzone
+            svm.tab = .results
             svm.scrollToAutomation = true
         case let .folder(path):
             let ft = orderedFileType(in: a.fileTypes) ?? pipeline.fileType ?? .image
-            svm.tab = .automation
+            svm.tab = .pipelines
             svm.scrollToFileType = ft
             svm.highlightFolder = HighlightedFolderRequest(fileType: ft, folder: path)
         case let .presetZone(zoneID):
-            svm.tab = .dropzone
+            svm.tab = .results
             svm.editingPresetZoneID = zoneID
         }
     }
@@ -1475,6 +1475,10 @@ struct PipelinesSettingsView: View {
     ]
 
     @Default(.savedPipelines) var savedPipelines
+    @Default(.pipelinesToRunOnImage) var imagePipelines
+    @Default(.pipelinesToRunOnVideo) var videoPipelines
+    @Default(.pipelinesToRunOnPdf) var pdfPipelines
+    @Default(.pipelinesToRunOnAudio) var audioPipelines
 
     @ObservedObject var svm = settingsViewManager
 
@@ -1548,10 +1552,42 @@ struct PipelinesSettingsView: View {
                         }
                     }
                 }
+                Section(header: SectionHeader(
+                    title: "Automation",
+                    subtitle: "Automatically run actions on files after (or before) optimisation: convert, crop, copy, rename and more\nType an action name and press Tab to fill in, Enter to finish"
+                ).searchAnchor("automation.automation.pipelines")) {
+                    PipelineTypeSectionView(fileType: .image, pipelines: $imagePipelines)
+                        .id(PolcFileType.image)
+                    Divider()
+                    PipelineTypeSectionView(fileType: .video, pipelines: $videoPipelines)
+                        .id(PolcFileType.video)
+                    Divider()
+                    PipelineTypeSectionView(fileType: .audio, pipelines: $audioPipelines)
+                        .id(PolcFileType.audio)
+                    Divider()
+                    PipelineTypeSectionView(fileType: .pdf, pipelines: $pdfPipelines)
+                        .id(PolcFileType.pdf)
+                }
             }
             .padding(Space.xs)
-            .onAppear { handleHighlightPipeline(proxy) }
+            .onAppear {
+                handleHighlightPipeline(proxy)
+                guard let fileType = svm.scrollToFileType else { return }
+                DispatchQueue.main.async {
+                    withAnimation {
+                        proxy.scrollTo(fileType, anchor: .top)
+                    }
+                    svm.scrollToFileType = nil
+                }
+            }
             .onChange(of: svm.highlightPipelineID) { _ in handleHighlightPipeline(proxy) }
+            .onChange(of: svm.scrollToFileType) { fileType in
+                guard let fileType else { return }
+                withAnimation {
+                    proxy.scrollTo(fileType, anchor: .top)
+                }
+                svm.scrollToFileType = nil
+            }
         }
     }
 
@@ -1577,61 +1613,4 @@ struct PipelinesSettingsView: View {
     @State private var newlyCreatedID: String?
     @State private var highlightedPipelineID: String?
 
-}
-
-struct AutomationSettingsView: View {
-    @Default(.pipelinesToRunOnImage) var imagePipelines
-    @Default(.pipelinesToRunOnVideo) var videoPipelines
-    @Default(.pipelinesToRunOnPdf) var pdfPipelines
-    @Default(.pipelinesToRunOnAudio) var audioPipelines
-
-    @ObservedObject var svm = settingsViewManager
-
-    var body: some View {
-        ScrollViewReader { proxy in
-            Form {
-                Section(header: SectionHeader(
-                    title: "Automation",
-                    subtitle: "Automatically run actions on files after (or before) optimisation: convert, crop, copy, rename and more\nType an action name and press Tab to fill in, Enter to finish"
-                ).searchAnchor("automation.automation.pipelines")) {
-                    PipelineTypeSectionView(fileType: .image, pipelines: $imagePipelines)
-                        .id(PolcFileType.image)
-                    Divider()
-                    PipelineTypeSectionView(fileType: .video, pipelines: $videoPipelines)
-                        .id(PolcFileType.video)
-                    Divider()
-                    PipelineTypeSectionView(fileType: .audio, pipelines: $audioPipelines)
-                        .id(PolcFileType.audio)
-                    Divider()
-                    PipelineTypeSectionView(fileType: .pdf, pipelines: $pdfPipelines)
-                        .id(PolcFileType.pdf)
-                }
-            }
-            .padding(Space.xs)
-            .onAppear {
-                guard let fileType = svm.scrollToFileType else { return }
-                DispatchQueue.main.async {
-                    withAnimation {
-                        proxy.scrollTo(fileType, anchor: .top)
-                    }
-                    svm.scrollToFileType = nil
-                }
-            }
-            .onChange(of: svm.scrollToFileType) { fileType in
-                guard let fileType else { return }
-                withAnimation {
-                    proxy.scrollTo(fileType, anchor: .top)
-                }
-                svm.scrollToFileType = nil
-            }
-        }
-    }
-}
-
-struct AutomationSettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        AutomationSettingsView()
-            .frame(minWidth: 850, maxWidth: .infinity, minHeight: 520, maxHeight: .infinity)
-            .formStyle(.grouped)
-    }
 }

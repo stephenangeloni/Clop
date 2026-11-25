@@ -116,10 +116,10 @@ struct PresetZone: Codable, Hashable, Identifiable, Defaults.Serializable {
     Defaults[.presetZones] = Defaults[.presetZones].filter { $0.id != zone.id }
 }
 
-struct DropZoneSettingsView_Previews: PreviewProvider {
+struct ResultsSettingsView_Previews: PreviewProvider {
     static var previews: some View {
         VStack {
-            DropZoneSettingsView()
+            ResultsSettingsView()
                 .formStyle(.grouped)
                 .padding()
         }
