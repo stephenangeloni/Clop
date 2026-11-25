@@ -139,6 +139,48 @@ struct RightClickMenuView: View {
         .keyboardShortcut("z")
         .disabled(optimiser.isOriginal)
 
+        if !optimiser.running {
+            Section("File") {
+                Button("Copy to clipboard") {
+                    optimiser.copyToClipboard()
+                    optimiser.overlayMessage = "Copied"
+                }
+                .keyboardShortcut("c")
+
+                Button("Show in Finder") {
+                    optimiser.showInFinder()
+                }
+                .keyboardShortcut("f")
+
+                Button("Save as…") {
+                    optimiser.save()
+                }
+                .keyboardShortcut("s")
+
+                if let url = optimiser.url ?? optimiser.originalURL {
+                    // Name and icon the default app so it's obvious what opens (e.g. "Open with Preview").
+                    let defaultApp = NSWorkspace.shared.urlForApplication(toOpen: url)
+                    Button(action: {
+                        if optimiser.existingFileOrNotify() != nil {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }) {
+                        if let defaultApp {
+                            SwiftUI.Image(nsImage: appMenuIcon(defaultApp))
+                            Text("Open with \(appDisplayName(defaultApp))")
+                        } else {
+                            Text("Open with default app")
+                        }
+                    }
+                    .keyboardShortcut("o")
+                }
+                EditWithAppButton(optimiser: optimiser)
+                if let url = optimiser.url {
+                    OpenWithMenuView(fileURL: url)
+                }
+            }
+        }
+
         // Inspect: stays available even while the pipeline is still running.
         Section {
             Button("Quick Look") {
@@ -154,50 +196,6 @@ struct RightClickMenuView: View {
         }
 
         if !optimiser.running {
-            Section("File") {
-                Button("Save as…") {
-                    optimiser.save()
-                }
-                .keyboardShortcut("s")
-
-                Button("Copy to clipboard") {
-                    optimiser.copyToClipboard()
-                    optimiser.overlayMessage = "Copied"
-                }
-                .keyboardShortcut("c")
-
-                Button("Show in Finder") {
-                    optimiser.showInFinder()
-                }
-                .keyboardShortcut("f")
-            }
-
-            if optimiser.url != nil || optimiser.originalURL != nil {
-                Section("Open") {
-                    if let url = optimiser.url ?? optimiser.originalURL {
-                        // Name and icon the default app so it's obvious what opens (e.g. "Open with Preview").
-                        let defaultApp = NSWorkspace.shared.urlForApplication(toOpen: url)
-                        Button(action: {
-                            if optimiser.existingFileOrNotify() != nil {
-                                NSWorkspace.shared.open(url)
-                            }
-                        }) {
-                            if let defaultApp {
-                                SwiftUI.Image(nsImage: appMenuIcon(defaultApp))
-                                Text("Open with \(appDisplayName(defaultApp))")
-                            } else {
-                                Text("Open with default app")
-                            }
-                        }
-                        .keyboardShortcut("o")
-                    }
-                    EditWithAppButton(optimiser: optimiser)
-                    if let url = optimiser.url {
-                        OpenWithMenuView(fileURL: url)
-                    }
-                }
-            }
-
             if hasEditSection {
                 Section("Transform") {
                     editButtons
@@ -205,24 +203,17 @@ struct RightClickMenuView: View {
                 }
             }
 
-            Section("Share") {
-                if let url = optimiser.url ?? optimiser.originalURL, let airdrop = NSSharingService(named: .sendViaAirDrop) {
-                    Button("Send with AirDrop") {
-                        guard optimiser.existingFileOrNotify() != nil else { return }
-                        airdrop.perform(withItems: [url])
+            Menu("Advanced") {
+                if optimiser.canConvertHDRToSDR() {
+                    Button("Convert HDR to SDR") {
+                        optimiser.convertHDRToSDR()
                     }
-                    .disabled(!airdrop.canPerform(withItems: [url]))
                 }
-                if DROPSHARE.appURL != nil {
-                    Button("Upload with Dropshare") {
-                        DROPSHARE.open(optimiser: optimiser)
+                if optimiser.canReoptimise(), optimiser.type.isVideo {
+                    Menu("Re-optimise with encoder") {
+                        ReoptimiseWithEncoderMenu(optimiser: optimiser)
                     }
-                    .keyboardShortcut("u")
                 }
-                ShelfMenu { $0.open(optimiser: optimiser) }
-            }
-
-            Section("Advanced") {
                 if !optimiser.type.isPDF, !optimiser.type.isAudio {
                     Button("Strip EXIF metadata") {
                         guard optimiser.existingFileOrNotify() != nil else { return }
@@ -238,6 +229,23 @@ struct RightClickMenuView: View {
                 }
                 Menu("Pass file through Shortcut") {
                     WorkflowMenu(optimiser: optimiser)
+                }
+
+                Section {
+                    if let url = optimiser.url ?? optimiser.originalURL, let airdrop = NSSharingService(named: .sendViaAirDrop) {
+                        Button("Send with AirDrop") {
+                            guard optimiser.existingFileOrNotify() != nil else { return }
+                            airdrop.perform(withItems: [url])
+                        }
+                        .disabled(!airdrop.canPerform(withItems: [url]))
+                    }
+                    if DROPSHARE.appURL != nil {
+                        Button("Upload with Dropshare") {
+                            DROPSHARE.open(optimiser: optimiser)
+                        }
+                        .keyboardShortcut("u")
+                    }
+                    ShelfMenu { $0.open(optimiser: optimiser) }
                 }
             }
         }
@@ -276,11 +284,6 @@ struct RightClickMenuView: View {
             .keyboardShortcut("a")
             .disabled(optimiser.aggressive)
         }
-        if optimiser.canConvertHDRToSDR() {
-            Button("Convert HDR to SDR") {
-                optimiser.convertHDRToSDR()
-            }
-        }
     }
 
     /// Submenu transforms, grouped after `editButtons`. The conversion submenus live here too (moved from
@@ -307,31 +310,9 @@ struct RightClickMenuView: View {
             }
         }
 
-        if optimiser.type.isAudio {
-            Menu("Normalise loudness") {
-                LoudnessMenu(optimiser: optimiser)
-            }
-            Menu("Downscale cover art") {
-                CoverArtDownscaleMenu(optimiser: optimiser)
-            }
-        }
-
-        if optimiser.canChangePlaybackSpeed() {
-            Menu("Change playback speed") {
-                ChangePlaybackSpeedMenu(optimiser: optimiser)
-            }
-            .disabled(optimiser.changePlaybackSpeedFactor >= 10)
-        }
-
-        if optimiser.type.isVideo {
-            Menu("Convert to GIF") {
-                ConvertToGIFMenu(optimiser: optimiser)
-            }
-        }
-
-        if optimiser.canReoptimise(), optimiser.type.isVideo {
-            Menu("Re-optimise with encoder") {
-                ReoptimiseWithEncoderMenu(optimiser: optimiser)
+        if optimiser.convertibleTypes.isNotEmpty {
+            Menu("Convert to…") {
+                ConvertMenu(optimiser: optimiser)
             }
         }
 
@@ -357,9 +338,25 @@ struct RightClickMenuView: View {
             }
         }
 
-        if optimiser.convertibleTypes.isNotEmpty {
-            Menu("Convert to…") {
-                ConvertMenu(optimiser: optimiser)
+        if optimiser.type.isAudio {
+            Menu("Normalise loudness") {
+                LoudnessMenu(optimiser: optimiser)
+            }
+            Menu("Downscale cover art") {
+                CoverArtDownscaleMenu(optimiser: optimiser)
+            }
+        }
+
+        if optimiser.canChangePlaybackSpeed() {
+            Menu("Change playback speed") {
+                ChangePlaybackSpeedMenu(optimiser: optimiser)
+            }
+            .disabled(optimiser.changePlaybackSpeedFactor >= 10)
+        }
+
+        if optimiser.type.isVideo {
+            Menu("Convert to GIF") {
+                ConvertToGIFMenu(optimiser: optimiser)
             }
         }
     }
