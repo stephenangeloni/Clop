@@ -278,6 +278,7 @@ extension View {
             // clean white/black chip instead of the mushy gray that a thin tint over the material gave.
             shape.fill(Color.bg.warm.opacity(0.92))
         }
+        .opaqueWhenReducingTransparency(Color.bg.warm, in: shape)
         .overlay { shape.stroke(Color.primary.opacity(0.12), lineWidth: 0.5) }
     }
 
@@ -291,17 +292,8 @@ extension View {
                 Capsule().fill(.regularMaterial)
                 Capsule().fill(Color.bg.warm.opacity(0.92))
             }
+            .opaqueWhenReducingTransparency(Color.bg.warm, in: Capsule())
             .overlay(Capsule().strokeBorder(Color.fg.warm.opacity(hovering ? 0.3 : 0.15), lineWidth: 0.5))
-    }
-
-    /// Compact-list filename/extension chip: a very translucent monochrome fill + hairline border on a 4pt
-    /// rounded rect. `.primary` text so it adapts to the list's color scheme; firms up on hover. Apply
-    /// after the chip's own (tight) padding.
-    func listChip(hovering: Bool) -> some View {
-        let shape = RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
-        return foregroundColor(.primary)
-            .background(shape.fill(Color.primary.opacity(hovering ? 0.1 : 0.05)))
-            .overlay(shape.strokeBorder(Color.primary.opacity(hovering ? 0.2 : 0.1), lineWidth: 0.5))
     }
 }
 

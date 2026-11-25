@@ -40,9 +40,11 @@ extension View {
                 .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
         } else if #available(macOS 26.0, *) {
             glassEffect(.regular, in: shape)
+                .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
                 .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
         } else {
             background(.ultraThickMaterial, in: shape)
+                .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
                 .overlay(shape.strokeBorder(Color.primary.opacity(0.15), lineWidth: 0.5))
                 .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
         }
@@ -54,9 +56,11 @@ extension View {
             if #available(macOS 26.0, *) {
                 background(.red.opacity(0.5), in: shape)
                     .glassEffect(.regular, in: shape)
+                    .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
             } else {
                 background(.red.opacity(0.5), in: shape)
                     .background(.thinMaterial, in: shape)
+                    .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
             }
         } else {
             // Semi-opaque backing so the panel reads against the desktop instead of being see-through
@@ -64,9 +68,11 @@ extension View {
             if #available(macOS 26.0, *) {
                 background(Color.bg.primary.opacity(0.75), in: shape)
                     .glassEffect(.regular, in: shape)
+                    .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
             } else {
                 background(Color.bg.primary.opacity(0.75), in: shape)
                     .background(.thinMaterial, in: shape)
+                    .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
             }
         }
     }
@@ -133,10 +139,12 @@ private struct GlassChipFill: ViewModifier {
             content
                 .background(Color.inverted.opacity(tintOpacity), in: shape)
                 .glassEffect(.regular, in: shape)
+                .opaqueWhenReducingTransparency(Color.bg.warm, in: shape)
         } else {
             content
                 .background(Color.inverted.opacity(tintOpacity), in: shape)
                 .background(.thinMaterial, in: shape)
+                .opaqueWhenReducingTransparency(Color.bg.warm, in: shape)
         }
     }
 }
@@ -647,7 +655,7 @@ struct NameFormatPill: View {
         // thumbnail; at rest the two faint-accent chips carry their own fill, with no warm pill behind.
         .background {
             if optimiser.editingFilename {
-                Capsule().fill(.regularMaterial)
+                Capsule().fill(.regularMaterial).opaqueWhenReducingTransparency(Color.bg.warm, in: Capsule())
                 Capsule().fill(Color.bg.warm.opacity(0.92))
                 Capsule().stroke(Color.primary.opacity(0.12), lineWidth: 0.5)
             }
@@ -1170,25 +1178,10 @@ struct FloatingResult: View {
         }
     }
 
-    @ViewBuilder var bitrateDiff: some View {
-        if optimiser.type.isAudio, let oldBitrate = optimiser.oldBitrate, oldBitrate > 0 {
-            HStack(spacing: Space.xxs) {
-                let hideOldBitrate = OM.compactResults && (optimiser.newBitrate ?? 0) > 0 && optimiser.newBitrate! != oldBitrate
-                if !hideOldBitrate {
-                    Text("\(oldBitrate) kbps")
-                }
-                if let newBitrate = optimiser.newBitrate, newBitrate > 0, newBitrate != oldBitrate {
-                    if !hideOldBitrate {
-                        SwiftUI.Image(systemName: "arrow.right")
-                    }
-                    Text("\(newBitrate) kbps")
-                }
-            }
-            .lineLimit(1)
+    var bitrateDiff: some View {
+        BitrateChange(optimiser: optimiser, hidesOldWhenChanged: OM.compactResults)
             .font(.round(TextSize.caption))
             .foregroundColor(optimiser.thumbnail != nil ? .lightGray : .secondary)
-            .fixedSize()
-        }
     }
 
     @ViewBuilder var coverArtDiff: some View {
@@ -1210,46 +1203,20 @@ struct FloatingResult: View {
         }
     }
 
-    @ViewBuilder var dpiDiff: some View {
-        if optimiser.type.isPDF, let oldDPI = optimiser.oldDPI {
-            HStack(spacing: Space.xxs) {
-                let hideOldDPI = OM.compactResults && optimiser.newDPI != nil && optimiser.newDPI! != oldDPI
-                if !hideOldDPI {
-                    Text("\(oldDPI) DPI")
-                }
-                if let newDPI = optimiser.newDPI, newDPI != oldDPI {
-                    if !hideOldDPI {
-                        SwiftUI.Image(systemName: "arrow.right")
-                    }
-                    Text("\(newDPI) DPI")
-                }
-            }
-            .lineLimit(1)
+    var dpiDiff: some View {
+        DPIChange(optimiser: optimiser, hidesOldWhenChanged: OM.compactResults)
             .font(.round(TextSize.caption))
             .foregroundColor(optimiser.thumbnail != nil ? .lightGray : .secondary)
-            .fixedSize()
-        }
     }
 
-    @ViewBuilder var fileSizeDiff: some View {
-        let improvement = optimiser.newBytes > 0 && optimiser.newBytes < optimiser.oldBytes
+    var fileSizeDiff: some View {
         let onThumbnail = optimiser.thumbnail != nil
-        let savingColor = onThumbnail ? Palette.savingOnThumbnail : Palette.saving
-        let growthColor = onThumbnail ? Palette.growthOnThumbnail : Palette.growth
-
-        HStack {
-            Text(optimiser.oldBytes.humanSize)
-                .mono(TextSize.body, weight: .semibold)
-                .foregroundColor(improvement ? growthColor : savingColor)
-            if optimiser.newBytes > 0, optimiser.newBytes != optimiser.oldBytes {
-                SwiftUI.Image(systemName: "arrow.right")
-                Text(optimiser.newBytes.humanSize)
-                    .mono(TextSize.body, weight: .semibold)
-                    .foregroundColor(improvement ? savingColor : growthColor)
-            }
-        }
-        .lineLimit(1)
-        .fixedSize()
+        return FileSizeChange(
+            optimiser: optimiser,
+            sizeFont: .mono(TextSize.body, weight: .semibold),
+            savingColor: onThumbnail ? Palette.savingOnThumbnail : Palette.saving,
+            growthColor: onThumbnail ? Palette.growthOnThumbnail : Palette.growth
+        )
         .brightness(0.1)
         .saturation(1.1)
     }
@@ -1759,6 +1726,80 @@ struct FloatingResult: View {
         }
     }
 
+}
+
+struct FileSizeChange: View {
+    @ObservedObject var optimiser: Optimiser
+    var spacing: CGFloat?
+    var sizeFont: Font
+    var savingColor: Color
+    var growthColor: Color
+
+    var body: some View {
+        let improvement = optimiser.newBytes > 0 && optimiser.newBytes < optimiser.oldBytes
+
+        HStack(spacing: spacing) {
+            Text(optimiser.oldBytes.humanSize)
+                .font(sizeFont)
+                .foregroundColor(improvement ? growthColor : savingColor)
+            if optimiser.newBytes > 0, optimiser.newBytes != optimiser.oldBytes {
+                SwiftUI.Image(systemName: "arrow.right")
+                Text(optimiser.newBytes.humanSize)
+                    .font(sizeFont)
+                    .foregroundColor(improvement ? savingColor : growthColor)
+            }
+        }
+        .lineLimit(1)
+        .fixedSize()
+    }
+}
+
+struct BitrateChange: View {
+    @ObservedObject var optimiser: Optimiser
+    var hidesOldWhenChanged: Bool
+
+    var body: some View {
+        if optimiser.type.isAudio, let oldBitrate = optimiser.oldBitrate, oldBitrate > 0 {
+            HStack(spacing: Space.xxs) {
+                let hideOldBitrate = hidesOldWhenChanged && (optimiser.newBitrate ?? 0) > 0 && optimiser.newBitrate! != oldBitrate
+                if !hideOldBitrate {
+                    Text("\(oldBitrate) kbps")
+                }
+                if let newBitrate = optimiser.newBitrate, newBitrate > 0, newBitrate != oldBitrate {
+                    if !hideOldBitrate {
+                        SwiftUI.Image(systemName: "arrow.right")
+                    }
+                    Text("\(newBitrate) kbps")
+                }
+            }
+            .lineLimit(1)
+            .fixedSize()
+        }
+    }
+}
+
+struct DPIChange: View {
+    @ObservedObject var optimiser: Optimiser
+    var hidesOldWhenChanged: Bool
+
+    var body: some View {
+        if optimiser.type.isPDF, let oldDPI = optimiser.oldDPI {
+            HStack(spacing: Space.xxs) {
+                let hideOldDPI = hidesOldWhenChanged && optimiser.newDPI != nil && optimiser.newDPI! != oldDPI
+                if !hideOldDPI {
+                    Text("\(oldDPI) DPI")
+                }
+                if let newDPI = optimiser.newDPI, newDPI != oldDPI {
+                    if !hideOldDPI {
+                        SwiftUI.Image(systemName: "arrow.right")
+                    }
+                    Text("\(newDPI) DPI")
+                }
+            }
+            .lineLimit(1)
+            .fixedSize()
+        }
+    }
 }
 
 @ViewBuilder
