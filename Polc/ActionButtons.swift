@@ -372,7 +372,7 @@ struct RestoreOptimiseButton: View {
                         optimiser.optimise(allowLarger: false); optimiser.collapseHoverOverlay = true
                     }
                 },
-                label: { SwiftUI.Image(systemName: "goforward.plus").font(.heavy(TextSize.micro)) }
+                label: { SwiftUI.Image(systemName: "goforward.plus").font(.heavy(TextSize.cardBadge)) }
             )
             .contentShape(Rectangle())
         } else {
@@ -382,7 +382,7 @@ struct RestoreOptimiseButton: View {
                         optimiser.restoreOriginal(); optimiser.overlayMessage = "Restored original"; optimiser.collapseHoverOverlay = true
                     }
                 },
-                label: { SwiftUI.Image(systemName: "arrow.uturn.left").font(.semibold(TextSize.micro)) }
+                label: { SwiftUI.Image(systemName: "arrow.uturn.left").font(.semibold(TextSize.cardBadge)) }
             )
             .contentShape(Rectangle())
         }
@@ -410,7 +410,7 @@ struct DownscaleButton: View {
     @Environment(\.preview) var preview
 
     var body: some View {
-        Button(action: {}, label: { SwiftUI.Image(systemName: "minus").font(.heavy(TextSize.micro)) })
+        Button(action: {}, label: { SwiftUI.Image(systemName: "minus").font(.heavy(TextSize.cardBadge)) })
             .contentShape(Rectangle())
             .onMouseDown {
                 guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
@@ -472,7 +472,7 @@ struct HorizontalDownscaleSlider: View {
                             Text(downscaleFactorLabel(displayFactor))
                                 .font(.system(size: TextSize.caption, weight: .heavy, design: .rounded))
                             if let res = downscaleResolutionString(for: optimiser, factor: displayFactor) {
-                                Text(res).font(.system(size: TextSize.micro, weight: .semibold, design: .rounded)).foregroundColor(.secondary)
+                                Text(res).font(.system(size: TextSize.cardBadge, weight: .semibold, design: .rounded)).foregroundColor(.secondary)
                             }
                         }
                         .foregroundColor(.primary)
@@ -573,7 +573,7 @@ struct HorizontalCoverArtSlider: View {
                                 .font(.system(size: TextSize.caption, weight: .heavy, design: .rounded))
                             if let base = optimiser.coverArtSize, base.width > 0, base.height > 0 {
                                 Text("\(Int((base.width * displayFactor).rounded()))×\(Int((base.height * displayFactor).rounded()))")
-                                    .font(.system(size: TextSize.micro, weight: .semibold, design: .rounded)).foregroundColor(.secondary)
+                                    .font(.system(size: TextSize.cardBadge, weight: .semibold, design: .rounded)).foregroundColor(.secondary)
                             }
                         }
                         .foregroundColor(.primary)
@@ -888,7 +888,7 @@ struct FormatChangeLine: View {
                         + Text(display.result).foregroundColor(primary)
                 }
             }
-            .font(.system(size: TextSize.micro, weight: .bold, design: .rounded))
+            .font(.system(size: TextSize.cardBadge, weight: .bold, design: .rounded))
             .fixedSize()
         }
     }
@@ -899,7 +899,7 @@ struct CompressionButton: View {
     @Environment(\.preview) var preview
 
     var body: some View {
-        Button(action: {}, label: { SwiftUI.Image(systemName: "slider.horizontal.3").font(.heavy(TextSize.micro)) })
+        Button(action: {}, label: { SwiftUI.Image(systemName: "slider.horizontal.3").font(.heavy(TextSize.cardBadge)) })
             .contentShape(Rectangle())
             .onMouseDown {
                 guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
@@ -1848,7 +1848,7 @@ struct CoverArtDownscaleButton: View {
     @Environment(\.preview) var preview
 
     var body: some View {
-        Button(action: {}, label: { SwiftUI.Image(systemName: "minus").font(.heavy(TextSize.micro)) })
+        Button(action: {}, label: { SwiftUI.Image(systemName: "minus").font(.heavy(TextSize.cardBadge)) })
             .contentShape(Rectangle())
             .onMouseDown {
                 guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
@@ -1866,7 +1866,7 @@ struct LowerPDFDPIButton: View {
     @Environment(\.preview) var preview
 
     var body: some View {
-        Button(action: {}, label: { SwiftUI.Image(systemName: "slider.horizontal.3").font(.heavy(TextSize.micro)) })
+        Button(action: {}, label: { SwiftUI.Image(systemName: "slider.horizontal.3").font(.heavy(TextSize.cardBadge)) })
             .contentShape(Rectangle())
             .onMouseDown {
                 guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
@@ -1890,7 +1890,7 @@ struct QuickLookButton: View {
                     optimiser.quicklook()
                 }
             },
-            label: { SwiftUI.Image(systemName: "eye").font(.heavy(TextSize.micro)) }
+            label: { SwiftUI.Image(systemName: "eye").font(.heavy(TextSize.cardBadge)) }
         )
         .contentShape(Rectangle())
     }
@@ -1907,7 +1907,7 @@ struct ShowInFinderButton: View {
                     optimiser.showInFinder()
                 }
             },
-            label: { SwiftUI.Image(systemName: "folder").font(.heavy(TextSize.micro)) }
+            label: { SwiftUI.Image(systemName: "folder").font(.heavy(TextSize.cardBadge)) }
         )
         .contentShape(Rectangle())
     }
@@ -1925,7 +1925,7 @@ struct ShareButton: View {
                 guard !preview else { return }
                 optimiser.sharing = true
             },
-            label: { SwiftUI.Image(systemName: "square.and.arrow.up").font(.heavy(TextSize.micro)) }
+            label: { SwiftUI.Image(systemName: "square.and.arrow.up").font(.heavy(TextSize.cardBadge)) }
         )
         .contentShape(Rectangle())
         .background(SharingsPicker(isPresented: $optimiser.sharing, sharingItems: [optimiser.url as Any]))
@@ -1958,7 +1958,7 @@ struct AggressiveOptimisationButton: View {
             },
             label: {
                 SwiftUI.Image(systemName: optimiser.aggressive ? "bolt.fill" : "bolt")
-                    .font(.heavy(TextSize.micro))
+                    .font(.heavy(TextSize.cardBadge))
                     .foregroundColor(optimiser.aggressive ? Palette.savingOnThumbnail : nil)
                     // The pale "glow" yellow washes out on light thumbnails/backgrounds; a dark drop
                     // shadow keeps it legible on any background without losing the yellow identity.
@@ -1979,7 +1979,7 @@ struct VideoEncoderButton: View {
                 guard !preview else { return }
                 optimiser.reoptimiseWithEncoder(.slowHighQuality)
             },
-            label: { SwiftUI.Image(systemName: "bolt").font(.heavy(TextSize.micro)) }
+            label: { SwiftUI.Image(systemName: "bolt").font(.heavy(TextSize.cardBadge)) }
         )
         .contentShape(Rectangle())
     }
@@ -2060,7 +2060,7 @@ struct TargetSizeButton: View {
 
     var body: some View {
         if inFloatingCard {
-            Button(action: {}, label: { SwiftUI.Image(systemName: "target").font(.heavy(TextSize.micro)) })
+            Button(action: {}, label: { SwiftUI.Image(systemName: "target").font(.heavy(TextSize.cardBadge)) })
                 .contentShape(Rectangle())
                 .onMouseDown {
                     guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
@@ -2074,7 +2074,7 @@ struct TargetSizeButton: View {
             Menu {
                 TargetSizeMenuItems(optimiser: optimiser)
             } label: {
-                SwiftUI.Image(systemName: "target").font(.heavy(TextSize.micro))
+                SwiftUI.Image(systemName: "target").font(.heavy(TextSize.cardBadge))
             }
             .accessibilityLabel("Target size")
             .menuButtonStyle(BorderlessButtonMenuButtonStyle())
@@ -2163,7 +2163,7 @@ struct ActionButton: View {
                     optimiser.showCropWindow()
                 }
             }) {
-                SwiftUI.Image(systemName: "crop").font(.heavy(TextSize.micro))
+                SwiftUI.Image(systemName: "crop").font(.heavy(TextSize.cardBadge))
             }
             .contentShape(Rectangle())
         case .share:
@@ -2183,7 +2183,7 @@ struct ActionButton: View {
                     optimiser.copyToClipboard(); optimiser.overlayMessage = "Copied"
                 }
             }) {
-                SwiftUI.Image(systemName: "doc.on.doc").font(.heavy(TextSize.micro))
+                SwiftUI.Image(systemName: "doc.on.doc").font(.heavy(TextSize.cardBadge))
             }
             .contentShape(Rectangle())
         case .showInFinder:
@@ -2196,7 +2196,7 @@ struct ActionButton: View {
                     optimiser.save()
                 }
             }) {
-                SwiftUI.Image(systemName: "square.and.arrow.down").font(.heavy(TextSize.micro))
+                SwiftUI.Image(systemName: "square.and.arrow.down").font(.heavy(TextSize.cardBadge))
             }
             .contentShape(Rectangle())
         case .addToShelf:
@@ -2205,7 +2205,7 @@ struct ActionButton: View {
                     app.open(optimiser: optimiser)
                 }
             }) {
-                SwiftUI.Image(systemName: "tray.and.arrow.down").font(.heavy(TextSize.micro))
+                SwiftUI.Image(systemName: "tray.and.arrow.down").font(.heavy(TextSize.cardBadge))
             }
             .contentShape(Rectangle())
         case .targetSize:
@@ -2217,7 +2217,7 @@ struct ActionButton: View {
                     optimiser.collapseHoverOverlay = true
                 }
             }) {
-                SwiftUI.Image(systemName: action.icon(for: optimiser.fileType)).font(.heavy(TextSize.micro))
+                SwiftUI.Image(systemName: action.icon(for: optimiser.fileType)).font(.heavy(TextSize.cardBadge))
             }
             .contentShape(Rectangle())
             .disabled(optimiser.url == nil || optimiser.running)
@@ -2463,7 +2463,7 @@ struct ActionPickerButton: View {
             }
         }) {
             SwiftUI.Image(systemName: action.icon)
-                .font(.heavy(TextSize.micro))
+                .font(.heavy(TextSize.cardBadge))
         }
         .buttonStyle(FlatButton(color: .clear, textColor: .black.opacity(0.7), width: size, height: size, circle: true))
         .background(MenuAnchor(holder: anchor))
@@ -2487,7 +2487,7 @@ struct FloatingActionGridPicker: View {
             VStack(spacing: 1) {
                 Text("Action buttons").medium(TextSize.callout).foregroundColor(.secondary)
                     .searchAnchor("floating.main.floatingResultActions")
-                Text("Tap a button to change it").regular(TextSize.micro).foregroundColor(.secondary.opacity(0.5))
+                Text("Tap a button to change it").regular(TextSize.caption).foregroundColor(.secondary.opacity(0.5))
             }
             let cols = Array(repeating: GridItem(.fixed(side), spacing: Space.m), count: 3)
             LazyVGrid(columns: cols, spacing: Space.m) {
@@ -2743,7 +2743,7 @@ struct ActionListPicker: View {
             VStack(spacing: 1) {
                 Text(label).medium(TextSize.callout)
                     .foregroundColor(.secondary)
-                Text("To remove an icon, click on it").regular(TextSize.micro)
+                Text("To remove an icon, click on it").regular(TextSize.caption)
                     .foregroundColor(.secondary.opacity(0.5))
             }
 

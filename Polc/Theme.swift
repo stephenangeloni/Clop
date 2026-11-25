@@ -119,15 +119,14 @@ extension View {
 }
 
 enum TextSize {
-    static let micro: CGFloat = 9
-    static let caption: CGFloat = 10
-    static let subheadline: CGFloat = 11
-    static let callout: CGFloat = 12
-    static let body: CGFloat = 13
-    static let title3: CGFloat = 15
-    static let title2: CGFloat = 17
-    static let title1: CGFloat = 22
-    static let largeTitle: CGFloat = 26
+    static let caption = NSFont.preferredFont(forTextStyle: .caption1).pointSize
+    static let subheadline = NSFont.preferredFont(forTextStyle: .subheadline).pointSize
+    static let callout = NSFont.preferredFont(forTextStyle: .callout).pointSize
+    static let body = NSFont.preferredFont(forTextStyle: .body).pointSize
+    static let title3 = NSFont.preferredFont(forTextStyle: .title3).pointSize
+    static let title2 = NSFont.preferredFont(forTextStyle: .title2).pointSize
+
+    static let cardBadge: CGFloat = 9
     static let display: CGFloat = 48
     static let wordmark: CGFloat = 64
 }

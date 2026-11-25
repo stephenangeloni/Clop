@@ -558,7 +558,7 @@ struct OnboardingFloatingPreview: View {
                     SwiftUI.Image(systemName: "folder")
                     Text("Open folder with pages")
                 }
-                .font(.medium(TextSize.micro))
+                .font(.medium(TextSize.cardBadge))
             }
             .buttonStyle(PickerButton(
                 color: .bg.warm.opacity(0.7),
@@ -581,7 +581,7 @@ struct OnboardingFloatingPreview: View {
                     }
                 }
             }
-            .font(.medium(TextSize.micro))
+            .font(.medium(TextSize.cardBadge))
         }
     }
 
@@ -673,7 +673,7 @@ struct NameFormatPill: View {
     var segments: some View {
         HStack(spacing: Space.xs) {
             Text(stem.isEmpty ? "filename" : stem)
-                .font(.system(size: TextSize.micro, weight: .medium)).lineLimit(1).truncationMode(.middle)
+                .font(.system(size: TextSize.cardBadge, weight: .medium)).lineLimit(1).truncationMode(.middle)
                 // Shrink the text a little more while hovering the name so more of a long filename
                 // shows, but not so much it stops being readable.
                 .minimumScaleFactor(optimiser.hoveringFilename ? 0.75 : 0.9)
@@ -706,7 +706,7 @@ struct NameFormatPill: View {
                 // Hovering the extension chip springs the convert targets up from behind it; one click on a
                 // target converts. The accordion sits in an overlay so it doesn't affect the pill's layout,
                 // and rises into the card interior (over the thumbnail) rather than past the clipped edge.
-                Text(optimiser.formatChipText).font(.system(size: TextSize.micro, weight: .bold))
+                Text(optimiser.formatChipText).font(.system(size: TextSize.cardBadge, weight: .bold))
                     .frame(height: 12)
                     .padding(.horizontal, Space.s).padding(.vertical, Space.xxs)
                     .cardChip(hovering: hoveringExt || optimiser.showingFormats)
@@ -717,7 +717,7 @@ struct NameFormatPill: View {
                     .overlay(alignment: .bottomTrailing) { formatAccordion }
             }
         } else {
-            Text(optimiser.formatChipText).font(.system(size: TextSize.micro, weight: .semibold)).foregroundColor(.white).padding(.leading, 1).padding(.trailing, Space.xs)
+            Text(optimiser.formatChipText).font(.system(size: TextSize.cardBadge, weight: .semibold)).foregroundColor(.white).padding(.leading, 1).padding(.trailing, Space.xs)
         }
     }
 
@@ -727,7 +727,7 @@ struct NameFormatPill: View {
             ForEach(Array(formats.enumerated()), id: \.offset) { idx, item in
                 Button { convert(to: item.type) } label: {
                     Text((additiveConvert ? "+" : "") + item.ext.uppercased())
-                        .font(.mono(TextSize.micro, weight: .bold))
+                        .font(.mono(TextSize.cardBadge, weight: .bold))
                         .frame(height: 12)
                         .padding(.horizontal, Space.s).padding(.vertical, Space.xxs)
                         .cardChip(hovering: hoveredFormatIdx == idx)
@@ -761,7 +761,7 @@ struct NameFormatPill: View {
         HStack(spacing: Space.xs) {
             TextField("", text: $tempName)
                 .textFieldStyle(.plain)
-                .font(.system(size: TextSize.micro, weight: .medium))
+                .font(.system(size: TextSize.cardBadge, weight: .medium))
                 .foregroundColor(.primary)
                 .focused($focused)
                 .onSubmit {
@@ -769,7 +769,7 @@ struct NameFormatPill: View {
                     optimiser.editingFilename = false
                 }
             Button(action: { optimiser.editingFilename = false }, label: {
-                SwiftUI.Image(systemName: "xmark").font(.bold(TextSize.micro)).foregroundColor(.secondary)
+                SwiftUI.Image(systemName: "xmark").font(.bold(TextSize.cardBadge)).foregroundColor(.secondary)
             })
             .buttonStyle(.plain)
             .keyboardShortcut(.escape, modifiers: [])
@@ -878,7 +878,7 @@ struct FormatPickerBar: View {
                 let hovered = hoveredIdx == idx && !optimiser.running
                 Button { convert(to: item.format) } label: {
                     Text((additiveConvert && !item.active ? "+" : "") + item.label)
-                        .font(.mono(TextSize.micro, weight: item.active ? .heavy : .bold))
+                        .font(.mono(TextSize.cardBadge, weight: item.active ? .heavy : .bold))
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                         .padding(.horizontal, Space.xxs)
@@ -1189,7 +1189,7 @@ struct FloatingResult: View {
             let factor = optimiser.coverDownscaleFactor
             let scaled = factor < 0.999
             HStack(spacing: Space.xxs) {
-                SwiftUI.Image(systemName: "photo").font(.system(size: TextSize.micro))
+                SwiftUI.Image(systemName: "photo").font(.system(size: TextSize.cardBadge))
                 Text("\(Int(base.width.rounded()))×\(Int(base.height.rounded()))")
                 if scaled {
                     SwiftUI.Image(systemName: "arrow.right")

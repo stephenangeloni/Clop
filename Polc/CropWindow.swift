@@ -459,7 +459,7 @@ struct SizePresetRow: View {
                         .opacity(hovering ? 0 : 1)
                     Button(action: delete) {
                         SwiftUI.Image(systemName: "trash.fill")
-                            .font(.system(size: TextSize.micro))
+                            .font(.system(size: TextSize.caption))
                             .foregroundColor(hoveringTrash ? .white : .red.opacity(0.85))
                             .padding(Space.xs)
                             .background(Circle().fill(hoveringTrash ? Color.red : .clear))
@@ -1060,7 +1060,7 @@ struct CropView: View {
 
     func sectionHeader(_ title: String) -> some View {
         Text(title.uppercased())
-            .font(.system(size: TextSize.micro, weight: .bold))
+            .font(.system(size: TextSize.caption, weight: .bold))
             .kerning(0.7)
             .foregroundColor(.secondary)
     }

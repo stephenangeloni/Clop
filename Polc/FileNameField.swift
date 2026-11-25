@@ -67,7 +67,7 @@ struct FileNameField: View {
                 optimiser.editingFilename = false
             }, label: { SwiftUI.Image(systemName: "xmark").foregroundColor(.primary) })
                 .buttonStyle(FlatButton(color: .clear, textColor: .white, horizontalPadding: 0, verticalPadding: 0))
-                .font(.bold(TextSize.micro))
+                .font(.bold(TextSize.cardBadge))
                 .frame(width: 18)
                 .contentShape(Rectangle())
                 .keyboardShortcut(.escape, modifiers: [])

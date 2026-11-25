@@ -58,7 +58,7 @@ struct BatchCropButton: View {
         VStack(spacing: Space.m) {
             VStack(alignment: .leading, spacing: Space.xs) {
                 Text("SIZE PRESETS")
-                    .font(.system(size: TextSize.micro, weight: .bold))
+                    .font(.system(size: TextSize.caption, weight: .bold))
                     .kerning(0.7)
                     .foregroundColor(.secondary)
                     .padding(.bottom, 1)
@@ -92,7 +92,7 @@ struct BatchCropButton: View {
             Divider()
             VStack(alignment: .leading, spacing: Space.xs) {
                 Text("ASPECT RATIOS")
-                    .font(.system(size: TextSize.micro, weight: .bold))
+                    .font(.system(size: TextSize.caption, weight: .bold))
                     .kerning(0.7)
                     .foregroundColor(.secondary)
                     .padding(.bottom, 1)
@@ -217,7 +217,7 @@ struct BatchCropButton: View {
                         .fontDesign(.rounded)
                     Spacer()
                     Text(size.id)
-                        .font(.system(size: TextSize.micro, design: .monospaced))
+                        .font(.system(size: TextSize.caption, design: .monospaced))
                         .foregroundColor(.secondary)
                         .allowsTightening(false)
                 }

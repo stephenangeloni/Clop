@@ -383,7 +383,7 @@ struct FolderAutomationsSection: View {
             Button(action: { withAnimation(.easeOut(duration: 0.15)) { expanded.toggle() } }) {
                 HStack(spacing: Space.xs) {
                     SwiftUI.Image(systemName: expanded ? "chevron.down" : "chevron.right")
-                        .font(.semibold(TextSize.micro)).foregroundColor(.secondary)
+                        .font(.semibold(TextSize.caption)).foregroundColor(.secondary)
                     Text("Automations").semibold(TextSize.callout)
                     if count > 0 {
                         Text("\(count)").mono(TextSize.caption)
@@ -641,9 +641,9 @@ struct VideoSettingsView: View {
                             ) {
                                 EmptyView()
                             } minimumValueLabel: {
-                                Text("Better quality").round(TextSize.micro, weight: .regular).foregroundColor(.secondary)
+                                Text("Better quality").round(TextSize.caption, weight: .regular).foregroundColor(.secondary)
                             } maximumValueLabel: {
-                                Text("Smaller size").round(TextSize.micro, weight: .regular).foregroundColor(.secondary)
+                                Text("Smaller size").round(TextSize.caption, weight: .regular).foregroundColor(.secondary)
                             }
                             .accessibilityLabel("Compression")
                             .frame(maxWidth: .infinity)
@@ -1543,7 +1543,7 @@ struct FileHandlingSettingsView: View {
             }}) {
                 HStack(spacing: Space.xs) {
                     SwiftUI.Image(systemName: expanded ? "chevron.down" : "chevron.right")
-                        .font(.semibold(TextSize.micro)).foregroundColor(.secondary)
+                        .font(.semibold(TextSize.caption)).foregroundColor(.secondary)
                     Text("Template variables").semibold(TextSize.callout)
                     Spacer()
                 }
@@ -3192,7 +3192,7 @@ struct SettingsView: View {
                                     .lineLimit(2)
                             }
                             Text([entry.tab.title, entry.section].filter { !$0.isEmpty }.joined(separator: " › "))
-                                .round(TextSize.micro)
+                                .round(TextSize.caption)
                                 .foregroundColor(.secondary.opacity(0.8))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)

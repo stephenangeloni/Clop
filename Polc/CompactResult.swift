@@ -32,7 +32,7 @@ struct CompactResult: View {
     @ViewBuilder var pathView: some View {
         if let url = optimiser.url, url.isFileURL {
             Text(url.filePath!.shellString)
-                .medium(TextSize.micro)
+                .medium(TextSize.cardBadge)
                 .foregroundColor(.secondary)
                 .lineLimit(1)
                 .allowsTightening(true)
@@ -43,7 +43,7 @@ struct CompactResult: View {
     @ViewBuilder var nameView: some View {
         if let url = optimiser.url, url.isFileURL {
             Text(url.lastPathComponent)
-                .medium(TextSize.micro)
+                .medium(TextSize.cardBadge)
                 .foregroundColor(.secondary)
                 .lineLimit(1)
                 .allowsTightening(true)
@@ -126,7 +126,7 @@ struct CompactResult: View {
                 // sits near full intensity), so the wins you care about visibly pop.
                 let intensity = min(1.0, max(0.2, pct.d / 70.0))
                 Text("−\(pct)%")
-                    .mono(TextSize.micro, weight: .bold)
+                    .mono(TextSize.cardBadge, weight: .bold)
                     .foregroundColor(Palette.saving)
                     .padding(.horizontal, Space.xs).padding(.vertical, 1)
                     .background(Palette.saving.opacity(0.1 + intensity * 0.22), in: Capsule())
@@ -240,7 +240,7 @@ struct CompactResult: View {
             optimiser.uiStop()
         } label: {
             SwiftUI.Image(systemName: optimiser.running ? "stop.fill" : "xmark")
-                .font(.bold(TextSize.micro))
+                .font(.bold(TextSize.cardBadge))
                 .foregroundColor(.red)
                 .frame(width: 14, height: 14)
                 .background(Circle().fill(
@@ -538,7 +538,7 @@ struct CompactNameField: View {
                     optimiser.editingFilename = false
                 }
             Button(action: { optimiser.editingFilename = false }, label: {
-                SwiftUI.Image(systemName: "xmark").font(.bold(TextSize.micro)).foregroundColor(.secondary)
+                SwiftUI.Image(systemName: "xmark").font(.bold(TextSize.cardBadge)).foregroundColor(.secondary)
             })
             .buttonStyle(.plain)
             .keyboardShortcut(.escape, modifiers: [])
@@ -1027,7 +1027,7 @@ struct CompactResultList: View {
                 .padding(.top, Space.xs)
                 .resultsBandBackground(scale: 1.1)
                 .offset(y: -Self.footerBand + 4)
-                .font(.mono(TextSize.micro))
+                .font(.mono(TextSize.cardBadge))
         }
     }
 

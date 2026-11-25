@@ -171,7 +171,7 @@ private struct CopyablePill: View {
             HStack(spacing: Space.xs) {
                 // `SwiftUI.Image` qualified: Polc has its own `Image` type for optimisable files.
                 SwiftUI.Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.doc")
-                    .font(.system(size: TextSize.micro, weight: .semibold))
+                    .font(.system(size: TextSize.caption, weight: .semibold))
                     // Fixed footprint so the glyph swap can't reflow the pill.
                     .frame(width: 12, height: 12)
                 Text(copied ? "Copied!" : value)

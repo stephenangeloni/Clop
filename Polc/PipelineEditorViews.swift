@@ -275,7 +275,7 @@ struct PipelineFlagSegmentedToggle: View {
                         }
                     } label: {
                         Text(label)
-                            .font(.system(size: TextSize.micro, weight: isSelected ? .bold : .medium))
+                            .font(.system(size: TextSize.caption, weight: isSelected ? .bold : .medium))
                             .padding(.horizontal, Space.s)
                             .padding(.vertical, 1)
                             .foregroundColor(isSelected ? tint : (isHovered ? .primary : .secondary.opacity(0.45)))
@@ -306,7 +306,7 @@ struct PipelineFlagSegmentedToggle: View {
                 Text(trailing)
             }
         }
-        .font(.regular(TextSize.micro))
+        .font(.regular(TextSize.caption))
         // Connective words (Pass … file / … floating result) stay legible so the control reads as a
         // sentence; the unselected option is faded above so the chosen word is what stands out.
         .foregroundColor(.primary.opacity(0.85))
@@ -354,7 +354,7 @@ struct PipelineFieldRow: View {
 
                     if pipeline.isLibraryReference, !pipeline.resolves {
                         Text("Missing")
-                            .font(.regular(TextSize.micro))
+                            .font(.regular(TextSize.caption))
                             .foregroundColor(.white)
                             .padding(.horizontal, Space.xs)
                             .padding(.vertical, 1)
@@ -933,7 +933,7 @@ struct SavedPipelineRow: View {
                             Group {
                                 if pipeline.isBuiltin {
                                     Text("Built-in")
-                                        .font(.regular(TextSize.micro))
+                                        .font(.regular(TextSize.caption))
                                         .foregroundColor(.secondary)
                                         .padding(.horizontal, Space.xs)
                                         .padding(.vertical, 1)
@@ -1003,7 +1003,7 @@ struct SavedPipelineRow: View {
                             // Trash trailing-right, always visible.
                             Button(action: onDelete) {
                                 SwiftUI.Image(systemName: "trash")
-                                    .font(.regular(TextSize.micro))
+                                    .font(.regular(TextSize.caption))
                                     .foregroundColor(.red.opacity(0.6))
                             }
                             .accessibilityLabel("Delete pipeline")
@@ -1180,8 +1180,8 @@ struct SavedPipelineRow: View {
             }
         } label: {
             HStack(spacing: Space.xxs) {
-                SwiftUI.Image(systemName: "plus").font(.system(size: TextSize.micro))
-                Text("Add to").font(.regular(TextSize.micro))
+                SwiftUI.Image(systemName: "plus").font(.system(size: TextSize.caption))
+                Text("Add to").font(.regular(TextSize.caption))
             }
             .foregroundColor(.blue.opacity(0.8))
             .padding(.horizontal, Space.s)
@@ -1229,7 +1229,7 @@ struct SavedPipelineRow: View {
                 } else {
                     SwiftUI.Image(systemName: "doc").foregroundColor(.secondary)
                 }
-                Text("Move to").font(.regular(TextSize.micro))
+                Text("Move to").font(.regular(TextSize.caption))
             }
             .foregroundColor(.blue.opacity(0.8))
             .padding(.horizontal, Space.s)
@@ -1369,8 +1369,8 @@ struct SavedPipelineRow: View {
             label = "Preset zone"
         }
         return HStack(spacing: Space.xxs) {
-            SwiftUI.Image(systemName: icon).font(.system(size: TextSize.micro))
-            Text(label).font(.regular(TextSize.micro)).lineLimit(1)
+            SwiftUI.Image(systemName: icon).font(.system(size: TextSize.caption))
+            Text(label).font(.regular(TextSize.caption)).lineLimit(1)
         }
         .foregroundColor(.secondary)
         .padding(.horizontal, Space.s)

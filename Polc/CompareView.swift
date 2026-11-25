@@ -502,7 +502,7 @@ struct CompareView: View {
                     .foregroundColor(.secondary)
                 if optimiser.newBytes > 0, optimiser.newBytes != optimiser.oldBytes {
                     SwiftUI.Image(systemName: "arrow.right")
-                        .font(.system(size: TextSize.micro))
+                        .font(.system(size: TextSize.caption))
                         .foregroundColor(.secondary)
                     Text(optimiser.newBytes.humanSize).mono(TextSize.caption, weight: .semibold)
                         .foregroundColor(improvement ? Palette.saving : Palette.growth)
@@ -514,7 +514,7 @@ struct CompareView: View {
                 Text(oldSize.s).mono(TextSize.caption).foregroundColor(.secondary)
                 if let newSize = optimiser.newSize, newSize != oldSize {
                     SwiftUI.Image(systemName: "arrow.right")
-                        .font(.system(size: TextSize.micro))
+                        .font(.system(size: TextSize.caption))
                         .foregroundColor(.secondary)
                     Text(newSize.s).mono(TextSize.caption).foregroundColor(.secondary)
                 }
@@ -687,9 +687,9 @@ struct CompareView: View {
             .disabled(duration <= 0)
 
             HStack {
-                Text(audioTimeString(audioController.displayTime(for: side))).mono(TextSize.micro)
+                Text(audioTimeString(audioController.displayTime(for: side))).mono(TextSize.caption)
                 Spacer()
-                Text(audioTimeString(duration)).mono(TextSize.micro)
+                Text(audioTimeString(duration)).mono(TextSize.caption)
             }
             .foregroundColor(.secondary)
         }
@@ -747,7 +747,7 @@ struct CompareView: View {
                         .fill(.regularMaterial)
                         .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
                     SwiftUI.Image(systemName: "arrow.left.and.right")
-                        .font(.system(size: TextSize.micro, weight: .bold))
+                        .font(.system(size: TextSize.caption, weight: .bold))
                         .foregroundColor(.primary)
                 }
                 .frame(width: 26, height: 26)
