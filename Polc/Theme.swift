@@ -21,14 +21,14 @@ enum Palette {
 
 /// A muted, earthy sidebar colour with a light/dark pair: deeper on the light
 /// sidebar, lifted on the dark one so the glyph keeps its weight either way.
-/// Skin / stone / ochre / plum tones instead of saturated system
+/// Skin / stone / ochre / olive tones instead of saturated system
 /// colours. File-type tabs use the file-type colours from `Palette` instead.
 struct SidebarHue {
-    static let dustyBlue = SidebarHue(light: rgb(0.24, 0.43, 0.63), dark: rgb(0.53, 0.64, 0.75))
+    static let olive = SidebarHue(light: rgb(0.45, 0.50, 0.20), dark: rgb(0.68, 0.72, 0.47))
     static let violet = SidebarHue(light: rgb(0.52, 0.32, 0.75), dark: rgb(0.70, 0.58, 0.88))
     static let orchid = SidebarHue(light: rgb(0.70, 0.25, 0.70), dark: rgb(0.85, 0.55, 0.85))
     static let skin = SidebarHue(light: rgb(0.74, 0.47, 0.30), dark: rgb(0.80, 0.64, 0.52))
-    static let plum = SidebarHue(light: rgb(0.58, 0.30, 0.55), dark: rgb(0.68, 0.55, 0.67))
+    static let slate = SidebarHue(light: rgb(0.38, 0.44, 0.52), dark: rgb(0.62, 0.67, 0.74))
     static let mutedTeal = SidebarHue(light: rgb(0.15, 0.50, 0.45), dark: rgb(0.47, 0.68, 0.63))
     static let stone = SidebarHue(light: rgb(0.45, 0.43, 0.37), dark: rgb(0.66, 0.64, 0.57))
     static let ochre = SidebarHue(light: rgb(0.78, 0.56, 0.16), dark: rgb(0.83, 0.68, 0.40))
@@ -137,40 +137,16 @@ extension View {
     }
 }
 
-enum Shadow {
-    case flat
-    case subtle
-    case raised
-    case legibility
-    case savingGlow
+struct Shadow {
+    static let flat = Shadow(color: .clear, radius: 0, y: 0)
+    static let subtle = Shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+    static let raised = Shadow(color: .black.opacity(0.3), radius: 6, y: 3)
+    static let legibility = Shadow(color: .black.opacity(0.6), radius: 1.5, y: 0)
+    static let savingGlow = Shadow(color: Palette.saving, radius: 3, y: 0)
 
-    fileprivate var color: Color {
-        switch self {
-        case .flat: .clear
-        case .subtle: .black.opacity(0.2)
-        case .raised: .black.opacity(0.3)
-        case .legibility: .black.opacity(0.6)
-        case .savingGlow: Palette.saving
-        }
-    }
-
-    fileprivate var radius: CGFloat {
-        switch self {
-        case .flat: 0
-        case .subtle: 2
-        case .raised: 6
-        case .legibility: 1.5
-        case .savingGlow: 3
-        }
-    }
-
-    fileprivate var y: CGFloat {
-        switch self {
-        case .subtle: 1
-        case .raised: 3
-        case .flat, .legibility, .savingGlow: 0
-        }
-    }
+    fileprivate let color: Color
+    fileprivate let radius: CGFloat
+    fileprivate let y: CGFloat
 }
 
 extension View {

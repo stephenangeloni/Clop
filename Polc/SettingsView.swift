@@ -322,7 +322,7 @@ struct DirListView: View {
 }
 
 /// Per-path automations shown below the watched-paths table. Edits the same Defaults the
-/// Automation tab uses (`fileType.pipelineKey`), filtered to a single folder.
+/// Automation section of the Pipelines tab uses (`fileType.pipelineKey`), filtered to a single folder.
 struct FolderAutomationsSection: View {
     let fileType: PolcFileType
     let folder: String
@@ -384,7 +384,7 @@ struct FolderAutomationsSection: View {
 /// Reusable automation editor scoped to a single non-folder `OptimisationSource`
 /// (drop zone, clipboard). Stacks one `PipelineEditorRow` per file type, each
 /// bound to the matching `pipelinesToRunOn<Type>` Defaults dict keyed by
-/// `source.string`. Writes the SAME storage as the Automation tab, so both
+/// `source.string`. Writes the SAME storage as the Automation section, so both
 /// views update live. Per-file-type editors are always shown (no collapse).
 ///
 /// Produces interface (consumed by the clipboard pane in a later phase):
@@ -3053,7 +3053,7 @@ struct SettingsView: View {
         var hue: SidebarHue {
             switch self {
             case .general: .stone
-            case .clipboard: .dustyBlue
+            case .clipboard: .olive
             case .files: .skin
             case .video: SidebarHue(light: Palette.video, dark: Palette.video)
             case .audio: SidebarHue(light: Palette.audio, dark: Palette.audio)
@@ -3063,7 +3063,7 @@ struct SettingsView: View {
             case .keys: .violet
             case .pipelines: .orchid
             case .mcp: .ochre
-            case .about: .plum
+            case .about: .slate
             }
         }
     }

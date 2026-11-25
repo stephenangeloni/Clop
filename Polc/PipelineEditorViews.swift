@@ -206,7 +206,7 @@ struct PipelineEditorRow: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.leading, Space.l)
-                .help("Open the Preset Zones tab to set up per-target drop pipelines")
+                .help("Open preset zones in the Results tab to set up per-target drop pipelines")
             }
 
             ForEach(Array(pipelineList.enumerated()), id: \.element.id) { index, pipeline in

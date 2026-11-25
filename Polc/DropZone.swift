@@ -397,7 +397,7 @@ struct DropZonePresetsView: View {
         }
     }
 
-    /// Used by the real floating drop zone (not the settings preview): jump to the Preset Zones tab and,
+    /// Used by the real floating drop zone (not the settings preview): jump to preset zones in the Results tab and,
     /// if a specific zone was clicked, open its editor row there.
     func zoneAction(zone: PresetZone?) {
         settingsViewManager.tab = .results
