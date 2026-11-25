@@ -434,6 +434,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				ActionButtons.swift,
+				ActiveCLIRequests.swift,
 				Audio.swift,
 				AudioPipeline.swift,
 				Automation.swift,
@@ -455,7 +456,6 @@
 				CropWindow.swift,
 				DebugDump.swift,
 				DropZone.swift,
-				ErrorReports.swift,
 				ExceptionCatcher.h,
 				FileNameField.swift,
 				FileOps.swift,

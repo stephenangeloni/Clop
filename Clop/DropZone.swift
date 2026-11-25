@@ -7,12 +7,6 @@ import System
 import UniformTypeIdentifiers
 
 private let log = Logger(subsystem: LOG_SUBSYSTEM, category: "DropZone")
-let MAC26 = if #available(macOS 26.0, *) {
-    true
-} else {
-    false
-}
-
 class DragManager: ObservableObject {
     @MainActor @Published var dragHovering = false
     @MainActor @Published var itemsToOptimise: [ClipboardType] = []
@@ -561,7 +555,6 @@ struct DropZoneView: View {
     }
 }
 
-let HAT_ICON_SIZE: CGFloat = 30
 let DROPZONE_PADDING = CGSize(width: 14, height: 10)
 // Match the floating result thumbnail card footprint (cardW × cardH); the inner content frame is
 // the card size minus the dropzone's own padding so the bordered box ends up the same size.

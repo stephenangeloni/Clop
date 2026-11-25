@@ -1734,47 +1734,6 @@ struct FloatingResult: View {
         slider().frame(width: Self.cardW - 30)
     }
 
-    func topField(_ url: URL) -> some View {
-        ZStack {
-            if let info = optimiser.info {
-                Text(info)
-                    .hfill(.leading)
-                    .frame(height: 16)
-                    .lineLimit(1)
-                    .font(.medium(9))
-                    .minimumScaleFactor(0.5)
-                    .scaledToFit()
-                    .foregroundColor(.primary)
-                    .padding(.leading, 5)
-                    .background(
-                        VisualEffectBlur(material: .sidebar, blendingMode: .withinWindow, state: .active)
-                            .clipShape(
-                                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            )
-                    )
-                    .frame(width: THUMB_SIZE.width / 2, height: 16, alignment: .leading)
-                    .fixedSize()
-                    .padding(.horizontal, 5)
-                    .offset(y: isExpanded || SWIFTUI_PREVIEW ? 30 : 0)
-                    .opacity(isExpanded || SWIFTUI_PREVIEW ? 0 : 1)
-            }
-
-            FileNameField(optimiser: optimiser)
-                .font(.medium(9))
-                .foregroundColor(.primary)
-                .frame(width: THUMB_SIZE.width / 2, height: 16, alignment: .leading)
-                .fixedSize()
-                .padding(.horizontal, 5)
-                .offset(y: isExpanded || editingFilename || SWIFTUI_PREVIEW ? 0 : 30)
-                .opacity(isExpanded || editingFilename || SWIFTUI_PREVIEW ? 1 : 0)
-                .scaleEffect(
-                    x: optimiser.editingFilename ? 1.2 : 1,
-                    y: optimiser.editingFilename ? 1.2 : 1,
-                    anchor: floatingResultsCorner.isTrailing ? .bottomTrailing : .bottomLeading
-                )
-        }
-    }
-
     /// Whether an action belongs in the in-card grid for this result. Crop is a dedicated corner
     /// button; downscale is dropped for audio, which uses the compression button as its single
     /// bitrate/quality axis.
