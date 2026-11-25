@@ -118,6 +118,8 @@ struct OnboardingView: View {
 
     @Default(.enableAutomaticImageOptimisations) var enableAutomaticImageOptimisations
     @Default(.enableAutomaticVideoOptimisations) var enableAutomaticVideoOptimisations
+    @Default(.enableAutomaticPDFOptimisations) var enableAutomaticPDFOptimisations
+    @Default(.enableAutomaticAudioOptimisations) var enableAutomaticAudioOptimisations
 
     var polcLogo: some View {
         ZStack(alignment: .topLeading) {
@@ -141,7 +143,8 @@ struct OnboardingView: View {
                 .fill(Color.primary.opacity(0.1))
                 .frame(height: 24)
             HStack(spacing: Space.l) {
-                SwiftUI.Image("MenubarIcon")
+                SwiftUI.Image(nsImage: NSImage(resource: menubarIconResource(classic: useClassicMenubarIcon, geometric: useGeometricMenubarIcon)))
+                    .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 21, height: 21)
@@ -164,6 +167,8 @@ struct OnboardingView: View {
                         Text("""
                         Polc lives in your **menubar** and waits for you
                         to copy an image or **screenshot to clipboard**.
+                        Copied **video**, **audio** and **PDF** files can be
+                        optimised too, in **Settings → Clipboard**.
                         """)
                         .font(.round(TextSize.body, weight: .regular))
                         Toggle(" Enable clipboard optimiser", isOn: $enableClipboardOptimiser)
@@ -202,20 +207,32 @@ struct OnboardingView: View {
                 .padding(.bottom, Space.window)
 
                 Text("""
-                Polc can also watch folders for new **images** and **videos**
-                and **automatically** optimise them.
+                Polc can also watch folders for new **images**, **videos**,
+                **PDFs** and **audio** files and **automatically** optimise them.
                 """)
                 .font(.round(TextSize.body, weight: .regular))
                 .padding()
                 .multilineTextAlignment(.center)
-                HStack {
-                    VStack {
-                        Text("Images").round(TextSize.callout)
-                        DirListView(fileType: .image, dirs: $imageDirs, enabled: $enableAutomaticImageOptimisations, hideIgnoreRules: true)
+                VStack {
+                    HStack {
+                        VStack {
+                            Text("Images").round(TextSize.callout)
+                            DirListView(fileType: .image, dirs: $imageDirs, enabled: $enableAutomaticImageOptimisations, hideIgnoreRules: true)
+                        }
+                        VStack {
+                            Text("Videos").round(TextSize.callout)
+                            DirListView(fileType: .video, dirs: $videoDirs, enabled: $enableAutomaticVideoOptimisations, hideIgnoreRules: true)
+                        }
                     }
-                    VStack {
-                        Text("Videos").round(TextSize.callout)
-                        DirListView(fileType: .video, dirs: $videoDirs, enabled: $enableAutomaticVideoOptimisations, hideIgnoreRules: true)
+                    HStack {
+                        VStack {
+                            Text("PDFs").round(TextSize.callout)
+                            DirListView(fileType: .pdf, dirs: $pdfDirs, enabled: $enableAutomaticPDFOptimisations, hideIgnoreRules: true)
+                        }
+                        VStack {
+                            Text("Audio").round(TextSize.callout)
+                            DirListView(fileType: .audio, dirs: $audioDirs, enabled: $enableAutomaticAudioOptimisations, hideIgnoreRules: true)
+                        }
                     }
                 }
                 .padding(.bottom, Space.window)
@@ -269,6 +286,10 @@ struct OnboardingView: View {
     @Default(.enableClipboardOptimiser) private var enableClipboardOptimiser
     @Default(.imageDirs) private var imageDirs
     @Default(.videoDirs) private var videoDirs
+    @Default(.pdfDirs) private var pdfDirs
+    @Default(.audioDirs) private var audioDirs
+    @Default(.useClassicMenubarIcon) private var useClassicMenubarIcon
+    @Default(.useGeometricMenubarIcon) private var useGeometricMenubarIcon
 }
 
 #Preview {
