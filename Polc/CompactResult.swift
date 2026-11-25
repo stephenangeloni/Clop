@@ -1276,7 +1276,7 @@ struct CompactPreview: View {
         noticeOpt.finish(notice: "**Paused**\nNext clipboard event will be ignored")
 
         // Record which bundled sample backs each finished card; the temp files are only written when
-        // the Floating Results settings tab appears (materializeSamples), to avoid I/O on launch.
+        // the Results settings tab appears (materializeSamples), to avoid I/O on launch.
         CompactPreview.sampleSpecs = [
             (clipEnd, "preview-sample-image", "downscale-images.webp"),
             (pdfEnd, "preview-sample-pdf", "Low-Tech Whistle.pdf"),
@@ -1349,7 +1349,7 @@ struct CompactPreview: View {
     }
 
     /// Write the bundled preview samples to the temp folder and point the cards at them. Called only
-    /// when the Floating Results settings tab appears, so we don't do this I/O on launch.
+    /// when the Results settings tab appears, so we don't do this I/O on launch.
     static func materializeSamples() {
         _ = om // ensure the (cheap, in-memory) setup ran and populated sampleSpecs
         guard !samplesMaterialized else { return }

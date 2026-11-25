@@ -402,7 +402,7 @@ struct FloatingPreview: View {
         clipEnd.finish(oldBytes: 750_190, newBytes: 211_932, oldSize: thumbSize)
 
         // Record which bundled sample backs each card. The temp files are only written when the
-        // Floating Results settings tab is actually shown (materializeSamples), to avoid I/O on launch.
+        // Results settings tab is actually shown (materializeSamples), to avoid I/O on launch.
         FloatingPreview.sampleSpecs = [
             (clipEnd, "preview-sample-image", "downscale-images.webp"),
             (videoOpt, "preview-sample-video", "copy-optimise-paste.mp4"),
@@ -441,7 +441,7 @@ struct FloatingPreview: View {
     }
 
     /// Write the bundled preview samples to the temp folder and point the cards at them. Called only
-    /// when the Floating Results settings tab appears, so we don't do this I/O on launch.
+    /// when the Results settings tab appears, so we don't do this I/O on launch.
     static func materializeSamples() {
         _ = om // ensure the (cheap, in-memory) setup ran and populated sampleSpecs
         guard !samplesMaterialized else { return }
