@@ -293,16 +293,6 @@ extension View {
             }
             .overlay(Capsule().strokeBorder(Color.fg.warm.opacity(hovering ? 0.3 : 0.15), lineWidth: 0.5))
     }
-
-    /// Compact-list filename/extension chip: a very translucent monochrome fill + hairline border on a 4pt
-    /// rounded rect. `.primary` text so it adapts to the list's color scheme; firms up on hover. Apply
-    /// after the chip's own (tight) padding.
-    func listChip(hovering: Bool) -> some View {
-        let shape = RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
-        return foregroundColor(.primary)
-            .background(shape.fill(Color.primary.opacity(hovering ? 0.1 : 0.05)))
-            .overlay(shape.strokeBorder(Color.primary.opacity(hovering ? 0.2 : 0.1), lineWidth: 0.5))
-    }
 }
 
 /// Small round button shared by the three floating-card corner controls (close, menu, crop).

@@ -29,23 +29,6 @@ struct CompactResult: View {
     @Environment(\.openURL) var openURL
     @Environment(\.colorScheme) var colorScheme
 
-    /// Per-file-type accent hue for the thumbnail ring.
-    var typeColor: Color {
-        if optimiser.type.isImage {
-            return .blue
-        }
-        if optimiser.type.isVideo {
-            return .purple
-        }
-        if optimiser.type.isPDF {
-            return .orange
-        }
-        if optimiser.type.isAudio {
-            return .pink
-        }
-        return .gray
-    }
-
     @ViewBuilder var pathView: some View {
         if let url = optimiser.url, url.isFileURL {
             Text(url.filePath!.shellString)
@@ -119,44 +102,18 @@ struct CompactResult: View {
     }
 
     @ViewBuilder var bitrateDiff: some View {
-        if optimiser.type.isAudio, let oldBitrate = optimiser.oldBitrate, oldBitrate > 0, !selecting {
-            HStack(spacing: Space.xxs) {
-                let hideOldBitrate = (optimiser.newBitrate ?? 0) > 0 && optimiser.newBitrate! != oldBitrate
-                if !hideOldBitrate {
-                    Text("\(oldBitrate) kbps")
-                }
-                if let newBitrate = optimiser.newBitrate, newBitrate > 0, newBitrate != oldBitrate {
-                    if !hideOldBitrate {
-                        SwiftUI.Image(systemName: "arrow.right")
-                    }
-                    Text("\(newBitrate) kbps")
-                }
-            }
-            .lineLimit(1)
-            .font(Self.metricFont)
-            .foregroundColor(.secondary)
-            .fixedSize()
+        if !selecting {
+            BitrateChange(optimiser: optimiser, hidesOldWhenChanged: true)
+                .font(Self.metricFont)
+                .foregroundColor(.secondary)
         }
     }
 
     @ViewBuilder var dpiDiff: some View {
-        if optimiser.type.isPDF, let oldDPI = optimiser.oldDPI, !selecting {
-            HStack(spacing: Space.xxs) {
-                let hideOldDPI = optimiser.newDPI != nil && optimiser.newDPI! != oldDPI
-                if !hideOldDPI {
-                    Text("\(oldDPI) DPI")
-                }
-                if let newDPI = optimiser.newDPI, newDPI != oldDPI {
-                    if !hideOldDPI {
-                        SwiftUI.Image(systemName: "arrow.right")
-                    }
-                    Text("\(newDPI) DPI")
-                }
-            }
-            .lineLimit(1)
-            .font(Self.metricFont)
-            .foregroundColor(.secondary)
-            .fixedSize()
+        if !selecting {
+            DPIChange(optimiser: optimiser, hidesOldWhenChanged: true)
+                .font(Self.metricFont)
+                .foregroundColor(.secondary)
         }
     }
 
@@ -178,32 +135,16 @@ struct CompactResult: View {
         }
     }
 
-    @ViewBuilder var fileSizeDiff: some View {
-        let improvement = optimiser.newBytes > 0 && optimiser.newBytes < optimiser.oldBytes
-
-        HStack(spacing: Space.xs) {
-            Text(optimiser.oldBytes.humanSize)
-                .font(Self.sizeFont)
-                .foregroundColor(
-                    !selecting
-                        ? (improvement ? Color.red : Color.secondary)
-                        : (improvement ? Color.secondary : Color.primary)
-                )
-            if optimiser.newBytes > 0, optimiser.newBytes != optimiser.oldBytes {
-                SwiftUI.Image(systemName: "arrow.right")
-                    .font(.medium(TextSize.subheadline))
-                    .foregroundColor(.secondary)
-                Text(optimiser.newBytes.humanSize)
-                    .font(Self.sizeFont)
-                    .foregroundColor(
-                        improvement
-                            ? (!selecting ? Palette.saving : .primary)
-                            : (!selecting ? Palette.growth : .secondary)
-                    )
-            }
-        }
-        .lineLimit(1)
-        .fixedSize()
+    var fileSizeDiff: some View {
+        FileSizeChange(
+            optimiser: optimiser,
+            spacing: Space.xs,
+            sizeFont: Self.sizeFont,
+            savingColor: selecting ? .primary : Palette.saving,
+            growthColor: selecting ? .secondary : Palette.growth
+        )
+        .font(.medium(TextSize.subheadline))
+        .foregroundColor(.secondary)
     }
 
     @ViewBuilder var errorView: some View {
@@ -246,7 +187,7 @@ struct CompactResult: View {
             // thumbnail is a generic icon, e.g. audio/PDF).
             .overlay(
                 RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
-                    .strokeBorder(typeColor.opacity(0.3), lineWidth: 1.5)
+                    .strokeBorder((optimiser.fileType?.color ?? .gray).opacity(0.3), lineWidth: 1.5)
             )
             .overlay(alignment: .topLeading) {
                 if !selecting {
@@ -497,9 +438,7 @@ struct CompactResult: View {
 
 /// Filename control for the compact list rows: `name.ext` rendered as two tappable chips. Tapping the
 /// name chip swaps it for an inline edit field; the extension chip is a borderless format-conversion
-/// menu. Each chip is a monochrome rounded chip (very translucent fill + hairline border, 4pt corners,
-/// tight padding) so it reads as clickable at a glance, firming up on hover. Text stays `.primary` so it
-/// adapts to the compact view's color scheme. The floating card keeps its own `NameFormatPill`/`FileNameField`.
+/// menu. Both use the floating card's `cardChip` style. The floating card keeps its own `NameFormatPill`/`FileNameField`.
 struct CompactNameField: View {
     @ObservedObject var optimiser: Optimiser
     @Environment(\.preview) var preview
@@ -531,7 +470,7 @@ struct CompactNameField: View {
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .padding(.horizontal, Space.xxs).padding(.vertical, 1)
-                .listChip(hovering: hoveringName)
+                .cardChip(hovering: hoveringName)
                 .onHover { inside in
                     guard !SM.selecting else { return }
                     hoveringName = inside
@@ -571,7 +510,7 @@ struct CompactNameField: View {
                 Text(optimiser.formatChipText)
                     .font(CompactResult.nameFont)
                     .padding(.horizontal, Space.xxs).padding(.vertical, 1)
-                    .listChip(hovering: hoveringExt)
+                    .cardChip(hovering: hoveringExt)
             }
             .menuButtonStyle(BorderlessButtonMenuButtonStyle())
             .menuIndicator(.hidden)
