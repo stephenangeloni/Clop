@@ -29,7 +29,7 @@ EOF
 
 is_registered() {
     local dump
-    dump=$("$LSREGISTER" -dump)
+    dump=$("$LSREGISTER" -dump) || { echo "lsregister -dump failed"; exit 2; }
     grep -qE "^path: +$(printf '%s' "$1" | sed 's/[][\.*^$/]/\\&/g') \(0x" <<< "$dump"
 }
 
