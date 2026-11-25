@@ -16,3 +16,4 @@ docs/specs/
 
 # subagent-driven-development scratch workspace
 .superpowers/
+__pycache__/
