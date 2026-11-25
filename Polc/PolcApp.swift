@@ -1602,6 +1602,10 @@ let WINDOW_MIN_SIZE = CGSize(width: 980, height: 750)
 
 // MARK: - PolcApp
 
+func menubarIconResource(classic: Bool, geometric: Bool) -> ImageResource {
+    geometric ? .menubarIconGeometric : classic ? .menubarIconClassic : .menubarIcon
+}
+
 struct PolcApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
@@ -1638,9 +1642,7 @@ struct PolcApp: App {
         MenuBarExtra(isInserted: $showMenubarIcon, content: {
             MenuView()
         }, label: {
-            SwiftUI.Image(nsImage: NSImage(
-                resource: useGeometricMenubarIcon ? .menubarIconGeometric : useClassicMenubarIcon ? .menubarIconClassic : .menubarIcon
-            ))
+            SwiftUI.Image(nsImage: NSImage(resource: menubarIconResource(classic: useClassicMenubarIcon, geometric: useGeometricMenubarIcon)))
             // Otherwise the menu bar item is announced by its asset name, "MenubarIcon".
             .accessibilityLabel("Polc")
         })
