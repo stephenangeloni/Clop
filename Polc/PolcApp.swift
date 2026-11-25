@@ -358,7 +358,7 @@ class AppDelegate: AppDelegateParent {
             }
 
             KM.primaryKeyModifiers = Defaults[.keyComboModifiers]
-            KM.primaryKeys = Defaults[.enabledKeys] + Defaults[.quickResizeKeys]
+            KM.primaryKeys = Defaults[.actionKeys].enabledKeys + Defaults[.quickResizeKeys]
             KM.onPrimaryHotkey = { key in
                 self.handleHotkey(key)
             }
@@ -417,13 +417,13 @@ class AppDelegate: AppDelegateParent {
             .store(in: &observers)
         pub(.quickResizeKeys)
             .sink {
-                KM.primaryKeys = Defaults[.enabledKeys] + $0.newValue
+                KM.primaryKeys = Defaults[.actionKeys].enabledKeys + $0.newValue
                 KM.reinitHotkeys()
             }
             .store(in: &observers)
-        pub(.enabledKeys)
+        pub(.actionKeys)
             .sink {
-                KM.primaryKeys = $0.newValue + Defaults[.quickResizeKeys]
+                KM.primaryKeys = $0.newValue.enabledKeys + Defaults[.quickResizeKeys]
                 KM.reinitHotkeys()
             }
             .store(in: &observers)
@@ -751,10 +751,23 @@ class AppDelegate: AppDelegateParent {
     func handleHotkey(_ key: SauceKey) {
         guard finishedOnboarding else { return }
 
-        switch key {
-        case .escape:
+        if let action = ActionKeys.action(for: key, in: Defaults[.actionKeys].complete) {
+            handleGlobalAction(action)
+        } else if RESIZE_KEYS.contains(key), let number = key.QWERTYCharacter.d {
+            if let opt = OM.current, !opt.inRemoval {
+                opt.downscale(toFactor: number / 10.0)
+            } else {
+                Task { try? await optimiseLastClipboardItem(downscaleTo: number / 10.0) }
+            }
+        }
+    }
+
+    @MainActor
+    func handleGlobalAction(_ action: GlobalAction) {
+        switch action {
+        case .stopAndClearAll:
             OM.clearVisibleOptimisers(stop: true)
-        case .minus:
+        case .downscale:
             if let opt = OM.current {
                 if opt.type.isPDF {
                     opt.stepLowerPDFDPI()
@@ -768,41 +781,41 @@ class AppDelegate: AppDelegateParent {
                 scalingFactor = max(scalingFactor > 0.5 ? scalingFactor - 0.25 : scalingFactor - 0.1, 0.1)
                 Task { try? await optimiseLastClipboardItem(downscaleTo: scalingFactor) }
             }
-        case .x:
+        case .speedUpVideo:
             if let opt = OM.current, opt.canChangePlaybackSpeed() {
                 guard opt.changePlaybackSpeedFactor < 10 else { return }
                 opt.changePlaybackSpeed()
             } else {
                 Task { try? await optimiseLastClipboardItem(changePlaybackSpeedBy: 1.25) }
             }
-        case .r:
+        case .rename:
             if let opt = OM.current, !opt.running {
                 opt.editingFilename = true
             }
-        case .k:
+        case .crop:
             if let opt = OM.current, opt.canCrop(), !opt.running {
                 opt.showCropWindow()
             }
-        case .delete:
+        case .stopAndDismiss:
             if let opt = OM.optimisers.filter({ !$0.inRemoval && !$0.hidden }).max(by: \.startedAt) {
                 hoveredOptimiserID = nil
                 opt.stop(animateRemoval: true)
             }
-        case .equal:
+        case .bringBack:
             if let opt = OM.removedOptimisers.popLast() {
                 opt.bringBack()
             }
-        case .space:
+        case .quickLook:
             if let opt = OM.current, !opt.inRemoval {
                 opt.quicklook()
             } else {
                 Task { try? await quickLookLastClipboardItem() }
             }
-        case .z:
+        case .restoreOriginal:
             if let opt = OM.current, !opt.inRemoval, !opt.isOriginal {
                 opt.restoreOriginal()
             }
-        case .p:
+        case .pause:
             if Defaults[.pauseAutomaticOptimisations] {
                 Defaults[.pauseAutomaticOptimisations] = false
                 pauseForNextClipboardEvent = false
@@ -814,25 +827,15 @@ class AppDelegate: AppDelegateParent {
                 pauseForNextClipboardEvent = true
                 showNotice("Running • **Paused** • Stopped\nNext clipboard event will be ignored")
             }
-        case .c:
+        case .optimiseClipboard:
             Task { try? await optimiseLastClipboardItem() }
-        case .a:
+        case .optimiseAggressively:
             if let opt = OM.current, !opt.inRemoval {
                 guard !opt.aggressive else { return }
                 opt.reoptimiseAggressively()
             } else {
                 Task { try? await optimiseLastClipboardItem(aggressiveOptimisation: true) }
             }
-        case SauceKey.NUMBER_KEYS.suffix(from: 1).arr:
-            guard let number = key.QWERTYCharacter.d else { break }
-
-            if let opt = OM.current, !opt.inRemoval {
-                opt.downscale(toFactor: number / 10.0)
-            } else {
-                Task { try? await optimiseLastClipboardItem(downscaleTo: number / 10.0) }
-            }
-        default:
-            break
         }
     }
 

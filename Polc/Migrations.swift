@@ -6,6 +6,19 @@ enum Migrations {
     static func run() {
         polcIgnoreMigrate()
         portablePathsMigrate()
+        actionKeysMigrate()
+    }
+
+    static func actionKeysMigrate() {
+        let enabledKeys = Defaults.Key<[SauceKey]?>("enabledKeys")
+        guard let keys = Defaults[enabledKeys] else { return }
+        if Defaults.Keys.actionKeys.suite.object(forKey: Defaults.Keys.actionKeys.name) == nil {
+            Defaults[.actionKeys] = ActionKeys.migrated(
+                enabledKeys: keys,
+                defaultKeys: GlobalAction.defaultActionKeys.mapValues(\.key)
+            )
+        }
+        Defaults[enabledKeys] = nil
     }
 
     /// Rewrite every stored path into its portable form (`~/Pictures` instead of `/Users/alin/Pictures`).

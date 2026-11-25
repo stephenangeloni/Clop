@@ -826,7 +826,7 @@ struct CompactListBar: View {
             Button(hasRunning ? "Stop and clear" : "Clear all") {
                 OM.clearVisibleOptimisers(stop: true)
             }
-            .help("Stop all running optimisations and dismiss all results (\(keyComboModifiers.str) esc)")
+            .help("Stop all running optimisations and dismiss all results (\(keyComboModifiers.str) \(actionKeys.complete[.stopAndClearAll]?.key.label(heldWith: keyComboModifiers) ?? ""))")
 
             Spacer()
         }
@@ -836,6 +836,7 @@ struct CompactListBar: View {
     }
 
     @Default(.keyComboModifiers) private var keyComboModifiers
+    @Default(.actionKeys) private var actionKeys
     @Default(.showCompactImages) private var showCompactImages
 
 }

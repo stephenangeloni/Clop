@@ -18,7 +18,7 @@ struct MenuView: View {
     @Environment(\.openWindow) var openWindow
 
     @Default(.keyComboModifiers) var keyComboModifiers
-    @Default(.enabledKeys) var enabledKeys
+    @Default(.actionKeys) var actionKeys
     @Default(.useAggressiveOptimisationGIF) var useAggressiveOptimisationGIF
     @Default(.useAggressiveOptimisationJPEG) var useAggressiveOptimisationJPEG
     @Default(.useAggressiveOptimisationPNG) var useAggressiveOptimisationPNG
@@ -34,7 +34,7 @@ struct MenuView: View {
         Section("Clipboard") {
             Button("Optimise") {
                 Task { try? await optimiseLastClipboardItem() }
-            }.hotkeyHint(.c, "c", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
+            }.hotkeyHint(.optimiseClipboard, in: actionKeys, modifiers: keyComboModifiers)
 
             if !useAggressiveOptimisationGIF ||
                 !useAggressiveOptimisationJPEG ||
@@ -43,20 +43,20 @@ struct MenuView: View {
             {
                 Button("Optimise (aggressive)") {
                     Task { try? await optimiseLastClipboardItem(aggressiveOptimisation: true) }
-                }.hotkeyHint(.a, "a", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
+                }.hotkeyHint(.optimiseAggressively, in: actionKeys, modifiers: keyComboModifiers)
             }
 
             Button("Downscale") {
                 scalingFactor = max(scalingFactor > 0.5 ? scalingFactor - 0.25 : scalingFactor - 0.1, 0.1)
                 Task { try? await optimiseLastClipboardItem(downscaleTo: scalingFactor) }
-            }.hotkeyHint(.minus, "-", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
+            }.hotkeyHint(.downscale, in: actionKeys, modifiers: keyComboModifiers)
             Button("Quick Look") {
                 Task { try? await quickLookLastClipboardItem() }
-            }.hotkeyHint(.space, " ", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
+            }.hotkeyHint(.quickLook, in: actionKeys, modifiers: keyComboModifiers)
             Button("Revert last optimisation") {
                 om.clipboardImageOptimiser?.restoreOriginal()
             }
-            .hotkeyHint(.z, "z", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
+            .hotkeyHint(.restoreOriginal, in: actionKeys, modifiers: keyComboModifiers)
             .disabled(om.clipboardImageOptimiser?.isOriginal ?? true)
             Button("Bring back last result") {
                 guard let last = om.removedOptimisers.popLast() else {
@@ -64,7 +64,7 @@ struct MenuView: View {
                 }
                 om.optimisers = om.optimisers.without(last).with(last)
             }
-            .hotkeyHint(.equal, "=", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
+            .hotkeyHint(.bringBack, in: actionKeys, modifiers: keyComboModifiers)
             .disabled(om.removedOptimisers.isEmpty)
 
             if let bundleID = lastApp.bundleId {
@@ -170,9 +170,9 @@ extension View {
     /// enabled in settings, so disabling a hotkey also drops its (now non-functional) hint from the
     /// menubar menu.
     @ViewBuilder
-    func hotkeyHint(_ key: SauceKey, _ equivalent: KeyEquivalent, enabled: [SauceKey], modifiers: EventModifiers) -> some View {
-        if enabled.contains(key) {
-            keyboardShortcut(equivalent, modifiers: modifiers)
+    func hotkeyHint(_ action: GlobalAction, in actionKeys: [GlobalAction: ActionKey<SauceKey>], modifiers: [TriggerKey]) -> some View {
+        if let actionKey = actionKeys.complete[action], actionKey.enabled, let equivalent = actionKey.key.keyEquivalent(heldWith: modifiers) {
+            keyboardShortcut(equivalent, modifiers: modifiers.eventModifiers)
         } else {
             self
         }

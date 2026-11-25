@@ -775,7 +775,7 @@ enum SettingsSearchIndex {
             keywords: ["modifier", "modifiers", "hotkey", "shortcut", "control", "shift", "option", "command", "ctrl", "hold", "combo", "global"], tab: .keys, section: "Trigger keys"
         ),
         SettingEntry(
-            id: "keys.actionkeys.enabledKeys", keys: ["enabledKeys"],
+            id: "keys.actionkeys.actionKeys", keys: ["actionKeys"],
             title: "Action keys",
             subtitle: "",
             keywords: [
@@ -797,6 +797,11 @@ enum SettingsSearchIndex {
                 "stop",
                 "paste",
                 "keycap",
+                "crop",
+                "rebind",
+                "change key",
+                "remap",
+                "conflict",
             ], tab: .keys, section: "Action keys"
         ),
         SettingEntry(

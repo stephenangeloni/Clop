@@ -38,7 +38,6 @@ let AUDIO_PASTEBOARD_TYPES = AUDIO_FORMATS.compactMap { NSPasteboard.PasteboardT
 let IMAGE_VIDEO_PASTEBOARD_TYPES: Set<NSPasteboard.PasteboardType> = (IMAGE_PASTEBOARD_TYPES + VIDEO_PASTEBOARD_TYPES + AUDIO_PASTEBOARD_TYPES + [.fileContents]).set
 
 let DEFAULT_HOVER_KEYS: [SauceKey] = [.minus, .delete, .z, .c, .a, .s, .x, .r, .f, .o, .comma, .u, .d, .k, .e]
-let DEFAULT_GLOBAL_KEYS: [SauceKey] = [.minus, .equal, .delete, .space, .z, .p, .c, .a, .x, .r, .k, .escape]
 
 enum CleanupInterval: TimeInterval, Codable, Defaults.Serializable {
     case every10Minutes = 600
@@ -271,7 +270,7 @@ extension Defaults.Keys {
 
     static let keyComboModifiers = Key<[TriggerKey]>("keyComboModifiers", default: [.lctrl, .lshift])
     static let quickResizeKeys = Key<[SauceKey]>("quickResizeKeys", default: [])
-    static let enabledKeys = Key<[SauceKey]>("enabledKeys", default: DEFAULT_GLOBAL_KEYS)
+    static let actionKeys = Key<[GlobalAction: ActionKey<SauceKey>]>("actionKeys", default: GlobalAction.defaultActionKeys)
 
     static let savedCropSizes = Key<[CropSize]>("savedCropSizes", default: DEFAULT_CROP_SIZES)
     static let pauseAutomaticOptimisations = Key<Bool>("pauseAutomaticOptimisations", default: false)

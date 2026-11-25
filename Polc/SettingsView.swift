@@ -1966,10 +1966,19 @@ class BoundFormatter: Formatter {
 let RESIZE_KEYS = SauceKey.NUMBER_KEYS.suffix(from: 1).arr
 
 let keyEnv = EnvState()
+let RECORDABLE_KEYS = Set(SauceKey.ALL_KEYS + [.space, .delete])
+
+struct KeyRefusal {
+    let action: GlobalAction
+    let message: String
+}
+
 struct KeysSettingsView: View {
-    @Default(.enabledKeys) var enabledKeys
+    @Default(.actionKeys) var actionKeys
     @Default(.quickResizeKeys) var quickResizeKeys
     @Default(.keyComboModifiers) var keyComboModifiers
+    @State var recordingAction: GlobalAction?
+    @State var refusal: KeyRefusal?
 
     var resizeKeys: some View {
         ForEach(RESIZE_KEYS, id: \.QWERTYKeyCode) { key in
@@ -1997,19 +2006,11 @@ struct KeysSettingsView: View {
             }
             .searchAnchor("keys.triggerkeys.keyComboModifiers")
             Section(header: SectionHeader(title: "Action keys")) {
-                keyToggle(.minus, actionName: "Downscale", description: "Decrease resolution of the last image or video")
-                keyToggle(.x, actionName: "Speed up video", description: "Make video playback faster by dropping frames")
-                keyToggle(.delete, actionName: "Stop and Dismiss", description: "Stop the last running action and dismiss the floating result")
-                keyToggle(.escape, actionName: "Stop and Clear All", description: "Stop running optimisations and clear all floating results")
-                keyToggle(.equal, actionName: "Bring Back", description: "Bring back the last removed floating result")
-                keyToggle(.space, actionName: "Quick Look", description: "Preview the latest image or video")
-                keyToggle(.r, actionName: "Rename", description: "Rename the file of the latest image or video")
-                keyToggle(.z, actionName: "Restore original", description: "Revert optimisations and downscaling actions done on the latest image or video")
-                keyToggle(.p, actionName: "Pause optimisations", description: "Pause or stop automatic optimisations")
-                keyToggle(.c, actionName: "Optimise current clipboard", description: "Apply optimisations on the copied image, URL or path")
-                keyToggle(.a, actionName: "Optimise aggressively", description: "Apply aggressive optimisations on the copied image, URL or path")
+                ForEach(GlobalAction.allCases, id: \.self) { action in
+                    keyToggle(action)
+                }
             }.padding(.leading, Space.xl)
-                .searchAnchor("keys.actionkeys.enabledKeys")
+                .searchAnchor("keys.actionkeys.actionKeys")
             Section(header: SectionHeader(title: "Resize keys")) {
                 HStack(alignment: .bottom, spacing: Space.s) {
                     VStack(alignment: .leading, spacing: Space.xs) {
@@ -2049,24 +2050,71 @@ struct KeysSettingsView: View {
     }
 
     @ViewBuilder
-    func keyToggle(_ key: SauceKey, actionName: String, description: String) -> some View {
-        let binding = Binding(
-            get: { enabledKeys.contains(key) },
-            set: { enabledKeys = $0 ? enabledKeys.with(key) : enabledKeys.without(key) }
+    func keyToggle(_ action: GlobalAction) -> some View {
+        let bindings = actionKeys.complete
+        let key = bindings[action]?.key ?? action.defaultKey
+        let enabled = Binding(
+            get: { bindings[action]?.enabled ?? true },
+            set: { actionKeys = bindings.merging([action: ActionKey(key: key, enabled: $0)]) { $1 } }
         )
-        Toggle(isOn: binding, label: {
+        VStack(alignment: .leading, spacing: Space.xs) {
             HStack {
                 triggerKeyCap
-                DynamicKey(key: .constant(key))
-                    .font(.mono(TextSize.title3, weight: SauceKey.ALPHANUMERIC_KEYS.contains(key) ? .medium : .heavy))
-                VStack(alignment: .leading, spacing: -1) {
-                    Text(actionName)
-                    Text(description).mono(TextSize.caption)
-                }
+                keyCap(action, key: key)
+                Toggle(isOn: enabled, label: {
+                    VStack(alignment: .leading, spacing: -1) {
+                        Text(action.title)
+                        Text(action.subtitle).mono(TextSize.caption)
+                    }
+                })
+                .accessibilityLabel(action.title)
+                .accessibilityHint(action.subtitle)
             }
-        })
-        .accessibilityLabel(actionName)
-        .accessibilityHint(description)
+            if recordingAction == action {
+                Text("Press the new key for \(action.title), or Esc to cancel")
+                    .mono(TextSize.caption)
+                    .foregroundColor(.secondary)
+            } else if let refusal, refusal.action == action {
+                Text(refusal.message)
+                    .mono(TextSize.caption)
+                    .foregroundColor(.red)
+            }
+        }
+    }
+
+    func keyCap(_ action: GlobalAction, key: SauceKey) -> some View {
+        let label = key.label(heldWith: keyComboModifiers)
+        let recording = recordingAction == action
+        return Button(recording ? "Press a key" : label) {
+            refusal = nil
+            recordingAction = recording ? nil : action
+        }
+        .buttonStyle(FlatButton(color: recording ? Color.red : Color.primary.opacity(0.1), textColor: recording ? .white : .primary))
+        .font(.mono(TextSize.title3, weight: SauceKey.ALPHANUMERIC_KEYS.contains(key) ? .medium : .heavy))
+        .background(
+            recording
+                ? KeyEventHandling(
+                    recording: Binding(get: { recordingAction == action }, set: { if !$0 { recordingAction = nil } }),
+                    key: Binding(get: { key }, set: { assign($0, to: action) }),
+                    allowedKeys: RECORDABLE_KEYS
+                )
+                : nil
+        )
+        .accessibilityLabel(recording ? "Press the new key for \(action.title)" : "Change key for \(action.title), currently \(label)")
+    }
+
+    func assign(_ key: SauceKey, to action: GlobalAction) {
+        var bindings = actionKeys.complete
+        let label = key.label(heldWith: keyComboModifiers)
+        switch ActionKeys.assign(key, to: action, in: &bindings, resizeKeys: Set(RESIZE_KEYS)) {
+        case let .action(other)?:
+            refusal = KeyRefusal(action: action, message: "\(label) is already the key for \(other.title)")
+        case .resizeKey?:
+            refusal = KeyRefusal(action: action, message: "\(label) is a resize key")
+        case nil:
+            refusal = nil
+            actionKeys = bindings
+        }
     }
 
 }
