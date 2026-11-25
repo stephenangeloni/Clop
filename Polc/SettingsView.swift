@@ -3084,6 +3084,8 @@ struct SettingsView: View {
         }
     }
 
+    static let sidebarMinWidth: CGFloat = 220
+
     var sidebar: some View {
         VStack(spacing: 0) {
             searchField
@@ -3096,7 +3098,7 @@ struct SettingsView: View {
             }
             .listStyle(.sidebar)
         }
-        .navigationSplitViewColumnWidth(min: 220, ideal: 240, max: 280)
+        .navigationSplitViewColumnWidth(min: Self.sidebarMinWidth, ideal: 240, max: 280)
         .modifier(HideSidebarToggleIfAvailable())
     }
 
@@ -3281,6 +3283,9 @@ struct SettingsView: View {
                       let controller = splitView.delegate as? NSSplitViewController else { return }
                 for item in controller.splitViewItems {
                     item.canCollapse = false
+                    if item.behavior == .sidebar {
+                        item.minimumThickness = SettingsView.sidebarMinWidth
+                    }
                     if item.isCollapsed {
                         item.isCollapsed = false
                     }

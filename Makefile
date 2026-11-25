@@ -2,13 +2,16 @@ BUILD_DIR := build
 APP := $(BUILD_DIR)/Build/Products/Release/Polc.app
 BUNDLE_ID := com.stephenangeloni.Polc
 
-.PHONY: build lint test install clean
+.PHONY: build lint test test-ui install clean
 
 lint:
 	python3 Scripts/theme_literals.py
 
 test:
 	Scripts/test-unregister-stray-builds.sh
+
+test-ui:
+	Scripts/test-settings-ui.sh
 
 build: lint
 	xcodebuild build -project Polc.xcodeproj -scheme Polc -configuration Release \
