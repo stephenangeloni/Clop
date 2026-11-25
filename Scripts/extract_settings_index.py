@@ -32,12 +32,10 @@ VIEW_TO_TAB = {
     "ImagesSettingsView": "images",
     "PDFSettingsView": "pdf",
     "ResultsSettingsView": "results",
-    "PresetZonesSettingsView": "presetZones",
     "FloatingSettingsView": "results",
     "KeysSettingsView": "keys",
     "PipelinesSettingsView": "pipelines",
     "MCPSettingsView": "mcp",
-    "LicenseUpdatesSettingsView": "licenseUpdates",
     "AboutSettingsView": "about",
 }
 
