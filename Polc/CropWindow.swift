@@ -216,9 +216,9 @@ struct CropSelectionOverlay: View {
                     .offset(x: -disp.minX * s, y: -disp.minY * s)
             }
             .frame(width: disp.width * s, height: disp.height * s, alignment: .topLeading)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.small, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                     .strokeBorder(.white.opacity(0.9), lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.55), radius: 6, y: 2)
@@ -269,7 +269,7 @@ struct CropSelectionOverlay: View {
         Text(sizeText)
             .font(.system(size: TextSize.caption, weight: .medium, design: .monospaced))
             .padding(.horizontal, Space.xs)
-            .padding(.vertical, Space.xxs)
+            .padding(.vertical, Space.xs)
             .background(RoundedRectangle(cornerRadius: Radius.small).fill(.black.opacity(0.7)))
             .foregroundColor(.white)
             .position(x: disp.midX, y: min(disp.maxY + 14, viewSize.height - 10))
@@ -277,8 +277,8 @@ struct CropSelectionOverlay: View {
         if let label, label.isNotEmpty {
             Text(label)
                 .font(.round(TextSize.caption, weight: .semibold))
-                .padding(.horizontal, Space.s)
-                .padding(.vertical, Space.xxs)
+                .padding(.horizontal, Space.xs)
+                .padding(.vertical, Space.xs)
                 .background(Capsule().fill(.black.opacity(0.7)))
                 .foregroundColor(.white)
                 .position(x: disp.midX, y: max(disp.minY - 14, 10))
@@ -305,7 +305,7 @@ struct CropSelectionOverlay: View {
     private func handleView(_ handle: CropHandle) -> some View {
         Group {
             if handle.isCorner {
-                RoundedRectangle(cornerRadius: Radius.hairline)
+                RoundedRectangle(cornerRadius: Radius.small)
                     .fill(.white)
                     .frame(width: 9, height: 9)
             } else {
@@ -429,7 +429,7 @@ struct AspectIcon: View {
         let w = min(maxW, maxH * aspect)
         let h = w / aspect
 
-        RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous)
+        RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
             .fill(Color.accentColor.opacity(selected ? 1 : 0.55))
             .frame(width: max(w, 3), height: max(min(h, maxH), 3))
             .frame(width: maxW, height: maxH + 1)
@@ -446,7 +446,7 @@ struct SizePresetRow: View {
 
     var body: some View {
         Button(action: apply) {
-            HStack(spacing: Space.s) {
+            HStack(spacing: Space.xs) {
                 AspectIcon(aspect: iconAspect, selected: selected)
                 Text(size.name)
                     .font(.round(TextSize.subheadline, weight: .medium))
@@ -472,13 +472,13 @@ struct SizePresetRow: View {
                     .accessibilityLabel("Delete preset")
                 }
             }
-            .padding(.horizontal, Space.m)
+            .padding(.horizontal, Space.s)
             .padding(.vertical, Space.xs)
             .background(
-                RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                     .fill(selected ? Color.accentColor.opacity(0.22) : Color.primary.opacity(hovering ? 0.1 : 0.05))
             )
-            .contentShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: Radius.small, style: .continuous))
         }
         .buttonStyle(.plain)
         .disabled(disabled)
@@ -737,7 +737,7 @@ struct CropView: View {
             .frame(width: geo.size.width, height: geo.size.height)
         }
         .padding([.horizontal, .top])
-        .padding(.top, Space.l)
+        .padding(.top, Space.m)
     }
 
     var previewBar: some View {
@@ -766,7 +766,7 @@ struct CropView: View {
             }
         }
         .buttonStyle(.borderless)
-        .padding(.vertical, Space.m)
+        .padding(.vertical, Space.s)
         .frame(height: 36)
         .onChange(of: pageIndex) { _ in Task { await loadPreview() } }
         .task(id: videoTimeDebounced) {
@@ -778,9 +778,9 @@ struct CropView: View {
     // MARK: Sidebar
 
     var sidebar: some View {
-        VStack(alignment: .leading, spacing: Space.m) {
+        VStack(alignment: .leading, spacing: Space.s) {
             ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: Space.m) {
+                VStack(alignment: .leading, spacing: Space.s) {
                     if optimiser.type.isPDF {
                         pdfPresets
                     } else {
@@ -789,7 +789,7 @@ struct CropView: View {
                         sizePresets
                     }
                 }
-                .padding(.top, Space.xxxl)
+                .padding(.top, Space.xxl)
             }
 
             Spacer(minLength: 0)
@@ -802,7 +802,7 @@ struct CropView: View {
     }
 
     var aspectRatios: some View {
-        VStack(alignment: .leading, spacing: Space.m) {
+        VStack(alignment: .leading, spacing: Space.s) {
             HStack {
                 sectionHeader("Aspect ratio")
                 Spacer()
@@ -844,9 +844,9 @@ struct CropView: View {
     }
 
     var sizePresets: some View {
-        VStack(alignment: .leading, spacing: Space.m) {
+        VStack(alignment: .leading, spacing: Space.s) {
             sectionHeader("Size presets")
-            VStack(spacing: Space.xxs) {
+            VStack(spacing: Space.xs) {
                 ForEach(savedCropSizes.filter { !$0.isAspectRatio && $0.cropRect == nil }.sorted(by: \.area)) { size in
                     let resolved = size.computedSize(from: sourceSize)
                     SizePresetRow(
@@ -896,7 +896,7 @@ struct CropView: View {
             .controlSize(.small)
             .disabled(saveName.isEmpty || savedCropSizes.contains(where: { $0.width == pixelWidth && $0.height == pixelHeight }))
         }
-        .padding(.top, Space.xxs)
+        .padding(.top, Space.xs)
     }
 
     var pdfPresets: some View {
@@ -1069,7 +1069,7 @@ struct CropView: View {
         Button(action: action) {
             HStack(spacing: Space.xs) {
                 if freeform {
-                    RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                         .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [2, 1.5]))
                         .foregroundColor(selected ? Color.accentColor : .secondary)
                         .frame(width: 10, height: 10)
@@ -1086,14 +1086,14 @@ struct CropView: View {
             .padding(.vertical, Space.xs)
             .padding(.horizontal, Space.xs)
             .background(
-                RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                     .fill(selected ? Color.accentColor.opacity(0.25) : Color.primary.opacity(0.06))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                     .strokeBorder(selected ? Color.accentColor.opacity(0.8) : Color.primary.opacity(0.08), lineWidth: 1)
             )
-            .contentShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: Radius.small, style: .continuous))
         }
         .buttonStyle(.plain)
     }

@@ -460,7 +460,7 @@ struct CompareView: View {
     }
 
     var audioStack: some View {
-        HStack(alignment: .top, spacing: Space.xl) {
+        HStack(alignment: .top, spacing: Space.l) {
             if let url = optimiser.url, let originalURL = optimiser.comparisonOriginalURL {
                 audioSide(.original, url: originalURL, title: "Original", bytes: optimiser.oldBytes, bitrate: optimiser.oldBitrate)
                 audioSide(
@@ -482,8 +482,8 @@ struct CompareView: View {
                 Text(percent > 0 ? "-\(percent)%" : "+\(-percent)%")
                     .mono(TextSize.callout, weight: .bold)
                     .foregroundColor(percent > 0 ? Palette.saving : Palette.growth)
-                    .padding(.horizontal, Space.m)
-                    .padding(.vertical, Space.xxs)
+                    .padding(.horizontal, Space.s)
+                    .padding(.vertical, Space.xs)
                     .background(
                         Capsule()
                             .fill(.ultraThickMaterial)
@@ -496,7 +496,7 @@ struct CompareView: View {
     @ViewBuilder var splitFooter: some View {
         let improvement = optimiser.newBytes > 0 && optimiser.newBytes < optimiser.oldBytes
 
-        HStack(spacing: Space.s) {
+        HStack(spacing: Space.xs) {
             if optimiser.oldBytes > 0 {
                 Text(optimiser.oldBytes.humanSize).mono(TextSize.caption, weight: .semibold)
                     .foregroundColor(.secondary)
@@ -530,7 +530,7 @@ struct CompareView: View {
 
                 Text("Only one side plays at a time, scrub either side to set where both start")
                     .round(TextSize.caption).foregroundColor(.tertiaryLabel)
-                    .padding(.top, Space.m)
+                    .padding(.top, Space.s)
             } else {
                 if compareMode == .split {
                     splitStack
@@ -547,7 +547,7 @@ struct CompareView: View {
                 if compareMode == .split {
                     Text("Drag across the preview to move the split divider")
                         .round(TextSize.caption).foregroundColor(.tertiaryLabel)
-                        .padding(.top, Space.s)
+                        .padding(.top, Space.xs)
                 }
                 Text("Hold **⌘ Command** to zoom in, add **⌥ Option** to zoom further")
                     .round(TextSize.caption).foregroundColor(.tertiaryLabel)
@@ -574,7 +574,7 @@ struct CompareView: View {
     }
 
     var controls: some View {
-        HStack(spacing: Space.l) {
+        HStack(spacing: Space.m) {
             Picker("Comparison", selection: $compareMode) {
                 SwiftUI.Image(systemName: "rectangle.split.2x1")
                     .help("Side by side comparison")
@@ -615,22 +615,22 @@ struct CompareView: View {
                 .accessibilityLabel(fitOrFill == .fit ? "Fill the preview area" : "Fit the whole image")
             }
         }
-        .padding(.top, Space.m)
+        .padding(.top, Space.s)
     }
 
     func audioSide(_ side: AudioSide, url: URL, title: String, bytes: Int, bitrate: Int?) -> some View {
-        VStack(spacing: Space.l) {
+        VStack(spacing: Space.m) {
             paneHeader(title: title, url: url)
 
             ZStack {
-                RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.large, style: .continuous)
                     .fill(.regularMaterial)
 
                 if let art = audioController.coverArt[side] {
                     SwiftUI.Image(nsImage: art)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .clipShape(RoundedRectangle(cornerRadius: Radius.panel, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: Radius.large, style: .continuous))
                         .opacity(0.45)
                 } else {
                     SwiftUI.Image(systemName: "waveform")
@@ -659,7 +659,7 @@ struct CompareView: View {
 
             audioScrubber(side)
 
-            VStack(alignment: .leading, spacing: Space.xxs) {
+            VStack(alignment: .leading, spacing: Space.xs) {
                 Text("Size: \(bytes.humanSize)").mono(TextSize.caption)
                     .hfill(.leading)
                 if let bitrate {
@@ -668,7 +668,7 @@ struct CompareView: View {
                 }
             }
             .foregroundColor(.secondary)
-            .padding(.top, Space.xxs)
+            .padding(.top, Space.xs)
         }
         .frame(minWidth: COMPARISON_VIEW_SIZE / 2, idealWidth: COMPARISON_VIEW_SIZE)
         .onAppear { audioController.register(side, url: url) }
@@ -676,7 +676,7 @@ struct CompareView: View {
 
     func audioScrubber(_ side: AudioSide) -> some View {
         let duration = audioController.duration(side)
-        return VStack(spacing: Space.xxs) {
+        return VStack(spacing: Space.xs) {
             Slider(
                 value: Binding(
                     get: { audioController.displayTime(for: side) },
@@ -732,7 +732,7 @@ struct CompareView: View {
             minHeight: COMPARISON_VIEW_SIZE / 2, idealHeight: COMPARISON_VIEW_SIZE, maxHeight: .infinity
         )
         .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.panel, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.large, style: .continuous))
         .background(paneFrameReader(.split))
     }
 
@@ -757,7 +757,7 @@ struct CompareView: View {
 
     func pdfControls(pdf: PDFDocument) -> some View {
         VStack {
-            HStack(spacing: Space.m) {
+            HStack(spacing: Space.s) {
                 if pdf.pageCount > 1 {
                     Button {
                         pdfPage -= 1
@@ -794,7 +794,7 @@ struct CompareView: View {
                     .frame(width: 400)
             }
         }
-        .padding(.top, Space.m)
+        .padding(.top, Space.s)
         .onChange(of: pdfPage) { page in
             if let url = optimiser.comparisonOriginalURL, let pdfView = PDFKitView.pdfViewCache[url], let page = pdfView.document?.page(at: page.i - 1) {
                 pdfView.go(to: page)
@@ -857,7 +857,7 @@ struct CompareView: View {
                         minHeight: COMPARISON_VIEW_SIZE / 2, idealHeight: COMPARISON_VIEW_SIZE, maxHeight: .infinity
                     )
                     .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: Radius.panel, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.large, style: .continuous))
                     .clipped()
                     .contextMenu { fileActions(for: url) }
                     .background(paneFrameReader(pane))

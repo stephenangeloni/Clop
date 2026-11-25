@@ -155,7 +155,7 @@ struct PresetZoneRow: View {
                 }
             }
         } label: {
-            HStack(spacing: Space.xxs) {
+            HStack(spacing: Space.xs) {
                 if let ft = zone.type {
                     SwiftUI.Image(systemName: ft.symbolName).foregroundColor(ft.color)
                 } else {
@@ -175,11 +175,11 @@ struct PresetZoneRow: View {
         HStack(spacing: 0) {
             Button(action: commit) {
                 SwiftUI.Image(systemName: "checkmark").font(.regular(TextSize.subheadline)).foregroundColor(.green.opacity(0.8))
-                    .padding(.horizontal, Space.s).padding(.vertical, Space.xxs)
+                    .padding(.horizontal, Space.xs).padding(.vertical, Space.xs)
             }.buttonStyle(.plain).help("Done").accessibilityLabel("Done")
             Button(action: cancel) {
                 SwiftUI.Image(systemName: "xmark").font(.regular(TextSize.subheadline)).foregroundColor(.red.opacity(0.8))
-                    .padding(.horizontal, Space.s).padding(.vertical, Space.xxs)
+                    .padding(.horizontal, Space.xs).padding(.vertical, Space.xs)
             }.buttonStyle(.plain).help("Cancel").accessibilityLabel("Cancel")
         }
         .background(Capsule().fill(Color.primary.opacity(0.05)))
@@ -187,7 +187,7 @@ struct PresetZoneRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: Space.s) {
+            HStack(spacing: Space.xs) {
                 IconPickerView(icon: $icon)
                     .buttonStyle(.plain)
                     .font(.system(size: TextSize.body))
@@ -219,7 +219,7 @@ struct PresetZoneRow: View {
                 ) { idx in setFlag(hide: idx == 1) }
                 confirmCancel
             }
-            .padding(.horizontal, Space.m)
+            .padding(.horizontal, Space.s)
             .padding(.vertical, Space.xs)
             .background(PipelineTheme.topBarBackground)
 
@@ -236,16 +236,16 @@ struct PresetZoneRow: View {
                 coordinatorRef: { coordHolder.value = $0 }
             )
             .frame(height: max(36, CGFloat(1 + editText.count / 80) * 18))
-            .padding(.horizontal, Space.m)
+            .padding(.horizontal, Space.s)
             .padding(.vertical, Space.xs)
             .background(PipelineTheme.editorBackground)
             if isEditingSteps {
                 PipelineEditingSuggestions(prefix: currentPrefix, fileType: zone.type, coordinator: coordinator)
-                    .padding(.horizontal, Space.m)
-                    .padding(.bottom, Space.s)
+                    .padding(.horizontal, Space.s)
+                    .padding(.bottom, Space.xs)
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: Radius.xlarge, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
         .card(radius: 10, fill: .clear, borderColor: .primary.opacity(0.2), borderWidth: 1)
         .onAppear {
             editName = zone.name

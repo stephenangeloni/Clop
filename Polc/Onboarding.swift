@@ -30,7 +30,7 @@ struct DropZoneDemoAnimationView: View {
     }
 
     var image: some View {
-        VStack(spacing: Space.m) {
+        VStack(spacing: Space.s) {
             SwiftUI.Image(nsImage: NSImage(resource: .sonomaShot))
                 .resizable()
                 .background(
@@ -136,13 +136,13 @@ struct OnboardingView: View {
 
     var menubar: some View {
         ZStack(alignment: .trailing) {
-            RoundedRectangle(cornerRadius: Radius.large, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                 .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                 .frame(height: 24)
-            RoundedRectangle(cornerRadius: Radius.large, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                 .fill(Color.primary.opacity(0.1))
                 .frame(height: 24)
-            HStack(spacing: Space.l) {
+            HStack(spacing: Space.m) {
                 SwiftUI.Image(nsImage: NSImage(resource: menubarIconResource(classic: useClassicMenubarIcon, geometric: useGeometricMenubarIcon)))
                     .renderingMode(.template)
                     .resizable()
@@ -152,7 +152,7 @@ struct OnboardingView: View {
                 Text("10:09")
             }
             .font(.regular(TextSize.title3))
-            .padding(.trailing, Space.m)
+            .padding(.trailing, Space.s)
         }
         .mask(LinearGradient(gradient: Gradient(colors: [.clear, .white]), startPoint: .leading, endPoint: .trailing))
     }
@@ -204,7 +204,7 @@ struct OnboardingView: View {
                             .frame(width: 530, height: 200)
                     }
                 }
-                .padding(.bottom, Space.window)
+                .padding(.bottom, Space.xl)
 
                 Text("""
                 Polc can also watch folders for new **images**, **videos**,
@@ -235,7 +235,7 @@ struct OnboardingView: View {
                         }
                     }
                 }
-                .padding(.bottom, Space.window)
+                .padding(.bottom, Space.xl)
 
                 if bm.decompressingBinaries {
                     ProgressView("Preparing optimisers...")

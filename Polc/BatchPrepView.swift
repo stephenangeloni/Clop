@@ -402,9 +402,9 @@ struct BatchPrepContent: View {
         .onDrop(of: [.fileURL], isTargeted: $dropTargeted) { providers in handleDrop(providers) }
         .overlay {
             if dropTargeted {
-                RoundedRectangle(cornerRadius: Radius.xlarge)
+                RoundedRectangle(cornerRadius: Radius.medium)
                     .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: 3))
-                    .padding(Space.s)
+                    .padding(Space.xs)
                     .allowsHitTesting(false)
             }
         }
@@ -418,7 +418,7 @@ struct BatchPrepContent: View {
     }
 
     private var dropZone: some View {
-        VStack(spacing: Space.l) {
+        VStack(spacing: Space.m) {
             SwiftUI.Image(systemName: "square.and.arrow.down.on.square")
                 .font(.system(size: IconSize.xlarge, weight: .light))
                 .foregroundStyle(.secondary)
@@ -430,18 +430,18 @@ struct BatchPrepContent: View {
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(Space.xxxl)
+        .padding(Space.xxl)
         .background {
-            RoundedRectangle(cornerRadius: Radius.panel)
+            RoundedRectangle(cornerRadius: Radius.large)
                 .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [9]))
                 .foregroundStyle(.quaternary)
-                .padding(Space.xxl)
+                .padding(Space.xl)
         }
         .contentShape(Rectangle())
     }
 
     private var footer: some View {
-        HStack(spacing: Space.m) {
+        HStack(spacing: Space.s) {
             if !manager.phase.isEmpty {
                 Text(manager.phase).foregroundStyle(.secondary)
             } else {
@@ -462,7 +462,7 @@ struct BatchPrepContent: View {
                 .keyboardShortcut(.defaultAction)
                 .disabled(manager.items.isEmpty || !manager.phase.isEmpty)
         }
-        .padding(Space.l)
+        .padding(Space.m)
     }
 
     private func setWindowMinHeight(_ h: CGFloat) {
@@ -563,7 +563,7 @@ struct BatchParamColumns: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             OutputRow(form: form)
-                .padding([.horizontal, .top], Space.xl)
+                .padding([.horizontal, .top], Space.l)
             HStack(alignment: .top, spacing: 0) {
                 column {
                     imageSection
@@ -621,7 +621,7 @@ struct BatchParamColumns: View {
                 .disabled(form.videoLongEdgeDisabled)
             LabeledContent { choicePicker("Encoder", $form.videoEncoder, VideoEncoderChoice.allCases) { $0.title } } label: { settingLabel("Encoder") }
             LabeledContent {
-                HStack(spacing: Space.s) {
+                HStack(spacing: Space.xs) {
                     numberField("Frame rate", $form.videoFPS).disabled(!form.videoFPSCap)
                     Text("fps").foregroundStyle(.tertiary)
                     Toggle("Frame rate", isOn: $form.videoFPSCap).labelsHidden().toggleStyle(.switch).controlSize(.mini)
@@ -648,7 +648,7 @@ struct BatchParamColumns: View {
             } label: { settingLabel("Cover art") }
                 .disabled(form.audioCoverDisabled)
             LabeledContent {
-                HStack(spacing: Space.s) {
+                HStack(spacing: Space.xs) {
                     numberSuffix("Cover size", $form.audioCoverSize, "px")
                     Picker("Cover size", selection: $form.audioCoverSquaring) {
                         Text("Square if landscape").tag(CoverArtSquaring.landscapeOnly)
@@ -672,7 +672,7 @@ private struct OutputRow: View {
     @ObservedObject var form: BatchParamsModel
 
     var body: some View {
-        HStack(spacing: Space.m) {
+        HStack(spacing: Space.s) {
             Text("Save to").foregroundStyle(.secondary)
             Picker("Save to", selection: Binding(
                 get: { form.outputFolder == nil ? 0 : 1 },
@@ -735,7 +735,7 @@ private struct CommitCompressionSlider: View {
 
     var body: some View {
         let shown = drag ?? value
-        HStack(spacing: Space.m) {
+        HStack(spacing: Space.s) {
             Slider(
                 value: Binding(get: { drag ?? value }, set: { drag = $0 }),
                 in: 0 ... 100,
@@ -758,7 +758,7 @@ private struct CommitDownscaleSlider: View {
 
     var body: some View {
         let shown = drag ?? value
-        HStack(spacing: Space.m) {
+        HStack(spacing: Space.s) {
             Slider(
                 value: Binding(get: { drag ?? value }, set: { drag = $0 }),
                 in: 0 ... 1,
@@ -799,7 +799,7 @@ private struct CommitBitrateSlider: View {
 
     var body: some View {
         let shown = drag.map { snapBitrate(Int($0.rounded()), range: range) } ?? value
-        HStack(spacing: Space.m) {
+        HStack(spacing: Space.s) {
             Slider(
                 value: Binding(get: { drag ?? Double(value) }, set: { drag = $0 }),
                 in: 0 ... Double(range.upperBound), step: 2,
@@ -829,7 +829,7 @@ private func snapBitrate(_ v: Int, range: ClosedRange<Int>) -> Int {
 }
 
 private func numberSuffix(_ label: String, _ value: Binding<Int>, _ suffix: String) -> some View {
-    HStack(spacing: Space.s) {
+    HStack(spacing: Space.xs) {
         numberField(label, value)
         Text(suffix).foregroundStyle(.tertiary)
     }
@@ -947,12 +947,12 @@ struct BatchResultsContent: View {
                     .disabled(changedTypes.isEmpty)
                     .keyboardShortcut(.defaultAction)
             }
-            .padding(Space.l)
+            .padding(Space.m)
         }
     }
 
     private var controlsBar: some View {
-        HStack(spacing: Space.l) {
+        HStack(spacing: Space.m) {
             batchProgress
             if manager.aggregate.savedBytes > 0 {
                 savingsPills
@@ -969,13 +969,13 @@ struct BatchResultsContent: View {
             .disabled(!canTune)
             Button("Cancel") { manager.cancel() }.disabled(!manager.isRunning)
         }
-        .padding(Space.l)
+        .padding(Space.m)
     }
 
     @ViewBuilder private var batchProgress: some View {
         let a = manager.aggregate
         if manager.isRunning || !manager.phase.isEmpty {
-            HStack(spacing: Space.m) {
+            HStack(spacing: Space.s) {
                 ProgressView(value: a.overallFraction).frame(width: 120)
                 Text(manager.phase.isEmpty ? "\(a.finished)/\(a.total)" : manager.phase)
                     .font(.callout).monospacedDigit().foregroundStyle(.secondary)
@@ -989,7 +989,7 @@ struct BatchResultsContent: View {
     private var savingsPills: some View {
         let a = manager.aggregate
         let pct = Int((a.savedFraction * 100).rounded())
-        return HStack(spacing: Space.s) {
+        return HStack(spacing: Space.xs) {
             pill(humanBytes(a.totalOldBytes), .red)
             SwiftUI.Image(systemName: "arrow.right").font(.caption2).foregroundStyle(.secondary)
             pill(humanBytes(a.totalNewBytes), .green)
@@ -998,7 +998,7 @@ struct BatchResultsContent: View {
     }
 
     private var actionBar: some View {
-        HStack(spacing: Space.m) {
+        HStack(spacing: Space.s) {
             Button("Show in Finder") { batchReveal(selectedItems) }.disabled(selection.isEmpty)
             Button("Open") { BatchQuickLooker.quicklook(batchResultURLs(selectedItems)) }.disabled(selection.isEmpty)
             Button("Copy") { batchCopyFiles(selectedItems) }.disabled(selection.isEmpty)
@@ -1030,13 +1030,13 @@ struct BatchResultsContent: View {
                     )
                 }
         }
-        .padding(Space.l)
+        .padding(Space.m)
     }
 
     private func pill(_ text: String, _ color: Color, prominent: Bool = false) -> some View {
         Text(text)
             .font(.system(size: TextSize.subheadline, weight: prominent ? .semibold : .regular)).monospacedDigit()
-            .padding(.horizontal, Space.m).padding(.vertical, Space.xxs)
+            .padding(.horizontal, Space.s).padding(.vertical, Space.xs)
             .background(color.opacity(prominent ? 0.22 : 0.14), in: Capsule())
             .foregroundStyle(color)
     }
@@ -1271,7 +1271,7 @@ struct BatchFailuresSheet: View {
                     .foregroundStyle(.orange).font(.headline)
                 Spacer()
             }
-            .padding(Space.l)
+            .padding(Space.m)
             Divider()
 
             List(failures) { item in
@@ -1279,15 +1279,15 @@ struct BatchFailuresSheet: View {
                     if let log = item.errorLog {
                         ScrollView(.horizontal) {
                             Text(log).font(.system(size: TextSize.subheadline, design: .monospaced)).textSelection(.enabled)
-                                .padding(Space.m)
+                                .padding(Space.s)
                         }
                         .frame(maxHeight: 220)
-                        .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: Radius.medium))
+                        .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: Radius.small))
                     } else {
                         Text("No tool output captured for this failure.").font(.callout).foregroundStyle(.secondary)
                     }
                 } label: {
-                    VStack(alignment: .leading, spacing: Space.xxs) {
+                    VStack(alignment: .leading, spacing: Space.xs) {
                         Text(item.name).fontWeight(.medium)
                         Text(item.error ?? "Unknown error").font(.callout).foregroundStyle(.secondary)
                     }
@@ -1300,7 +1300,7 @@ struct BatchFailuresSheet: View {
                 Spacer()
                 Button("Done") { dismiss() }.keyboardShortcut(.defaultAction)
             }
-            .padding(Space.l)
+            .padding(Space.m)
         }
         .frame(minWidth: 520, minHeight: 360)
     }

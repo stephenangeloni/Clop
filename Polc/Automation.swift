@@ -1164,8 +1164,8 @@ struct StepActionGrid: View {
                                 .mono(TextSize.caption, weight: .medium)
                         }
                         .fixedSize()
-                        .padding(.horizontal, Space.s)
-                        .padding(.vertical, Space.xxs)
+                        .padding(.horizontal, Space.xs)
+                        .padding(.vertical, Space.xs)
                         .background(
                             RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                                 .fill(color.opacity(0.08))

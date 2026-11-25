@@ -242,7 +242,7 @@ struct DropZonePresetsView: View {
     }
 
     var body: some View {
-        Grid(horizontalSpacing: Space.xxs, verticalSpacing: Space.xxs) {
+        Grid(horizontalSpacing: Space.xs, verticalSpacing: Space.xs) {
             GridRow {
                 zoneView(index: 0)
                 zoneView(index: 1)
@@ -276,7 +276,7 @@ struct DropZonePresetsView: View {
             .resizable()
             .scaledToFit()
             .frame(width: 21, height: 21)
-            .padding(Space.s)
+            .padding(Space.xs)
 //            .background(
 //                roundRect(5, fill: .bg.warm.opacity(colorScheme == .dark ? 0.6 : 0.4))
 //                    .shadow(color: .black.opacity(0.5), radius: 5, x: 0, y: 4)
@@ -329,7 +329,7 @@ struct DropZonePresetsView: View {
     func zoneLabel(zone: PresetZone?, nextPreset: Bool, hovered: Bool, index: Int) -> some View {
         let isLeft = index % 2 == 0
 
-        VStack(spacing: Space.xxs) {
+        VStack(spacing: Space.xs) {
             zoneIcon(systemName: zone.map(\.icon) ?? (nextPreset ? "plus.square.dashed" : "square.dashed"))
                 .rotation3DEffect(.degrees(hovered ? 170 : 0), axis: (x: 0, y: 1, z: 0), perspective: 1.2)
 
@@ -471,7 +471,7 @@ struct DropZoneView: View {
             } else {
                 Text("Drop to optimise")
                     .round(TextSize.body, weight: .heavy)
-                    .padding(.top, Space.m)
+                    .padding(.top, Space.s)
 
                 SwiftUI.Image(systemName: "livephoto")
                     .font(.bold(IconSize.xlarge))
@@ -503,7 +503,7 @@ struct DropZoneView: View {
                         .medium(TextSize.caption)
                         .foregroundColor(keysManager.flags.sideIndependentModifiers.contains(.command) ? .red : .primary)
                         .opacity(0.8)
-                        .padding(.bottom, Space.s)
+                        .padding(.bottom, Space.xs)
                 }
                 .lineLimit(1)
                 .multilineTextAlignment(.center)
@@ -561,7 +561,7 @@ let DROPZONE_PADDING = CGSize(width: 14, height: 10)
 // Match the floating result thumbnail card footprint (cardW × cardH); the inner content frame is
 // the card size minus the dropzone's own padding so the bordered box ends up the same size.
 let DROPZONE_SIZE = CGSize(width: FloatingResult.cardW - DROPZONE_PADDING.width * 2, height: FloatingResult.cardH - DROPZONE_PADDING.height * 2)
-let DROPZONE_SHAPE = RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
+let DROPZONE_SHAPE = RoundedRectangle(cornerRadius: Radius.large, style: .continuous)
 
 extension DropZoneView: DropDelegate {
     func dropEntered(info: DropInfo) {

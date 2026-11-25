@@ -139,24 +139,16 @@ enum IconSize {
 }
 
 enum Radius {
-    static let hairline: CGFloat = 2
     static let small: CGFloat = 4
-    static let medium: CGFloat = 6
-    static let large: CGFloat = 8
-    static let xlarge: CGFloat = 10
-    static let panel: CGFloat = 16
-    static let card: CGFloat = 22
+    static let medium: CGFloat = 8
+    static let large: CGFloat = 16
 }
 
 enum Space {
-    static let xxs: CGFloat = 2
     static let xs: CGFloat = 4
-    static let s: CGFloat = 6
-    static let m: CGFloat = 8
-    static let l: CGFloat = 12
-    static let xl: CGFloat = 16
-    static let window: CGFloat = 20
-    static let xxl: CGFloat = 24
-    static let xxxl: CGFloat = 32
-    static let huge: CGFloat = 48
+    static let s: CGFloat = 8
+    static let m: CGFloat = 12
+    static let l: CGFloat = 16
+    static let xl: CGFloat = 20
+    static let xxl: CGFloat = 32
 }

@@ -21,7 +21,7 @@ struct ResolutionField: View {
                 optimiser.showCropWindow()
             },
             label: {
-                HStack(spacing: Space.xxs) {
+                HStack(spacing: Space.xs) {
                     if showCropIcon {
                         SwiftUI.Image(systemName: "crop")
                     }

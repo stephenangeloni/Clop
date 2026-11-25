@@ -111,7 +111,7 @@ struct SidebarIcon: View {
             .frame(width: 20, height: 20)
             .background(
                 color.opacity(tileOpacity),
-                in: RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+                in: RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
             )
     }
 
@@ -146,7 +146,7 @@ struct DirListView: View {
                     .truncationMode(.middle)
                     .lineLimit(1)
                     .frame(maxWidth: 400, alignment: .trailing)
-            }.padding(.top, Space.xxs).opacity(0.8)
+            }.padding(.top, Space.xs).opacity(0.8)
             TextEditor(text: $textDebounce.text)
                 .font(.mono(TextSize.callout))
                 .onChange(of: textDebounce.debouncedText, perform: { value in
@@ -208,14 +208,14 @@ struct DirListView: View {
             }
         } else {
             (Text("Select a single path to edit its ") + Text("Ignore rules").bold())
-                .padding(.top, Space.s)
+                .padding(.top, Space.xs)
                 .opacity(0.8)
         }
 
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Space.s) {
+        VStack(alignment: .leading, spacing: Space.xs) {
             ScrollView {
                 Table(dirs.sorted(), selection: $selectedDirs) {
                     TableColumn("Path") { dir in Text(dir.replacingOccurrences(of: HOME.string, with: "~")).mono(TextSize.callout) }
@@ -241,11 +241,11 @@ struct DirListView: View {
                 .frame(height: 150)
                 .disabled(!enabled)
                 .opacity(enabled ? 1 : 0.6)
-                .clipShape(RoundedRectangle(cornerRadius: Radius.large))
+                .clipShape(RoundedRectangle(cornerRadius: Radius.medium))
                 .searchAnchor("images.watchpaths.dirsHideFloatingResult")
             }.frame(height: 150)
 
-            HStack(spacing: Space.xxs) {
+            HStack(spacing: Space.xs) {
                 Button(action: { chooseFile = true }, label: { SwiftUI.Image(systemName: "plus").font(.bold(TextSize.callout)).frame(width: 16, height: 16) })
                     .fileImporter(
                         isPresented: $chooseFile,
@@ -379,7 +379,7 @@ struct FolderAutomationsSection: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Space.s) {
+        VStack(alignment: .leading, spacing: Space.xs) {
             Button(action: { withAnimation(.easeOut(duration: 0.15)) { expanded.toggle() } }) {
                 HStack(spacing: Space.xs) {
                     SwiftUI.Image(systemName: expanded ? "chevron.down" : "chevron.right")
@@ -406,7 +406,7 @@ struct FolderAutomationsSection: View {
                 )
             }
         }
-        .padding(.top, Space.s)
+        .padding(.top, Space.xs)
     }
 
     @State private var editingKey: String?
@@ -431,7 +431,7 @@ struct SourceAutomationsSection: View {
     @Default(.pipelinesToRunOnAudio) var audioPipelines
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Space.m) {
+        VStack(alignment: .leading, spacing: Space.s) {
             ForEach(PolcFileType.allCases, id: \.self) { fileType in
                 let isDisabled = disabledTypes.contains(fileType)
                 VStack(alignment: .leading, spacing: Space.xs) {
@@ -456,7 +456,7 @@ struct SourceAutomationsSection: View {
                 .opacity(isDisabled ? 0.5 : 1)
             }
         }
-        .padding(.top, Space.s)
+        .padding(.top, Space.xs)
     }
 
     func binding(for fileType: PolcFileType) -> Binding<[String: [Pipeline]]> {
@@ -493,7 +493,7 @@ struct PDFSettingsView: View {
                     Button("File handling") { settingsViewManager.tab = .files }.buttonStyle(.link)
                 }.font(.system(size: TextSize.subheadline))
                 VStack(alignment: .leading, spacing: Space.xs) {
-                    HStack(spacing: Space.m) {
+                    HStack(spacing: Space.s) {
                         Text("Compression").regular(TextSize.body)
                             .searchAnchor("pdf.optimisationrules.pdfDPI")
                         Slider(
@@ -595,7 +595,7 @@ struct VideoSettingsView: View {
                     Text("Where files go is set in").foregroundColor(.secondary)
                     Button("File handling") { settingsViewManager.tab = .files }.buttonStyle(.link)
                 }.font(.system(size: TextSize.subheadline))
-                HStack(spacing: Space.m) {
+                HStack(spacing: Space.s) {
                     Text("Compression").regular(TextSize.body)
                         .searchAnchor("video.optimisationrules.videoCompression")
                     Spacer()
@@ -621,7 +621,7 @@ struct VideoSettingsView: View {
                 }
                 if videoCompression.tier == .smaller || videoCompression.tier == .custom {
                     VStack(alignment: .leading, spacing: Space.xs) {
-                        HStack(spacing: Space.m) {
+                        HStack(spacing: Space.s) {
                             Button("Auto") {
                                 if videoCompression.videoUsesAutoCRF {
                                     videoCompression = CompressionQuality(tier: .smaller, factor: lastVideoFactor)
@@ -664,7 +664,7 @@ struct VideoSettingsView: View {
                     .searchAnchor("video.optimisationrules.removeAudioFromVideos", namesControl: true)
                 Toggle(isOn: $capVideoFPS.animation(.spring())) {
                     HStack {
-                        Text("Cap frames per second to").regular(TextSize.body).padding(.trailing, Space.m)
+                        Text("Cap frames per second to").regular(TextSize.body).padding(.trailing, Space.s)
                         Spacer()
 
                         Button("30fps") {
@@ -685,7 +685,7 @@ struct VideoSettingsView: View {
                 .searchAnchor("video.optimisationrules.capVideoFPS")
                 if targetVideoFPS < 0, capVideoFPS {
                     HStack {
-                        Text("but no less than").regular(TextSize.body).padding(.trailing, Space.m)
+                        Text("but no less than").regular(TextSize.body).padding(.trailing, Space.s)
                             .searchAnchor("video.optimisationrules.minVideoFPS")
                         Spacer()
 
@@ -702,7 +702,7 @@ struct VideoSettingsView: View {
                             minVideoFPS = 60
                         }.buttonStyle(ToggleButton(isOn: .oneway { minVideoFPS == 60 }))
                     }
-                    .padding(.leading, Space.m)
+                    .padding(.leading, Space.s)
                 }
                 Picker(selection: $playbackSpeedFrameBehaviour) {
                     Text("Keep frames (smoother, higher fps)").tag(PlaybackSpeedFrameBehaviour.keepFrames)
@@ -722,7 +722,7 @@ struct VideoSettingsView: View {
                 CountSliderRow(count: $maxVideoFileCount, caption: { "Skips optimisation when more than \($0) \($0 == 1 ? "video is" : "videos are") copied or moved at once" })
                     .searchAnchor("video.watchedfilefilters.maxVideoFileCount")
                 HStack {
-                    Text("Ignore videos with extension").regular(TextSize.body).padding(.trailing, Space.m)
+                    Text("Ignore videos with extension").regular(TextSize.body).padding(.trailing, Space.s)
                         .searchAnchor("video.watchedfilefilters.videoFormatsToSkip")
                     Spacer()
 
@@ -736,7 +736,7 @@ struct VideoSettingsView: View {
             }
             Section(header: SectionHeader(title: "Compatibility", subtitle: "Converts less known formats to more compatible ones before optimisation")) {
                 HStack {
-                    (Text("Convert to ").regular(TextSize.body) + Text("mp4").mono(TextSize.body)).padding(.trailing, Space.m)
+                    (Text("Convert to ").regular(TextSize.body) + Text("mp4").mono(TextSize.body)).padding(.trailing, Space.s)
                         .searchAnchor("video.compatibility.formatsToConvertToMP4")
                     Spacer()
 
@@ -827,14 +827,14 @@ struct CompactSameFolderTemplate: View {
     }
 
     var body: some View {
-        HStack(alignment: .center, spacing: Space.m) {
+        HStack(alignment: .center, spacing: Space.s) {
             TextField("", text: $template, prompt: Text(DEFAULT_SAME_FOLDER_NAME_TEMPLATE))
                 .accessibilityLabel("File name template")
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, Space.s)
+                .padding(.horizontal, Space.xs)
                 .frame(height: 24)
                 .background(
-                    RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                         .stroke(Color.gray, lineWidth: 1)
                 )
             ExampleContainer(inputName: inputName, outputName: outputName, inputExt: inputExtension, outputExt: outputExtension)
@@ -886,14 +886,14 @@ struct CompactSpecificFolderTemplate: View {
     }
 
     var body: some View {
-        HStack(alignment: .center, spacing: Space.m) {
+        HStack(alignment: .center, spacing: Space.s) {
             TextField("", text: portableTemplate, prompt: Text(DEFAULT_SPECIFIC_FOLDER_NAME_TEMPLATE))
                 .accessibilityLabel("Folder template")
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, Space.s)
+                .padding(.horizontal, Space.xs)
                 .frame(height: 24)
                 .background(
-                    RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                         .stroke(Color.gray, lineWidth: 1)
                 )
             ExampleContainer(inputName: inputName, outputName: outputPath, inputExt: inputExtension, outputExt: outputExtension)
@@ -918,7 +918,7 @@ private struct ExampleFilePill: View {
             .lineLimit(1)
             .truncationMode(.middle)
             .padding(.horizontal, Space.xs)
-            .padding(.vertical, Space.xxs)
+            .padding(.vertical, Space.xs)
             .fixedSize()
             .background(Capsule().fill(fillColor))
             .foregroundColor(.primary)
@@ -957,14 +957,14 @@ private struct ExampleContainer: View {
                 .fixedSize()
             ExampleFilePill(name: middleTruncated(outputName), tint: tint(for: outputExt ?? inputExt))
         }
-        .padding(.horizontal, Space.m)
+        .padding(.horizontal, Space.s)
         .frame(height: 24)
         .background(
-            RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                 .fill(bgColor)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                 .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
         )
     }
@@ -1019,8 +1019,8 @@ private struct PillView: View {
     var body: some View {
         Text(text)
             .font(.mono(TextSize.caption, weight: .medium))
-            .padding(.horizontal, Space.s)
-            .padding(.vertical, Space.xxs)
+            .padding(.horizontal, Space.xs)
+            .padding(.vertical, Space.xs)
             .background(Capsule().fill(tint.opacity(0.15)))
             .foregroundColor(textColor)
     }
@@ -1032,7 +1032,7 @@ private struct AutoConvertPills: View {
 
     var body: some View {
         if !groups.isEmpty {
-            HStack(spacing: Space.s) {
+            HStack(spacing: Space.xs) {
                 Text("Converts:")
                     .round(TextSize.subheadline)
                     .foregroundColor(.secondary)
@@ -1054,7 +1054,7 @@ private struct AutoConvertPills: View {
                     settingsViewManager.tab = compatibilityTab
                     settingsViewManager.scrollToCompatibility = true
                 } label: {
-                    HStack(spacing: Space.xxs) {
+                    HStack(spacing: Space.xs) {
                         Text("Configured in")
                         Text("Compatibility").underline()
                     }
@@ -1187,7 +1187,7 @@ struct FileHandlingSettingsView: View {
 
             Section(header: SectionHeader(title: "Images")) {
                 // Optimise row: picker + optional template in a single Form row (no divider between them).
-                VStack(alignment: .leading, spacing: Space.s) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     Picker(selection: $optimisedImageBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
@@ -1207,7 +1207,7 @@ struct FileHandlingSettingsView: View {
                 }
 
                 // Auto-convert row: picker + Converts pills + optional template in a single Form row.
-                VStack(alignment: .leading, spacing: Space.s) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     Picker(selection: $convertedImageBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
@@ -1228,7 +1228,7 @@ struct FileHandlingSettingsView: View {
                 }
 
                 // Manual-convert row: picker + optional template in a single Form row.
-                VStack(alignment: .leading, spacing: Space.s) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     Picker(selection: $manualConvertedImageBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
@@ -1253,7 +1253,7 @@ struct FileHandlingSettingsView: View {
             // MARK: Videos
 
             Section(header: SectionHeader(title: "Videos")) {
-                VStack(alignment: .leading, spacing: Space.s) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     Picker(selection: $optimisedVideoBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
@@ -1272,7 +1272,7 @@ struct FileHandlingSettingsView: View {
                     }
                 }
 
-                VStack(alignment: .leading, spacing: Space.s) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     Picker(selection: $convertedVideoBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
@@ -1292,7 +1292,7 @@ struct FileHandlingSettingsView: View {
                     }
                 }
 
-                VStack(alignment: .leading, spacing: Space.s) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     Picker(selection: $manualConvertedVideoBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
@@ -1317,7 +1317,7 @@ struct FileHandlingSettingsView: View {
             // MARK: Audio
 
             Section(header: SectionHeader(title: "Audio")) {
-                VStack(alignment: .leading, spacing: Space.s) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     Picker(selection: $optimisedAudioBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
@@ -1336,7 +1336,7 @@ struct FileHandlingSettingsView: View {
                     }
                 }
 
-                VStack(alignment: .leading, spacing: Space.s) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     Picker(selection: $convertedAudioBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
@@ -1356,7 +1356,7 @@ struct FileHandlingSettingsView: View {
                     }
                 }
 
-                VStack(alignment: .leading, spacing: Space.s) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     Picker(selection: $manualConvertedAudioBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
@@ -1381,7 +1381,7 @@ struct FileHandlingSettingsView: View {
             // MARK: PDF
 
             Section(header: SectionHeader(title: "PDF")) {
-                VStack(alignment: .leading, spacing: Space.s) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     Picker(selection: $optimisedPDFBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
@@ -1553,7 +1553,7 @@ struct FileHandlingSettingsView: View {
             .buttonStyle(.plain)
 
             if expanded {
-                VStack(alignment: .leading, spacing: Space.m) {
+                VStack(alignment: .leading, spacing: Space.s) {
                     HStack(alignment: .top) {
                         Text("""
                         **Date**                | **Time**
@@ -1576,9 +1576,9 @@ struct FileHandlingSettingsView: View {
                     }
                     .font(.mono(TextSize.subheadline, weight: .light))
                     .foregroundColor(.secondary)
-                    .padding(Space.s)
+                    .padding(Space.xs)
                 }
-                .padding(.top, Space.s)
+                .padding(.top, Space.xs)
             }
         }
         .padding(.top, Space.xs)
@@ -1619,7 +1619,7 @@ struct AudioSettingsView: View {
                     Button("File handling") { settingsViewManager.tab = .files }.buttonStyle(.link)
                 }.font(.system(size: TextSize.subheadline))
                 VStack(alignment: .leading, spacing: Space.xs) {
-                    HStack(spacing: Space.m) {
+                    HStack(spacing: Space.s) {
                         Text("Compression").regular(TextSize.body)
                             .searchAnchor("audio.optimisationrules.audioCompression")
                         Slider(
@@ -1657,7 +1657,7 @@ struct AudioSettingsView: View {
             }
             Section(header: SectionHeader(title: "Compatibility", subtitle: "Convert less compatible formats to AAC or MP3 before optimisation; anything not picked keeps its own format")) {
                 HStack {
-                    (Text("Convert to ").regular(TextSize.body) + Text("AAC (M4A)").mono(TextSize.body)).padding(.trailing, Space.m)
+                    (Text("Convert to ").regular(TextSize.body) + Text("AAC (M4A)").mono(TextSize.body)).padding(.trailing, Space.s)
                     Spacer()
                     ForEach(FORMATS_CONVERTIBLE_TO_COMPRESSED_AUDIO, id: \.identifier) { format in
                         Button(format.preferredFilenameExtension ?? format.identifier) {
@@ -1670,7 +1670,7 @@ struct AudioSettingsView: View {
                     }
                 }
                 HStack {
-                    (Text("Convert to ").regular(TextSize.body) + Text("MP3").mono(TextSize.body)).padding(.trailing, Space.m)
+                    (Text("Convert to ").regular(TextSize.body) + Text("MP3").mono(TextSize.body)).padding(.trailing, Space.s)
                     Spacer()
                     ForEach(FORMATS_CONVERTIBLE_TO_COMPRESSED_AUDIO, id: \.identifier) { format in
                         Button(format.preferredFilenameExtension ?? format.identifier) {
@@ -1735,16 +1735,16 @@ struct ImagesSettingsView: View {
     }
 
     var customNameTemplate: some View {
-        VStack(alignment: .leading, spacing: Space.s) {
+        VStack(alignment: .leading, spacing: Space.xs) {
             settingLabel("Custom name template", "Rename the file using this template before copying the path to the clipboard")
 
             VStack(alignment: .leading) {
                 TextField("", text: $customNameTemplateForClipboardImages, prompt: Text(DEFAULT_NAME_TEMPLATE))
                     .accessibilityLabel("Custom name template")
                     .frame(width: TEXT_FIELD_WIDTH, height: 18, alignment: .leading)
-                    .padding(Space.s)
+                    .padding(Space.xs)
                     .background(
-                        RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).stroke(Color.gray.opacity(useCustomNameTemplateForClipboardImages ? 1 : 0.35), lineWidth: 1).scaleEffect(y: TEXT_FIELD_SCALE)
+                        RoundedRectangle(cornerRadius: Radius.small, style: .continuous).stroke(Color.gray.opacity(useCustomNameTemplateForClipboardImages ? 1 : 0.35), lineWidth: 1).scaleEffect(y: TEXT_FIELD_SCALE)
                             .offset(x: TEXT_FIELD_OFFSET)
                     )
                     .disabled(!useCustomNameTemplateForClipboardImages)
@@ -1774,7 +1774,7 @@ struct ImagesSettingsView: View {
                 """)
                 .mono(TextSize.callout, weight: .light)
                 .foregroundColor(.secondary)
-                .padding(.top, Space.s)
+                .padding(.top, Space.xs)
             }
         }
 
@@ -1825,7 +1825,7 @@ struct ImagesSettingsView: View {
                     .disabled(!enablePhotosIntegration)
                     .searchAnchor("images.photosintegration.maxCopiedPhotosCount")
 
-                HStack(spacing: Space.s) {
+                HStack(spacing: Space.xs) {
                     Text("Downscale to").regular(TextSize.body).lineLimit(1).fixedSize()
                         .searchAnchor("images.photosintegration.maxPhotosLength")
                     // No .fixedSize() here: it collapses the field to its ideal width, which is ~0
@@ -1835,7 +1835,7 @@ struct ImagesSettingsView: View {
                         .lineLimit(1)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 70, alignment: .trailing)
-                        .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).stroke(Color.gray, lineWidth: 1).scaleEffect(y: TEXT_FIELD_SCALE).offset(x: TEXT_FIELD_OFFSET))
+                        .background(RoundedRectangle(cornerRadius: Radius.small, style: .continuous).stroke(Color.gray, lineWidth: 1).scaleEffect(y: TEXT_FIELD_SCALE).offset(x: TEXT_FIELD_OFFSET))
                     Text("px").mono(TextSize.body).opacity(maxPhotosLength != nil ? 1 : 0.3).lineLimit(1).fixedSize()
                     Text("on").regular(TextSize.body).lineLimit(1).fixedSize()
                         .searchAnchor("images.photosintegration.photoCropOrientation")
@@ -1853,7 +1853,7 @@ struct ImagesSettingsView: View {
                 }.font(.system(size: TextSize.subheadline))
 
                 VStack(alignment: .leading, spacing: Space.xs) {
-                    HStack(spacing: Space.m) {
+                    HStack(spacing: Space.s) {
                         Text("Compression").regular(TextSize.body)
                             .searchAnchor("images.optimisationrules.imageCompression")
                         Slider(
@@ -1910,7 +1910,7 @@ struct ImagesSettingsView: View {
                 CountSliderRow(count: $maxImageFileCount, caption: { "Skips optimisation when more than \($0) \($0 == 1 ? "image is" : "images are") copied or moved at once" })
                     .searchAnchor("images.watchedfilefilters.maxImageFileCount")
                 HStack {
-                    Text("Ignore images with extension").regular(TextSize.body).padding(.trailing, Space.m)
+                    Text("Ignore images with extension").regular(TextSize.body).padding(.trailing, Space.s)
                         .searchAnchor("images.watchedfilefilters.imageFormatsToSkip")
                     Spacer()
 
@@ -1924,7 +1924,7 @@ struct ImagesSettingsView: View {
             }
             Section(header: SectionHeader(title: "Compatibility", subtitle: "Converts less known formats to more compatible ones before optimisation")) {
                 HStack {
-                    (Text("Convert to ").regular(TextSize.body) + Text("jpeg").mono(TextSize.body)).padding(.trailing, Space.m)
+                    (Text("Convert to ").regular(TextSize.body) + Text("jpeg").mono(TextSize.body)).padding(.trailing, Space.s)
                         .searchAnchor("images.compatibility.formatsToConvertToJPEG")
                     Spacer()
 
@@ -1939,7 +1939,7 @@ struct ImagesSettingsView: View {
                     }
                 }
                 HStack {
-                    (Text("Convert to ").regular(TextSize.body) + Text("png").mono(TextSize.body)).padding(.trailing, Space.m)
+                    (Text("Convert to ").regular(TextSize.body) + Text("png").mono(TextSize.body)).padding(.trailing, Space.s)
                         .searchAnchor("images.compatibility.formatsToConvertToPNG")
                     Spacer()
 
@@ -2040,10 +2040,10 @@ struct KeysSettingsView: View {
                 keyToggle(.p, actionName: "Pause optimisations", description: "Pause or stop automatic optimisations")
                 keyToggle(.c, actionName: "Optimise current clipboard", description: "Apply optimisations on the copied image, URL or path")
                 keyToggle(.a, actionName: "Optimise aggressively", description: "Apply aggressive optimisations on the copied image, URL or path")
-            }.padding(.leading, Space.window)
+            }.padding(.leading, Space.xl)
                 .searchAnchor("keys.actionkeys.enabledKeys")
             Section(header: SectionHeader(title: "Resize keys")) {
-                HStack(alignment: .bottom, spacing: Space.m) {
+                HStack(alignment: .bottom, spacing: Space.s) {
                     VStack(alignment: .leading, spacing: Space.xs) {
                         Text("Hold the trigger keys and").round(TextSize.callout, weight: .regular)
                         Text("press a number to downscale to").mono(TextSize.caption).foregroundColor(.secondary)
@@ -2055,7 +2055,7 @@ struct KeysSettingsView: View {
                     }
                     resizeKeys
                 }.fixedSize()
-            }.padding(.leading, Space.window)
+            }.padding(.leading, Space.xl)
                 .searchAnchor("keys.resizekeys.quickResizeKeys")
         }
         .scrollContentBackground(.hidden)
@@ -2068,14 +2068,14 @@ struct KeysSettingsView: View {
     /// together with that key. Styled lighter than the action keys (secondary text, fainter fill) so it
     /// reads as the held prefix, not the key itself.
     var triggerKeyCap: some View {
-        HStack(spacing: Space.xxs) {
+        HStack(spacing: Space.xs) {
             ForEach(keyComboModifiers) { key in
                 Text(key.str)
                     .font(.system(size: TextSize.title3, weight: .semibold))
                     .foregroundColor(.secondary)
-                    .padding(.horizontal, Space.s)
-                    .padding(.vertical, Space.xxs)
-                    .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).fill(Color.primary.opacity(0.08)))
+                    .padding(.horizontal, Space.xs)
+                    .padding(.vertical, Space.xs)
+                    .background(RoundedRectangle(cornerRadius: Radius.small, style: .continuous).fill(Color.primary.opacity(0.08)))
             }
         }
     }
@@ -2121,7 +2121,7 @@ struct LegalNotice: View {
 
 struct AboutSettingsView: View {
     var body: some View {
-        VStack(spacing: Space.l) {
+        VStack(spacing: Space.m) {
             SwiftUI.Image(nsImage: NSApp.applicationIconImage)
                 .resizable()
                 .interpolation(.high)
@@ -2137,10 +2137,10 @@ struct AboutSettingsView: View {
             Link("Source", destination: "https://github.com/stephenangeloni/Clop".url!)
                 .underline()
                 .opacity(0.75)
-                .padding(.top, Space.s)
+                .padding(.top, Space.xs)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, Space.xxl)
+        .padding(.vertical, Space.xl)
         .fill()
     }
 }
@@ -2181,7 +2181,7 @@ struct ResultsSettingsView: View {
     var toggles: some View {
         VStack(alignment: .leading, spacing: 0) {
             SectionHeader(title: "Drop zone", subtitle: "Drag files, paths and URLs onto a global zone to optimise them")
-            VStack(alignment: .leading, spacing: Space.m) {
+            VStack(alignment: .leading, spacing: Space.s) {
                 Toggle(isOn: $enableDragAndDrop) {
                     settingLabel("Enable drop zone", "Allows dragging files, paths and URLs to a global drop zone for optimisation")
                 }
@@ -2189,7 +2189,7 @@ struct ResultsSettingsView: View {
                 Toggle(isOn: $onlyShowDropZoneOnOption) {
                     settingLabel("Require pressing ⌥ Option to show drop zone", "Hide drop zone by default to avoid distractions while dragging files, show it by manually pressing ⌥ Option once")
                 }
-                .padding(.leading, Space.window)
+                .padding(.leading, Space.xl)
                 .disabled(!enableDragAndDrop)
                 .searchAnchor("dropzone.dropzone.onlyShowDropZoneOnOption")
                 Toggle(isOn: $autoCopyToClipboard) {
@@ -2197,19 +2197,19 @@ struct ResultsSettingsView: View {
                 }
                 .searchAnchor("dropzone.dropzone.autoCopyToClipboard")
             }
-            .padding(.horizontal, Space.xl)
-            .padding(.vertical, Space.m)
+            .padding(.horizontal, Space.l)
+            .padding(.vertical, Space.s)
         }
     }
 
     var preview: some View {
-        VStack(spacing: Space.m) {
+        VStack(spacing: Space.s) {
             DropZoneView()
                 .disabled(!enableDragAndDrop)
                 .saturation(enableDragAndDrop ? 1 : 0.5)
                 .preview(true)
-                .padding(Space.s)
-                .background(RoundedRectangle(cornerRadius: Radius.large, style: .continuous).stroke(Color.gray.opacity(0.2), lineWidth: 2))
+                .padding(Space.xs)
+                .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).stroke(Color.gray.opacity(0.2), lineWidth: 2))
                 .fixedSize()
 
             Text("Drag files onto the drop zone\nto optimise them")
@@ -2233,8 +2233,8 @@ struct ResultsSettingsView: View {
 
     var dropZonePage: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: Space.xl) {
-                HStack(alignment: .center, spacing: Space.xxl) {
+            VStack(alignment: .leading, spacing: Space.l) {
+                HStack(alignment: .center, spacing: Space.xl) {
                     toggles
                     Spacer()
                     preview
@@ -2247,7 +2247,7 @@ struct ResultsSettingsView: View {
                 Divider()
 
                 PresetZonesSection()
-                    .padding(.horizontal, Space.xl)
+                    .padding(.horizontal, Space.l)
                     .frame(maxWidth: 780)
                     .frame(maxWidth: .infinity)
                     .id("presetZones")
@@ -2256,7 +2256,7 @@ struct ResultsSettingsView: View {
 
                 VStack(alignment: .leading, spacing: 0) {
                     SectionHeader(title: "Batch mode", subtitle: "Process a large drop in a fast native window instead of one floating result per file")
-                    VStack(alignment: .leading, spacing: Space.m) {
+                    VStack(alignment: .leading, spacing: Space.s) {
                         Toggle(isOn: $useBatchModeForFolders) {
                             settingLabel("Use batch mode for large drops", "Dropping many files at once (or a folder with many files) opens a single batch window that optimises them all efficiently. Originals are backed up first and can be restored.")
                         }
@@ -2275,10 +2275,10 @@ struct ResultsSettingsView: View {
                         .disabled(!useBatchModeForFolders)
                         .opacity(useBatchModeForFolders ? 1 : 0.6)
                     }
-                    .padding(.horizontal, Space.xl)
-                    .padding(.vertical, Space.m)
+                    .padding(.horizontal, Space.l)
+                    .padding(.vertical, Space.s)
                 }
-                .padding(.horizontal, Space.xl)
+                .padding(.horizontal, Space.l)
                 .frame(maxWidth: 780)
                 .frame(maxWidth: .infinity)
 
@@ -2288,9 +2288,9 @@ struct ResultsSettingsView: View {
                     SectionHeader(title: "Automation", subtitle: "Run actions on files dropped here: convert, crop, copy, rename and more")
                     SourceAutomationsSection(source: .dropZone)
                         .disabled(!enableDragAndDrop)
-                        .padding(.bottom, Space.m)
+                        .padding(.bottom, Space.s)
                 }
-                .padding(.horizontal, Space.xl)
+                .padding(.horizontal, Space.l)
                 .frame(maxWidth: 780)
                 .frame(maxWidth: .infinity)
                 .id("automation")
@@ -2301,7 +2301,7 @@ struct ResultsSettingsView: View {
                     SectionHeader(title: "Floating results", subtitle: "The thumbnail, progress and actions shown for each optimised file")
                     FloatingSettingsView()
                 }
-                .padding(.horizontal, Space.xl)
+                .padding(.horizontal, Space.l)
                 .frame(maxWidth: 780)
                 .frame(maxWidth: .infinity)
             }
@@ -2320,7 +2320,7 @@ struct PresetZonesSection: View {
     @ObservedObject var svm = settingsViewManager
 
     var previews: some View {
-        Grid(horizontalSpacing: Space.xl, verticalSpacing: Space.l) {
+        Grid(horizontalSpacing: Space.l, verticalSpacing: Space.m) {
             GridRow {
                 zonePreview(.image)
                 zonePreview(.video)
@@ -2337,7 +2337,7 @@ struct PresetZonesSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             SectionHeader(title: "Preset zones", subtitle: "Hold or tap ⌃ Control while dragging to show a zone per file type. Click a zone to assign or create a pipeline.")
-            VStack(alignment: .leading, spacing: Space.m) {
+            VStack(alignment: .leading, spacing: Space.s) {
                 Picker("Show preset zones by holding or tapping the **⌃ Control** key", selection: $onlyShowPresetZonesOnControlTapped) {
                     Text("Hold").tag(false)
                     Text("Tap").tag(true)
@@ -2351,18 +2351,18 @@ struct PresetZonesSection: View {
                 if let id = svm.editingPresetZoneID, let zone = presetZones.first(where: { $0.id == id }) {
                     PresetZoneRow(zone: zone) { svm.editingPresetZoneID = nil }
                         .id("editor-\(id)")
-                        .padding(.top, Space.s)
+                        .padding(.top, Space.xs)
                 }
             }
-            .padding(.horizontal, Space.xl)
-            .padding(.vertical, Space.m)
+            .padding(.horizontal, Space.l)
+            .padding(.vertical, Space.s)
         }
         .disabled(!enableDragAndDrop)
         .saturation(enableDragAndDrop ? 1 : 0.5)
     }
 
     func zonePreview(_ type: PolcFileType) -> some View {
-        VStack(spacing: Space.s) {
+        VStack(spacing: Space.xs) {
             DropZoneView(presetFileType: type)
                 .preview(true)
             HStack(spacing: Space.xs) {
@@ -2371,8 +2371,8 @@ struct PresetZonesSection: View {
             }
             .font(.system(size: TextSize.body, weight: .semibold))
             .foregroundColor(type.color)
-            .padding(.horizontal, Space.m)
-            .padding(.vertical, Space.xxs)
+            .padding(.horizontal, Space.s)
+            .padding(.vertical, Space.xs)
             .background(Capsule().fill(type.color.opacity(0.15)))
             .padding(.top, 1)
         }
@@ -2466,9 +2466,9 @@ struct FloatingSettingsView: View {
                 Toggle("Show Copy all / Clear all buttons", isOn: $showCopyClearButtons)
                     .searchAnchor("floating.fulllayout.showCopyClearButtons", namesControl: true)
                 Text("Dismiss result after")
-                Toggle("drag and drop outside", isOn: $dismissFloatingResultOnDrop).padding(.leading, Space.window)
+                Toggle("drag and drop outside", isOn: $dismissFloatingResultOnDrop).padding(.leading, Space.xl)
                     .searchAnchor("floating.fulllayout.dismissFloatingResultOnDrop", namesControl: true)
-                Toggle("upload to Dropshare", isOn: $dismissFloatingResultOnUpload).padding(.leading, Space.window)
+                Toggle("upload to Dropshare", isOn: $dismissFloatingResultOnUpload).padding(.leading, Space.xl)
                     .searchAnchor("floating.fulllayout.dismissFloatingResultOnUpload", namesControl: true)
 
                 Toggle("Auto hide", isOn: $autoHideFloatingResults)
@@ -2483,7 +2483,7 @@ struct FloatingSettingsView: View {
                     Text("5 minutes").tag(300)
                     Text("10 minutes").tag(600)
                     Text("never").tag(0)
-                }.disabled(!autoHideFloatingResults).padding(.leading, Space.window)
+                }.disabled(!autoHideFloatingResults).padding(.leading, Space.xl)
                     .searchAnchor("floating.fulllayout.autoHideFloatingResultsAfter", namesControl: true)
                 Picker("clipboard after", selection: $autoHideClipboardResultAfter) {
                     Text("1 seconds").tag(1)
@@ -2495,7 +2495,7 @@ struct FloatingSettingsView: View {
                     Text("30 seconds").tag(30)
                     Text("same as non-clipboard").tag(-1)
                     Text("never").tag(0)
-                }.disabled(!autoHideFloatingResults).padding(.leading, Space.window)
+                }.disabled(!autoHideFloatingResults).padding(.leading, Space.xl)
                     .searchAnchor("floating.fulllayout.autoHideClipboardResultAfter", namesControl: true)
             }.disabled(!enableFloatingResults)
 
@@ -2503,9 +2503,9 @@ struct FloatingSettingsView: View {
                 Toggle("Show images", isOn: $showCompactImages)
                     .searchAnchor("floating.compactlayout.showCompactImages", namesControl: true)
                 Text("Dismiss result after")
-                Toggle("drag and drop outside", isOn: $dismissCompactResultOnDrop).padding(.leading, Space.window)
+                Toggle("drag and drop outside", isOn: $dismissCompactResultOnDrop).padding(.leading, Space.xl)
                     .searchAnchor("floating.compactlayout.dismissCompactResultOnDrop", namesControl: true)
-                Toggle("upload to Dropshare", isOn: $dismissCompactResultOnUpload).padding(.leading, Space.window)
+                Toggle("upload to Dropshare", isOn: $dismissCompactResultOnUpload).padding(.leading, Space.xl)
                     .searchAnchor("floating.compactlayout.dismissCompactResultOnUpload", namesControl: true)
 
                 Picker("Auto clear all after", selection: $autoClearAllCompactResultsAfter) {
@@ -2539,7 +2539,7 @@ struct FloatingSettingsView: View {
                 if compact {
                     CompactPreview()
                         .frame(width: THUMB_SIZE.width + 60, height: 550, alignment: .center)
-                        .background(RoundedRectangle(cornerRadius: Radius.large, style: .continuous).stroke(Color.gray.opacity(0.2), lineWidth: 2))
+                        .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).stroke(Color.gray.opacity(0.2), lineWidth: 2))
                         .disabled(!enableFloatingResults)
                         .saturation(enableFloatingResults ? 1 : 0.5)
                 } else {
@@ -2553,7 +2553,7 @@ struct FloatingSettingsView: View {
                             }
                         }
                         .frame(width: THUMB_SIZE.width + 60, height: 550)
-                        .background(RoundedRectangle(cornerRadius: Radius.large, style: .continuous).stroke(Color.gray.opacity(0.2), lineWidth: 2))
+                        .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).stroke(Color.gray.opacity(0.2), lineWidth: 2))
                         .disabled(!enableFloatingResults)
                         .saturation(enableFloatingResults ? 1 : 0.5)
                         .onAppear {
@@ -2729,7 +2729,7 @@ struct ClipboardSettingsView: View {
                     .searchAnchor("clipboard.clipboard.optimisePDFClipboard", namesControl: true)
                 }
                 .disabled(!enableClipboardOptimiser)
-                .padding(.leading, Space.window)
+                .padding(.leading, Space.xl)
 
                 Toggle(isOn: $appendClipboardResults) {
                     settingLabel("Keep all clipboard results", "Show each clipboard optimisation as a separate result instead of replacing the previous one")
@@ -2742,7 +2742,7 @@ struct ClipboardSettingsView: View {
                             .foregroundColor(.secondary)
                     }
                     .disabled(!enableClipboardOptimiser)
-                    .padding(.leading, Space.window)
+                    .padding(.leading, Space.xl)
                     .searchAnchor("clipboard.clipboard.copyConsecutiveClipboardImages", namesControl: true)
 
                     HStack {
@@ -2760,14 +2760,14 @@ struct ClipboardSettingsView: View {
                         .searchAnchor("clipboard.clipboard.clipboardAccumulationTimeout")
                         Text("of inactivity").regular(TextSize.body)
                     }
-                    .padding(.leading, Space.window)
+                    .padding(.leading, Space.xl)
                 }
             }
 
             Section(header: SectionHeader(title: "Ignored apps", subtitle: "Skip clipboard optimisation while one of these apps is in front")) {
                 VStack(alignment: .leading, spacing: Space.xs) {
                     IgnoredAppsPicker(bundleIds: $clipboardIgnoredAppBundleIds, enabled: enableClipboardOptimiser)
-                        .padding(.top, Space.xxs)
+                        .padding(.top, Space.xs)
                         .searchAnchor("clipboard.ignoredapps.clipboardIgnoredAppBundleIds")
                 }
                 .disabled(!enableClipboardOptimiser)
@@ -2781,8 +2781,8 @@ struct ClipboardSettingsView: View {
             .id("automation")
         }
         .scrollContentBackground(.hidden)
-        .padding(.horizontal, Space.huge)
-        .padding(.vertical, Space.window)
+        .padding(.horizontal, Space.xxl)
+        .padding(.vertical, Space.xl)
         .scrollsToAutomation()
     }
 }
@@ -2866,13 +2866,13 @@ struct GeneralSettingsView: View {
 
             Section(header: SectionHeader(title: "Working directory", subtitle: "Where temporary files and backups are stored and where the optimised files are saved")) {
                 HStack {
-                    Text("Path").regular(TextSize.body).padding(.trailing, Space.m)
+                    Text("Path").regular(TextSize.body).padding(.trailing, Space.s)
                         .searchAnchor("general.workingdirectory.workdir")
                     TextField("", text: workdirBinding)
                         .accessibilityLabel("Working directory")
                         .multilineTextAlignment(.center)
                         .font(.mono(TextSize.callout))
-                        .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).stroke(Color.gray, lineWidth: 1).scaleEffect(y: TEXT_FIELD_SCALE).offset(x: TEXT_FIELD_OFFSET))
+                        .background(RoundedRectangle(cornerRadius: Radius.small, style: .continuous).stroke(Color.gray, lineWidth: 1).scaleEffect(y: TEXT_FIELD_SCALE).offset(x: TEXT_FIELD_OFFSET))
                     Button("Reset") {
                         workdir = Defaults.Keys.workdir.defaultValue
                     }
@@ -2901,7 +2901,7 @@ struct GeneralSettingsView: View {
                 Toggle(isOn: $preserveColorMetadata) {
                     settingLabel("Preserve color profile metadata", "Keep color profile metadata tags untouched when stripping EXIF metadata")
                 }
-                .padding(.leading, Space.window)
+                .padding(.leading, Space.xl)
                 .disabled(!stripMetadata)
                 .searchAnchor("general.optimisation.preserveColorMetadata", namesControl: true)
 
@@ -2922,8 +2922,8 @@ struct GeneralSettingsView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .padding(.horizontal, Space.huge)
-        .padding(.vertical, Space.window)
+        .padding(.horizontal, Space.xxl)
+        .padding(.vertical, Space.xl)
     }
 
     @ViewBuilder
@@ -2938,11 +2938,11 @@ struct GeneralSettingsView: View {
                 .frame(width: 46, height: 28)
                 .foregroundStyle(selected ? Color.white : Color.primary)
                 .background(
-                    RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                         .fill(selected ? Color.accentColor : Color.primary.opacity(0.06))
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                         .strokeBorder(selected ? Color.clear : Color.primary.opacity(0.12))
                 )
         }
@@ -3136,7 +3136,7 @@ struct SettingsView: View {
     /// `.searchable` field from code needs macOS 15 and Polc runs on 13. rcmd's Settings window has
     /// the same field for the same reason.
     var searchField: some View {
-        HStack(spacing: Space.s) {
+        HStack(spacing: Space.xs) {
             // `SwiftUI.Image` qualified: Polc has its own `Image` type for optimisable files.
             SwiftUI.Image(systemName: "magnifyingglass")
                 .font(.system(size: TextSize.callout, weight: .semibold))
@@ -3157,12 +3157,12 @@ struct SettingsView: View {
                 .accessibilityLabel("Clear search")
             }
         }
-        .padding(.horizontal, Space.m)
-        .padding(.vertical, Space.s)
-        .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).fill(.quaternary))
-        .padding(.horizontal, Space.m)
-        .padding(.top, Space.m)
-        .padding(.bottom, Space.s)
+        .padding(.horizontal, Space.s)
+        .padding(.vertical, Space.xs)
+        .background(RoundedRectangle(cornerRadius: Radius.small, style: .continuous).fill(.quaternary))
+        .padding(.horizontal, Space.s)
+        .padding(.top, Space.s)
+        .padding(.bottom, Space.xs)
         .onExitCommand { svm.searchQuery = "" }
     }
 
@@ -3183,7 +3183,7 @@ struct SettingsView: View {
             List {
                 ForEach(results) { entry in
                     Button(action: { svm.jump(to: entry) }) {
-                        VStack(alignment: .leading, spacing: Space.xxs) {
+                        VStack(alignment: .leading, spacing: Space.xs) {
                             Text(entry.title).medium(TextSize.callout)
                             if !entry.subtitle.isEmpty {
                                 Text(entry.subtitle)
@@ -3339,7 +3339,7 @@ struct SettingsView: View {
         case .about:
             AboutSettingsView()
                 .overlay(alignment: .bottomTrailing) {
-                    LegalNotice().padding(Space.m)
+                    LegalNotice().padding(Space.s)
                 }
         }
     }

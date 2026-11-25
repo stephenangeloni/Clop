@@ -11,10 +11,10 @@ struct CompletionPanel: View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Suggestions")
                 .dimmed(9, weight: .medium)
-                .padding(.bottom, Space.xxs)
+                .padding(.bottom, Space.xs)
             ForEach(suggestions.prefix(10)) { suggestion in
                 Button(action: { onSelect(suggestion) }) {
-                    HStack(spacing: Space.s) {
+                    HStack(spacing: Space.xs) {
                         Circle()
                             .fill(suggestion.color)
                             .frame(width: 6, height: 6)
@@ -29,7 +29,7 @@ struct CompletionPanel: View {
                         }
                         Spacer()
                     }
-                    .padding(.horizontal, Space.m)
+                    .padding(.horizontal, Space.s)
                     .padding(.vertical, Space.xs)
                     .contentShape(Rectangle())
                 }
@@ -37,12 +37,12 @@ struct CompletionPanel: View {
             }
         }
         .background(
-            RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                 .fill(.ultraThinMaterial)
                 .shadow(color: .black.opacity(0.12), radius: 6, y: 2)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
         )
     }
@@ -68,7 +68,7 @@ struct PipelineEditingSuggestions: View {
                 coordinator?.appendStep(text)
                 coordinator?.refocus()
             }
-            .padding(.top, Space.xxs)
+            .padding(.top, Space.xs)
         }
     }
 }
@@ -140,7 +140,7 @@ struct PipelineEditorRow: View {
                 }
             }
         } label: {
-            HStack(spacing: Space.xxs) {
+            HStack(spacing: Space.xs) {
                 // SwiftUI.Image(systemName: "plus.circle.fill")
                 Text("Add pipeline")
             }
@@ -158,7 +158,7 @@ struct PipelineEditorRow: View {
             ? source.displayLabel
             : sourceStr.replacingOccurrences(of: HOME.string, with: "~")
 
-        VStack(alignment: .leading, spacing: Space.s) {
+        VStack(alignment: .leading, spacing: Space.xs) {
             HStack(spacing: Space.xs) {
                 SwiftUI.Image(systemName: sourceIcon)
                     .font(.regular(TextSize.caption))
@@ -191,12 +191,12 @@ struct PipelineEditorRow: View {
                 Text(subtitle)
                     .regular(TextSize.caption)
                     .foregroundColor(.secondary)
-                    .padding(.leading, Space.xl)
+                    .padding(.leading, Space.l)
             }
 
             if case .dropZone = source {
                 Button(action: { settingsViewManager.tab = .results }) {
-                    HStack(spacing: Space.xxs) {
+                    HStack(spacing: Space.xs) {
                         Text("Want different pipelines for specific drop targets?")
                         Text("Use Preset Zones")
                             .foregroundColor(.accentColor)
@@ -205,7 +205,7 @@ struct PipelineEditorRow: View {
                     .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
-                .padding(.leading, Space.xl)
+                .padding(.leading, Space.l)
                 .help("Open the Preset Zones tab to set up per-target drop pipelines")
             }
 
@@ -236,7 +236,7 @@ struct PipelineEditorRow: View {
                 )
             }
         }
-        .padding(Space.m)
+        .padding(Space.s)
         .card(radius: 8, fill: .primary.opacity(0.03), borderColor: .primary.opacity(0.08), borderWidth: 1)
     }
 }
@@ -264,7 +264,7 @@ struct PipelineFlagSegmentedToggle: View {
             // Two-segment pill: the selected option sits on a raised light "pill" (like a native segmented
             // control) in the tint colour, so it's obvious at a glance which one is active; hovering an
             // inactive segment gives it a faint tint wash.
-            HStack(spacing: Space.xxs) {
+            HStack(spacing: Space.xs) {
                 ForEach(0 ..< 2, id: \.self) { idx in
                     let label = idx == 0 ? options.0 : options.1
                     let isSelected = selection == idx
@@ -276,7 +276,7 @@ struct PipelineFlagSegmentedToggle: View {
                     } label: {
                         Text(label)
                             .font(.system(size: TextSize.caption, weight: isSelected ? .bold : .medium))
-                            .padding(.horizontal, Space.s)
+                            .padding(.horizontal, Space.xs)
                             .padding(.vertical, 1)
                             .foregroundColor(isSelected ? tint : (isHovered ? .primary : .secondary.opacity(0.45)))
                             .background {
@@ -299,7 +299,7 @@ struct PipelineFlagSegmentedToggle: View {
                     }
                 }
             }
-            .padding(Space.xxs)
+            .padding(Space.xs)
             .background(Capsule().fill(tint.opacity(0.12)))
             .overlay(Capsule().strokeBorder(tint.opacity(0.22), lineWidth: 0.5))
             if let trailing {
@@ -311,8 +311,8 @@ struct PipelineFlagSegmentedToggle: View {
         // sentence; the unselected option is faded above so the chosen word is what stands out.
         .foregroundColor(.primary.opacity(0.85))
         .padding(.leading, leading == nil ? 2 : 7)
-        .padding(.trailing, Space.s)
-        .padding(.vertical, Space.xxs)
+        .padding(.trailing, Space.xs)
+        .padding(.vertical, Space.xs)
         .background(Capsule().fill(tint.opacity(0.10)))
         .overlay(Capsule().strokeBorder(tint.opacity(0.20), lineWidth: 0.5))
         .help(help)
@@ -349,7 +349,7 @@ struct PipelineFieldRow: View {
         VStack(alignment: .leading, spacing: Space.xs) {
             VStack(alignment: .leading, spacing: 0) {
                 // Top bar: name + missing badge + spacer + pass picker + hide picker + divider + trash
-                HStack(spacing: Space.s) {
+                HStack(spacing: Space.xs) {
                     nameChip
 
                     if pipeline.isLibraryReference, !pipeline.resolves {
@@ -366,12 +366,12 @@ struct PipelineFieldRow: View {
 
                     // Busy controls fade back to translucent unless the row is hovered or being edited,
                     // so only the name stays prominent at rest.
-                    HStack(spacing: Space.s) {
+                    HStack(spacing: Space.xs) {
                         trailingFlags
                     }
                     .opacity((hovering || isEditing) ? 1 : 0.35)
                 }
-                .padding(.horizontal, Space.m)
+                .padding(.horizontal, Space.s)
                 .padding(.vertical, Space.xs)
                 .background(PipelineTheme.topBarBackground)
 
@@ -388,11 +388,11 @@ struct PipelineFieldRow: View {
                     coordinatorRef: { coordHolder.value = $0 }
                 )
                 .frame(height: max(isEditing ? 36 : 22, CGFloat(1 + text.count / 80) * 18))
-                .padding(.horizontal, Space.m)
+                .padding(.horizontal, Space.s)
                 .padding(.vertical, Space.xs)
                 .background(PipelineTheme.editorBackground)
             }
-            .clipShape(RoundedRectangle(cornerRadius: Radius.xlarge, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
             .card(radius: 10, fill: .clear, borderColor: .primary.opacity(isEditing ? 0.25 : 0.12), borderWidth: 1)
             .onHover { hovering = $0 }
             .animation(.easeOut(duration: 0.15), value: hovering)
@@ -581,7 +581,7 @@ struct PipelineTypeSectionView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Space.m) {
+        VStack(alignment: .leading, spacing: Space.s) {
             HStack {
                 HStack(spacing: Space.xs) {
                     SwiftUI.Image(systemName: fileType.symbolName)
@@ -601,7 +601,7 @@ struct PipelineTypeSectionView: View {
                             }
                         }
                     } label: {
-                        HStack(spacing: Space.xxs) {
+                        HStack(spacing: Space.xs) {
                             SwiftUI.Image(systemName: "folder.badge.plus")
                             Text("Add folder")
                         }
@@ -630,7 +630,7 @@ struct PipelineTypeSectionView: View {
                     }
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                         .strokeBorder(fileType.color, lineWidth: 2)
                         .opacity(highlightedFolder == source.string ? 1 : 0)
                         .animation(.easeOut(duration: 0.3), value: highlightedFolder)
@@ -783,13 +783,13 @@ struct InlineNameField: View {
                 .foregroundColor(restingTextColor)
                 // Keep the same horizontal inset for name and description so their text lines up exactly.
                 .padding(.horizontal, Space.xs)
-                .padding(.vertical, Space.xxs)
+                .padding(.vertical, Space.xs)
                 .background(
-                    RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                         .fill(Color.primary.opacity(subtle ? (isHovered ? 0.1 : 0.06) : (isHovered ? 0.12 : 0.06)))
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                         .strokeBorder(Color.primary.opacity(subtle ? (isHovered ? 0.15 : 0.1) : (isHovered ? 0.25 : 0.15)), lineWidth: 0.5)
                 )
                 .contentShape(Rectangle())
@@ -844,13 +844,13 @@ struct InlineNameField: View {
             onCancel: { isEditing = false }
         )
         .padding(.horizontal, Space.xs)
-        .padding(.vertical, Space.xxs)
+        .padding(.vertical, Space.xs)
         .background(
-            RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                 .fill(Color.primary.opacity(0.06))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.15), lineWidth: 0.5)
         )
 
@@ -894,7 +894,7 @@ struct SavedPipelineRow: View {
             // Header row + description stacked vertically so the description gets its own
             // full-width line below the header, instead of widening the name column and
             // cramming the controls (file type / pass / hide / trash) on the right.
-            HStack(alignment: .center, spacing: Space.s) {
+            HStack(alignment: .center, spacing: Space.xs) {
                 IconPickerView(icon: $editIcon)
                     .buttonStyle(.plain)
                     // Larger now that it sits centred against the two-line name + description block, and a
@@ -919,8 +919,8 @@ struct SavedPipelineRow: View {
 
                 // Name row and the description/pills line share one column to the right of the icon, so
                 // the description always lines up under the name no matter how wide the chosen icon is.
-                VStack(alignment: .leading, spacing: Space.xxs) {
-                    HStack(spacing: Space.s) {
+                VStack(alignment: .leading, spacing: Space.xs) {
+                    HStack(spacing: Space.xs) {
                         InlineNameField(name: $editName, size: 10, weight: .medium) {
                             var updated = pipeline
                             updated.name = editName
@@ -929,7 +929,7 @@ struct SavedPipelineRow: View {
 
                         // Everything except the name, description, icon and trash fades fully out at rest and
                         // returns on hover/edit. The trash stays visible so deleting never needs a hover hunt.
-                        HStack(spacing: Space.s) {
+                        HStack(spacing: Space.xs) {
                             Group {
                                 if pipeline.isBuiltin {
                                     Text("Built-in")
@@ -980,8 +980,8 @@ struct SavedPipelineRow: View {
                                             SwiftUI.Image(systemName: "checkmark")
                                                 .font(.regular(TextSize.caption))
                                                 .foregroundColor(.green.opacity(0.7))
-                                                .padding(.horizontal, Space.s)
-                                                .padding(.vertical, Space.xxs)
+                                                .padding(.horizontal, Space.xs)
+                                                .padding(.vertical, Space.xs)
                                         }
                                         .buttonStyle(.plain)
 
@@ -989,8 +989,8 @@ struct SavedPipelineRow: View {
                                             SwiftUI.Image(systemName: "xmark")
                                                 .font(.regular(TextSize.caption))
                                                 .foregroundColor(.red.opacity(0.7))
-                                                .padding(.horizontal, Space.s)
-                                                .padding(.vertical, Space.xxs)
+                                                .padding(.horizontal, Space.xs)
+                                                .padding(.vertical, Space.xs)
                                         }
                                         .accessibilityLabel("Cancel")
                                         .buttonStyle(.plain)
@@ -1014,7 +1014,7 @@ struct SavedPipelineRow: View {
                     // Description + assignment pills share a line below the header. The description yields
                     // width to the pills (which show where this pipeline is assigned and host "Add to…"),
                     // so a long description truncates rather than pushing the pills off-screen.
-                    HStack(spacing: Space.m) {
+                    HStack(spacing: Space.s) {
                         InlineNameField(name: $editDetails, placeholder: "description", size: 9, weight: .regular, fillWidth: true, subtle: true) {
                             var updated = pipeline
                             updated.details = editDetails.isEmpty ? nil : editDetails
@@ -1029,7 +1029,7 @@ struct SavedPipelineRow: View {
                     }
                 }
             }
-            .padding(.horizontal, Space.m)
+            .padding(.horizontal, Space.s)
             .padding(.vertical, Space.xs)
             .background(PipelineTheme.topBarBackground)
 
@@ -1049,13 +1049,13 @@ struct SavedPipelineRow: View {
                     coordinatorRef: { coordHolder.value = $0 }
                 )
                 .frame(height: max(36, CGFloat(1 + editText.count / 80) * 18))
-                .padding(.horizontal, Space.m)
+                .padding(.horizontal, Space.s)
                 .padding(.vertical, Space.xs)
                 .background(PipelineTheme.editorBackground)
                 if isEditingSteps {
                     PipelineEditingSuggestions(prefix: currentPrefix, fileType: pipeline.fileType, coordinator: coordinator)
-                        .padding(.horizontal, Space.m)
-                        .padding(.bottom, Space.s)
+                        .padding(.horizontal, Space.s)
+                        .padding(.bottom, Space.xs)
                 }
             } else {
                 let readOnlyText = pipeline.rawText ?? pipeline.steps.map(\.displayString).joined(separator: " -> ")
@@ -1065,8 +1065,8 @@ struct SavedPipelineRow: View {
                     .lineLimit(2)
                     .truncationMode(.tail)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, Space.l)
-                    .padding(.vertical, Space.m)
+                    .padding(.horizontal, Space.m)
+                    .padding(.vertical, Space.s)
                     // Near-opaque white/black so the steps read on a clean surface; the muted top-bar tint
                     // and the divider keep the two bands visually separated.
                     .background(PipelineTheme.editorBackground)
@@ -1096,7 +1096,7 @@ struct SavedPipelineRow: View {
                     .help("Click to edit")
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: Radius.xlarge, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
         .card(radius: 10, fill: .clear, borderColor: .primary.opacity(isEditingLib ? 0.2 : 0.08), borderWidth: 1)
         .onHover { hovering = $0 }
         .animation(.easeOut(duration: 0.15), value: hovering)
@@ -1179,12 +1179,12 @@ struct SavedPipelineRow: View {
                 }
             }
         } label: {
-            HStack(spacing: Space.xxs) {
+            HStack(spacing: Space.xs) {
                 SwiftUI.Image(systemName: "plus").font(.system(size: TextSize.caption))
                 Text("Add to").font(.regular(TextSize.caption))
             }
             .foregroundColor(.blue.opacity(0.8))
-            .padding(.horizontal, Space.s)
+            .padding(.horizontal, Space.xs)
             .padding(.vertical, 1)
             .background(Capsule().fill(Color.blue.opacity(0.1)))
             .overlay(Capsule().strokeBorder(Color.blue.opacity(0.18), lineWidth: 0.5))
@@ -1223,7 +1223,7 @@ struct SavedPipelineRow: View {
                 }
             }
         } label: {
-            HStack(spacing: Space.xxs) {
+            HStack(spacing: Space.xs) {
                 if let ft = pipeline.fileType {
                     SwiftUI.Image(systemName: ft.symbolName).foregroundColor(ft.color)
                 } else {
@@ -1232,7 +1232,7 @@ struct SavedPipelineRow: View {
                 Text("Move to").font(.regular(TextSize.caption))
             }
             .foregroundColor(.blue.opacity(0.8))
-            .padding(.horizontal, Space.s)
+            .padding(.horizontal, Space.xs)
             .padding(.vertical, 1)
             .background(Capsule().fill(Color.blue.opacity(0.1)))
             .overlay(Capsule().strokeBorder(Color.blue.opacity(0.18), lineWidth: 0.5))
@@ -1368,12 +1368,12 @@ struct SavedPipelineRow: View {
             icon = "square.grid.2x2"
             label = "Preset zone"
         }
-        return HStack(spacing: Space.xxs) {
+        return HStack(spacing: Space.xs) {
             SwiftUI.Image(systemName: icon).font(.system(size: TextSize.caption))
             Text(label).font(.regular(TextSize.caption)).lineLimit(1)
         }
         .foregroundColor(.secondary)
-        .padding(.horizontal, Space.s)
+        .padding(.horizontal, Space.xs)
         .padding(.vertical, 1)
         .background(Capsule().fill(Color.secondary.opacity(0.12)))
         .overlay(Capsule().strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5))
@@ -1516,7 +1516,7 @@ struct PipelinesSettingsView: View {
                                 .buttonStyle(.plain)
                                 .foregroundColor(.accentColor)
                             }
-                            .padding(.top, Space.s)
+                            .padding(.top, Space.xs)
 
                             if pipelines.isEmpty {
                                 Text("No pipelines yet")
@@ -1541,7 +1541,7 @@ struct PipelinesSettingsView: View {
                                     // straight here and point out the exact pipeline that ran on it.
                                     .id(pipeline.id)
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: Radius.xlarge, style: .continuous)
+                                        RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                                             .strokeBorder(headerColor, lineWidth: 2)
                                             .opacity(highlightedPipelineID == pipeline.id ? 1 : 0)
                                             .animation(.easeOut(duration: 0.3), value: highlightedPipelineID)

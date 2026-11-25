@@ -43,7 +43,7 @@ struct MCPSettingsView: View {
             }
 
             Section(header: SectionHeader(title: "Install by hand")) {
-                VStack(alignment: .leading, spacing: Space.l) {
+                VStack(alignment: .leading, spacing: Space.m) {
                     CopyableValueRow(title: "Command line", value: MCPInstaller.cliCommand)
                     CopyableValueRow(title: "Server", value: MCPInstaller.cliPath + " " + MCPInstaller.serveArgs.joined(separator: " "))
                 }
@@ -62,7 +62,7 @@ struct MCPSettingsView: View {
     @Default(.mcpAllowScriptSteps) private var mcpAllowScriptSteps
 
     private func clientRows(_ clients: [MCPInstaller.Client]) -> some View {
-        VStack(alignment: .leading, spacing: Space.m) {
+        VStack(alignment: .leading, spacing: Space.s) {
             ForEach(clients) { client in
                 clientRow(client)
             }
@@ -72,7 +72,7 @@ struct MCPSettingsView: View {
 
     private func clientRow(_ client: MCPInstaller.Client) -> some View {
         HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: Space.xxs) {
+            VStack(alignment: .leading, spacing: Space.xs) {
                 Text(client.name).medium(TextSize.body)
                 Text(rowDetail(client))
                     .round(TextSize.subheadline)
@@ -180,8 +180,8 @@ private struct CopyablePill: View {
                     .truncationMode(.middle)
             }
             .foregroundStyle(.secondary)
-            .padding(.horizontal, Space.m)
-            .padding(.vertical, Space.xxs)
+            .padding(.horizontal, Space.s)
+            .padding(.vertical, Space.xs)
             .background(Capsule().fill(Color.primary.opacity(0.08)))
             .overlay(Capsule().strokeBorder(Color.primary.opacity(0.10), lineWidth: 1))
         }

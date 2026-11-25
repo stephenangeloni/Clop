@@ -55,7 +55,7 @@ struct BatchCropButton: View {
     }
 
     var editor: some View {
-        VStack(spacing: Space.m) {
+        VStack(spacing: Space.s) {
             VStack(alignment: .leading, spacing: Space.xs) {
                 Text("SIZE PRESETS")
                     .font(.system(size: TextSize.caption, weight: .bold))
@@ -65,7 +65,7 @@ struct BatchCropButton: View {
                 ForEach(savedCropSizes.map { $0.withOrientation(cropOrientation) }.filter(!\.isAspectRatio).sorted(by: \.area)) { size in
                     cropSizeButton(size)
                 }
-                HStack(spacing: Space.m) {
+                HStack(spacing: Space.s) {
                     TextField("", text: $name, prompt: Text("Name"))
                         .textFieldStyle(.roundedBorder)
                         .focused($focused, equals: .name)
@@ -204,7 +204,7 @@ struct BatchCropButton: View {
 
     @ViewBuilder func cropSizeButton(_ size: CropSize) -> some View {
         let selected = !isAspectRatio && tempWidth == size.width && tempHeight == size.height
-        HStack(spacing: Space.s) {
+        HStack(spacing: Space.xs) {
             Button(action: {
                 isAspectRatio = false
                 tempWidth = size.width
@@ -224,7 +224,7 @@ struct BatchCropButton: View {
                 .frame(width: 190)
                 .lineLimit(1)
                 .padding(.vertical, Space.xs)
-                .padding(.horizontal, Space.s)
+                .padding(.horizontal, Space.xs)
                 .chipBackground(selected: selected)
             })
             .buttonStyle(.plain)
@@ -257,13 +257,13 @@ struct BatchCropButton: View {
 private extension View {
     func chipBackground(selected: Bool) -> some View {
         background(
-            RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                 .fill(selected ? Color.accentColor.opacity(0.25) : Color.primary.opacity(0.06))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                 .strokeBorder(selected ? Color.accentColor.opacity(0.8) : Color.primary.opacity(0.08), lineWidth: 1)
         )
-        .contentShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: Radius.small, style: .continuous))
     }
 }

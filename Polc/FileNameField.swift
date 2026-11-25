@@ -91,9 +91,9 @@ struct FileNameField: View {
 
     var body: some View {
         editorViewer
-            .padding(.horizontal, Space.s)
-            .padding(.vertical, Space.xxs)
-            .if(glass) { $0.glassOrMaterial(in: RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)) }
+            .padding(.horizontal, Space.xs)
+            .padding(.vertical, Space.xs)
+            .if(glass) { $0.glassOrMaterial(in: RoundedRectangle(cornerRadius: Radius.small, style: .continuous)) }
             .onChange(of: optimiser.running) { running in
                 if running {
                     optimiser.editingFilename = false

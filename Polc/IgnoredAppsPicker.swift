@@ -70,26 +70,26 @@ struct IgnoredAppsPicker: View {
     var enabled = true
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Space.s) {
+        VStack(alignment: .leading, spacing: Space.xs) {
             if bundleIds.isEmpty {
                 Text("No apps ignored. Clipboard events from all apps are processed.")
                     .round(TextSize.subheadline, weight: .regular)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, Space.s)
-                    .padding(.horizontal, Space.m)
-                    .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).fill(Color.primary.opacity(0.04)))
+                    .padding(.vertical, Space.xs)
+                    .padding(.horizontal, Space.s)
+                    .background(RoundedRectangle(cornerRadius: Radius.small, style: .continuous).fill(Color.primary.opacity(0.04)))
             } else {
-                VStack(spacing: Space.xxs) {
+                VStack(spacing: Space.xs) {
                     ForEach(sortedBundleIds, id: \.self) { id in
                         appRow(bundleId: id)
                     }
                 }
                 .padding(Space.xs)
-                .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).fill(Color.primary.opacity(0.04)))
+                .background(RoundedRectangle(cornerRadius: Radius.small, style: .continuous).fill(Color.primary.opacity(0.04)))
             }
 
-            HStack(spacing: Space.s) {
+            HStack(spacing: Space.xs) {
                 Menu {
                     if let id = LastFocusedAppTracker.shared.bundleId, !bundleIds.contains(id) {
                         let appName = LastFocusedAppTracker.shared.name ?? id
@@ -164,7 +164,7 @@ struct IgnoredAppsPicker: View {
     @ViewBuilder
     private func appRow(bundleId: String) -> some View {
         let path = pathByBundleId[bundleId]
-        HStack(spacing: Space.m) {
+        HStack(spacing: Space.s) {
             SwiftUI.Image(nsImage: icon(for: bundleId, path: path))
                 .resizable()
                 .frame(width: 18, height: 18)
@@ -186,8 +186,8 @@ struct IgnoredAppsPicker: View {
             .help("Remove from ignore list")
             .accessibilityLabel("Remove from ignore list")
         }
-        .padding(.horizontal, Space.s)
-        .padding(.vertical, Space.xxs)
+        .padding(.horizontal, Space.xs)
+        .padding(.vertical, Space.xs)
     }
 
     private func loadInstalledApps() {

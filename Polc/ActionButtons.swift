@@ -321,7 +321,7 @@ struct FloatingGridButtonStyle: ButtonStyle {
     var size: CGFloat = 34
 
     func makeBody(configuration: Configuration) -> some View {
-        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: Radius.large, style: .continuous)
         configuration.label
             .font(.heavy(TextSize.subheadline)).foregroundStyle(.primary)
             .frame(width: size, height: size)
@@ -445,7 +445,7 @@ struct HorizontalDownscaleSlider: View {
 
             ZStack {
                 // Track
-                RoundedRectangle(cornerRadius: Radius.hairline)
+                RoundedRectangle(cornerRadius: Radius.small)
                     .fill(.primary.opacity(0.15))
                     .frame(width: trackWidth, height: 3)
                     .position(x: geo.size.width / 2, y: centerY)
@@ -455,7 +455,7 @@ struct HorizontalDownscaleSlider: View {
                     let x = xPosition(for: threshold, trackLeft: trackLeft, trackWidth: trackWidth)
                     let isActive = abs(displayFactor - threshold) < 0.01
 
-                    RoundedRectangle(cornerRadius: Radius.hairline)
+                    RoundedRectangle(cornerRadius: Radius.small)
                         .fill(.primary.opacity(isActive ? 0.7 : 0.3))
                         .frame(width: isActive ? 2 : 1.5, height: size * 0.55)
                         .position(x: x, y: centerY)
@@ -478,7 +478,7 @@ struct HorizontalDownscaleSlider: View {
                         .foregroundColor(.primary)
                         .fixedSize()
                         .padding(.horizontal, Space.xs)
-                        .padding(.vertical, Space.xxs)
+                        .padding(.vertical, Space.xs)
                         .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
                         .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
                         .offset(y: -knobSize - 10)
@@ -548,7 +548,7 @@ struct HorizontalCoverArtSlider: View {
             let centerY = geo.size.height / 2
 
             ZStack {
-                RoundedRectangle(cornerRadius: Radius.hairline)
+                RoundedRectangle(cornerRadius: Radius.small)
                     .fill(.primary.opacity(0.15))
                     .frame(width: trackWidth, height: 3)
                     .position(x: geo.size.width / 2, y: centerY)
@@ -556,7 +556,7 @@ struct HorizontalCoverArtSlider: View {
                 ForEach(Self.thresholds, id: \.self) { threshold in
                     let x = xPosition(for: threshold, trackLeft: trackLeft, trackWidth: trackWidth)
                     let isActive = abs(displayFactor - threshold) < 0.01
-                    RoundedRectangle(cornerRadius: Radius.hairline)
+                    RoundedRectangle(cornerRadius: Radius.small)
                         .fill(.primary.opacity(isActive ? 0.7 : 0.3))
                         .frame(width: isActive ? 2 : 1.5, height: size * 0.55)
                         .position(x: x, y: centerY)
@@ -579,7 +579,7 @@ struct HorizontalCoverArtSlider: View {
                         .foregroundColor(.primary)
                         .fixedSize()
                         .padding(.horizontal, Space.xs)
-                        .padding(.vertical, Space.xxs)
+                        .padding(.vertical, Space.xs)
                         .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
                         .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
                         .offset(y: -knobSize - 10)
@@ -938,14 +938,14 @@ struct HorizontalCompressionSlider: View {
             let centerY = geo.size.height / 2
 
             ZStack {
-                RoundedRectangle(cornerRadius: Radius.hairline)
+                RoundedRectangle(cornerRadius: Radius.small)
                     .fill(.primary.opacity(0.15))
                     .frame(width: trackWidth, height: 3)
                     .position(x: geo.size.width / 2, y: centerY)
 
                 ForEach(CompressionScale.anchors(for: optimiser.compressionSliderType), id: \.self) { anchor in
                     let x = xPosition(for: anchor, trackLeft: trackLeft, trackWidth: trackWidth)
-                    RoundedRectangle(cornerRadius: Radius.hairline)
+                    RoundedRectangle(cornerRadius: Radius.small)
                         .fill(.primary.opacity(0.3))
                         .frame(width: 1.5, height: size * 0.55)
                         .position(x: x, y: centerY)
@@ -965,7 +965,7 @@ struct HorizontalCompressionSlider: View {
                         }
                         .fixedSize()
                         .padding(.horizontal, Space.xs)
-                        .padding(.vertical, Space.xxs)
+                        .padding(.vertical, Space.xs)
                         .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
                         .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
                         .offset(y: -knobSize / 2 - 16)
@@ -1048,7 +1048,7 @@ struct CardSlider: View {
                     FormatChangeLine(optimiser: optimiser, selectedQuality: formatChangeQuality, onDark: true)
                 }
             }
-            .padding(.horizontal, Space.m).padding(.vertical, Space.xxs)
+            .padding(.horizontal, Space.s).padding(.vertical, Space.xs)
             .background(
                 ZStack {
                     VisualEffectBlur(material: .hudWindow, blendingMode: .withinWindow, state: .active, appearance: .vibrantDark)
@@ -1290,7 +1290,7 @@ struct HorizontalPDFDPISlider: View {
             let centerY = geo.size.height / 2
 
             ZStack {
-                RoundedRectangle(cornerRadius: Radius.hairline)
+                RoundedRectangle(cornerRadius: Radius.small)
                     .fill(.primary.opacity(0.15))
                     .frame(width: trackWidth, height: 3)
                     .position(x: geo.size.width / 2, y: centerY)
@@ -1299,7 +1299,7 @@ struct HorizontalPDFDPISlider: View {
                     let x = xPosition(for: index, trackLeft: trackLeft, trackWidth: trackWidth)
                     let isActive = dpi == currentDPI
 
-                    RoundedRectangle(cornerRadius: Radius.hairline)
+                    RoundedRectangle(cornerRadius: Radius.small)
                         .fill(.primary.opacity(isActive ? 0.7 : 0.3))
                         .frame(width: isActive ? 2 : 1.5, height: size * 0.55)
                         .position(x: x, y: centerY)
@@ -1317,7 +1317,7 @@ struct HorizontalPDFDPISlider: View {
                                 .foregroundColor(.primary)
                                 .fixedSize()
                                 .padding(.horizontal, Space.xs)
-                                .padding(.vertical, Space.xxs)
+                                .padding(.vertical, Space.xs)
                                 .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
                                 .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
                                 .offset(y: -knobSize - 4)
@@ -2279,7 +2279,7 @@ struct FloatingAddActionSlot: View {
     let add: (FloatingAction) -> Void
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: Radius.large, style: .continuous)
         Button(action: popUpMenu) {
             SwiftUI.Image(systemName: "plus").font(.heavy(TextSize.caption)).foregroundStyle(.primary.opacity(0.45))
                 .frame(width: 34, height: 34)
@@ -2483,14 +2483,14 @@ struct FloatingActionGridPicker: View {
     @Binding var actions: [FloatingAction]
 
     var body: some View {
-        VStack(spacing: Space.s) {
+        VStack(spacing: Space.xs) {
             VStack(spacing: 1) {
                 Text("Action buttons").medium(TextSize.callout).foregroundColor(.secondary)
                     .searchAnchor("floating.main.floatingResultActions")
                 Text("Tap a button to change it").regular(TextSize.caption).foregroundColor(.secondary.opacity(0.5))
             }
-            let cols = Array(repeating: GridItem(.fixed(side), spacing: Space.m), count: 3)
-            LazyVGrid(columns: cols, spacing: Space.m) {
+            let cols = Array(repeating: GridItem(.fixed(side), spacing: Space.s), count: 3)
+            LazyVGrid(columns: cols, spacing: Space.s) {
                 ForEach(Array(slots.enumerated()), id: \.offset) { _, slot in
                     if let action = slot {
                         GridPickerButton(action: action, side: side) { replace(action, with: $0) }
@@ -2506,7 +2506,7 @@ struct FloatingActionGridPicker: View {
                     .buttonStyle(.plain)
                     .font(.medium(TextSize.caption))
                     .foregroundColor(.secondary)
-                    .padding(.top, Space.xxs)
+                    .padding(.top, Space.xs)
             }
         }
     }
@@ -2535,7 +2535,7 @@ struct FloatingActionGridPicker: View {
     }
 
     private var addPlaceholder: some View {
-        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: Radius.large, style: .continuous)
         return Menu {
             Section("Assign to a button") {
                 ForEach(addable) { a in
@@ -2665,7 +2665,7 @@ private struct GridPickerButton: View {
     let onChange: (FloatingAction?) -> Void
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: Radius.large, style: .continuous)
         // A plain Button renders the label's background; a borderless Menu label did not, which is
         // why earlier fill changes were invisible. Tap removes the action (re-add via the + slot).
         return Button(action: {
@@ -2739,7 +2739,7 @@ struct ActionListPicker: View {
     }
 
     var body: some View {
-        VStack(spacing: Space.s) {
+        VStack(spacing: Space.xs) {
             VStack(spacing: 1) {
                 Text(label).medium(TextSize.callout)
                     .foregroundColor(.secondary)
@@ -2747,8 +2747,8 @@ struct ActionListPicker: View {
                     .foregroundColor(.secondary.opacity(0.5))
             }
 
-            HStack(spacing: Space.s) {
-                let layout = vertical ? AnyLayout(VStackLayout(spacing: Space.xxs)) : AnyLayout(HStackLayout(spacing: Space.xxs))
+            HStack(spacing: Space.xs) {
+                let layout = vertical ? AnyLayout(VStackLayout(spacing: Space.xs)) : AnyLayout(HStackLayout(spacing: Space.xs))
                 layout {
                     ForEach(shownActions) { action in
                         ActionPickerButton(action: action, size: buttonSize) { new in
