@@ -6,7 +6,6 @@
 //
 
 import Defaults
-import LaunchAtLogin
 import Lowtech
 import SwiftUI
 import System
@@ -32,18 +31,7 @@ struct MenuView: View {
     @State var cliInstallResult: String?
 
     var body: some View {
-        Button("Settings") {
-            openWindow(id: "settings")
-            focus()
-        }.keyboardShortcut(",")
-        Button("Batch optimiser") {
-            BAT.presentForDropping()
-        }
-        LaunchAtLogin.Toggle()
-
-        Divider()
-
-        Section("Clipboard actions") {
+        Section("Clipboard") {
             Button("Optimise") {
                 Task { try? await optimiseLastClipboardItem() }
             }.hotkeyHint(.c, "c", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
@@ -62,9 +50,22 @@ struct MenuView: View {
                 scalingFactor = max(scalingFactor > 0.5 ? scalingFactor - 0.25 : scalingFactor - 0.1, 0.1)
                 Task { try? await optimiseLastClipboardItem(downscaleTo: scalingFactor) }
             }.hotkeyHint(.minus, "-", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
-            Button("Quicklook") {
+            Button("Quick Look") {
                 Task { try? await quickLookLastClipboardItem() }
             }.hotkeyHint(.space, " ", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
+            Button("Revert last optimisation") {
+                om.clipboardImageOptimiser?.restoreOriginal()
+            }
+            .hotkeyHint(.z, "z", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
+            .disabled(om.clipboardImageOptimiser?.isOriginal ?? true)
+            Button("Bring back last result") {
+                guard let last = om.removedOptimisers.popLast() else {
+                    return
+                }
+                om.optimisers = om.optimisers.without(last).with(last)
+            }
+            .hotkeyHint(.equal, "=", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
+            .disabled(om.removedOptimisers.isEmpty)
 
             if let bundleID = lastApp.bundleId {
                 let appName = lastApp.name ?? bundleID
@@ -81,7 +82,21 @@ struct MenuView: View {
             }
         }
 
-        Section("Backups") {
+        Divider()
+
+        Toggle("Pause automatic optimisations", isOn: $pauseAutomaticOptimisations)
+            .searchAnchor("general.main.pauseAutomaticOptimisations")
+        Button("Batch optimiser…") {
+            BAT.presentForDropping()
+        }
+
+        Divider()
+
+        Button("Settings…") {
+            openWindow(id: "settings")
+            focus()
+        }.keyboardShortcut(",")
+        Menu("Advanced") {
             Button("Open backups folder") {
                 NSWorkspace.shared.open(FilePath.polcBackups.url)
             }
@@ -89,74 +104,64 @@ struct MenuView: View {
                 NSWorkspace.shared.open(FilePath.workdir.url)
             }
             Button("Force clean working directory") {
-                do {
-                    for dir in [FilePath.polcBackups, .videos, .images, .pdfs, .conversions, .downloads, .forResize, .forFilters, .finderQuickAction, .processLogs] {
-                        try FileManager.default.removeItem(at: dir.url)
-                    }
-                } catch {
-                    showNotice("Failed to clean working directory\n\(error.localizedDescription)")
-                }
-
-                FilePath.workdir.mkdir(withIntermediateDirectories: true, permissions: 0o755)
-                guard FilePath.workdir.exists else {
-                    showNotice("Failed to create working directory")
-                    return
-                }
-
-                showNotice("Working directory cleaned")
+                forceCleanWorkingDirectory()
             }
 
-            Button("Revert last optimisations") {
-                om.clipboardImageOptimiser?.restoreOriginal()
-            }
-            .hotkeyHint(.z, "z", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
-            .disabled(om.clipboardImageOptimiser?.isOriginal ?? true)
-            Button("Bring back last result") {
-                guard let last = om.removedOptimisers.popLast() else {
-                    return
-                }
-                om.optimisers = om.optimisers.without(last).with(last)
-            }
-            .hotkeyHint(.equal, "=", enabled: enabledKeys, modifiers: keyComboModifiers.eventModifiers)
-            .disabled(om.removedOptimisers.isEmpty)
-        }
+            Divider()
 
-        Section("Automation") {
-            Toggle("Pause automatic optimisations", isOn: $pauseAutomaticOptimisations)
-                .searchAnchor("general.main.pauseAutomaticOptimisations")
-            if !cliInstalled {
-                Button("Install command-line integration") {
-                    do {
-                        try installCLIBinary()
-                        cliInstallResult = "CLI installed at \(POLC_CLI_BIN_SHELL)"
-                    } catch let error as InstallCLIError {
-                        cliInstallResult = error.message
-                    } catch {
-                        cliInstallResult = "Installation failed"
-                    }
-                    showNotice(cliInstallResult!)
-                }
-            }
-            if let cliInstallResult {
-                Text(cliInstallResult).disabled(true)
-            } else if cliInstalled {
+            if cliInstalled {
                 Text("CLI installed at \(POLC_CLI_BIN_SHELL)").disabled(true)
+            } else {
+                Button("Install command-line integration") {
+                    installCommandLineIntegration()
+                }
+                if let cliInstallResult {
+                    Text(cliInstallResult).disabled(true)
+                }
             }
-        }
-
-        Menu("About...") {
-            Button("Create debug dump") {
+            Toggle("Show Polc UI in screenshots", isOn: $allowPolcToAppearInScreenshots)
+                .searchAnchor("general.main.allowPolcToAppearInScreenshots")
+            Button("Create debug dump…") {
                 DebugDump.confirmAndRun()
             }
-            Text("Version: v\(Bundle.main.version)")
         }
 
-        Toggle("Show Polc UI in screenshots", isOn: $allowPolcToAppearInScreenshots)
-            .searchAnchor("general.main.allowPolcToAppearInScreenshots")
         Divider()
-        Button("Quit") {
+
+        Text("Polc \(Bundle.main.version)").disabled(true)
+        Button("Quit Polc") {
             NSApp.terminate(nil)
         }.keyboardShortcut("q")
+    }
+
+    func forceCleanWorkingDirectory() {
+        do {
+            for dir in [FilePath.polcBackups, .videos, .images, .pdfs, .conversions, .downloads, .forResize, .forFilters, .finderQuickAction, .processLogs] {
+                try FileManager.default.removeItem(at: dir.url)
+            }
+        } catch {
+            showNotice("Failed to clean working directory\n\(error.localizedDescription)")
+        }
+
+        FilePath.workdir.mkdir(withIntermediateDirectories: true, permissions: 0o755)
+        guard FilePath.workdir.exists else {
+            showNotice("Failed to create working directory")
+            return
+        }
+
+        showNotice("Working directory cleaned")
+    }
+
+    func installCommandLineIntegration() {
+        do {
+            try installCLIBinary()
+            cliInstallResult = "CLI installed at \(POLC_CLI_BIN_SHELL)"
+        } catch let error as InstallCLIError {
+            cliInstallResult = error.message
+        } catch {
+            cliInstallResult = "Installation failed"
+        }
+        showNotice(cliInstallResult!)
     }
 }
 

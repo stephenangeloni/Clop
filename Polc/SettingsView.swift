@@ -2050,7 +2050,7 @@ struct KeysSettingsView: View {
                 keyToggle(.delete, actionName: "Stop and Dismiss", description: "Stop the last running action and dismiss the floating result")
                 keyToggle(.escape, actionName: "Stop and Clear All", description: "Stop running optimisations and clear all floating results")
                 keyToggle(.equal, actionName: "Bring Back", description: "Bring back the last removed floating result")
-                keyToggle(.space, actionName: "QuickLook", description: "Preview the latest image or video")
+                keyToggle(.space, actionName: "Quick Look", description: "Preview the latest image or video")
                 keyToggle(.r, actionName: "Rename", description: "Rename the file of the latest image or video")
                 keyToggle(.z, actionName: "Restore original", description: "Revert optimisations and downscaling actions done on the latest image or video")
                 keyToggle(.p, actionName: "Pause optimisations", description: "Pause or stop automatic optimisations")

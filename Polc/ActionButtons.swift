@@ -109,8 +109,8 @@ enum FloatingAction: RawRepresentable, CaseIterable, Codable, Hashable, Defaults
         case .aggressiveOptimisation: "Aggressive optimisation"
         case .copyToClipboard: "Copy to clipboard"
         case .showInFinder: "Show in Finder"
-        case .quickLook: "QuickLook"
-        case .saveAs: "Save as..."
+        case .quickLook: "Quick Look"
+        case .saveAs: "Save as…"
         case .addToShelf: "Add to shelf"
         case .targetSize: "Fit under size"
         }

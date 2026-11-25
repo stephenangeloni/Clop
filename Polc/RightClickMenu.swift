@@ -24,7 +24,7 @@ struct OpenWithMenuView: View {
     let fileURL: URL
 
     var body: some View {
-        Menu("Open with...") {
+        Menu("Open with") {
             let appsDict: [String: [Bundle]] = NSWorkspace.shared
                 .urlsForApplications(toOpen: fileURL)
                 .compactMap { Bundle(url: $0) }
@@ -141,7 +141,7 @@ struct RightClickMenuView: View {
 
         // Inspect: stays available even while the pipeline is still running.
         Section {
-            Button("QuickLook") {
+            Button("Quick Look") {
                 optimiser.quicklook()
             }
             .keyboardShortcut(" ")
@@ -155,7 +155,7 @@ struct RightClickMenuView: View {
 
         if !optimiser.running {
             Section("File") {
-                Button("Save as...") {
+                Button("Save as…") {
                     optimiser.save()
                 }
                 .keyboardShortcut("s")
@@ -213,24 +213,13 @@ struct RightClickMenuView: View {
                     }
                     .disabled(!airdrop.canPerform(withItems: [url]))
                 }
-                Button("Upload with Dropshare") {
-                    DROPSHARE.open(optimiser: optimiser)
+                if DROPSHARE.appURL != nil {
+                    Button("Upload with Dropshare") {
+                        DROPSHARE.open(optimiser: optimiser)
+                    }
+                    .keyboardShortcut("u")
                 }
-                .keyboardShortcut("u")
-                Menu("Add to shelf\u{2026}") {
-                    Button("Add to Yoink") {
-                        YOINK.open(optimiser: optimiser)
-                    }
-                    Button("Add to Dockside") {
-                        DOCKSIDE.open(optimiser: optimiser)
-                    }
-                    Button("Add to Dropover") {
-                        DROPOVER.open(optimiser: optimiser)
-                    }
-                    Button("Add to Atoll") {
-                        ATOLL.open(optimiser: optimiser)
-                    }
-                }
+                ShelfMenu { $0.open(optimiser: optimiser) }
             }
 
             Section("Advanced") {
@@ -260,7 +249,7 @@ struct RightClickMenuView: View {
     /// Transform section never alternates between flat items and submenus.
     @ViewBuilder var editButtons: some View {
         if optimiser.canCrop() {
-            Button("Crop and resize...") {
+            Button("Crop and resize…") {
                 optimiser.showCropWindow()
             }
             .keyboardShortcut("k")
@@ -421,6 +410,21 @@ struct RightClickMenuView: View {
     }
 }
 
+struct ShelfMenu: View {
+    let add: (AppIntegration) -> Void
+
+    var body: some View {
+        let installed = SHELF_APPS.filter { $0.appURL != nil }
+        if !installed.isEmpty {
+            Menu("Add to shelf") {
+                ForEach(installed, id: \.appName) { app in
+                    Button("Add to \(app.appName)") { add(app) }
+                }
+            }
+        }
+    }
+}
+
 struct ConvertMenu: View {
     @ObservedObject var optimiser: Optimiser
 
@@ -457,7 +461,7 @@ struct BatchRightClickMenuView: View {
         }
         .disabled(optimisers.allSatisfy(\.isOriginal))
 
-        Button("QuickLook") {
+        Button("Quick Look") {
             sm.quicklook()
         }
 
@@ -505,27 +509,15 @@ struct BatchRightClickMenuView: View {
 
         Divider()
 
-        Button("Upload with Dropshare") {
-            DROPSHARE.open(optimisers: sm.optimisers)
-            sm.selection = []
+        if DROPSHARE.appURL != nil {
+            Button("Upload with Dropshare") {
+                DROPSHARE.open(optimisers: sm.optimisers)
+                sm.selection = []
+            }
         }
-        Menu("Add to shelf\u{2026}") {
-            Button("Add to Yoink") {
-                YOINK.open(optimisers: sm.optimisers)
-                sm.selection = []
-            }
-            Button("Add to Dockside") {
-                DOCKSIDE.open(optimisers: sm.optimisers)
-                sm.selection = []
-            }
-            Button("Add to Dropover") {
-                DROPOVER.open(optimisers: sm.optimisers)
-                sm.selection = []
-            }
-            Button("Add to Atoll") {
-                ATOLL.open(optimisers: sm.optimisers)
-                sm.selection = []
-            }
+        ShelfMenu {
+            $0.open(optimisers: sm.optimisers)
+            sm.selection = []
         }
 
         Divider()
