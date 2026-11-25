@@ -828,14 +828,33 @@ class AppDelegate: AppDelegateParent {
                 showNotice("Running • **Paused** • Stopped\nNext clipboard event will be ignored")
             }
         case .optimiseClipboard:
+            guard !optimiseFinderSelection(aggressive: false) else { return }
             Task { try? await optimiseLastClipboardItem() }
         case .optimiseAggressively:
+            guard !optimiseFinderSelection(aggressive: true) else { return }
             if let opt = OM.current, !opt.inRemoval {
                 guard !opt.aggressive else { return }
                 opt.reoptimiseAggressively()
             } else {
                 Task { try? await optimiseLastClipboardItem(aggressiveOptimisation: true) }
             }
+        }
+    }
+
+    @MainActor
+    func optimiseFinderSelection(aggressive: Bool) -> Bool {
+        guard FinderSelection.isFrontmost else { return false }
+        do {
+            let files = try FinderSelection.files()
+            guard !files.isEmpty else { return false }
+            optimiseFiles(files.map(ClipboardType.fromURL), aggressive: aggressive, source: .finder)
+            return true
+        } catch FinderSelection.Failure.notAllowed {
+            showNotice("**Polc can't see Finder's selection**\nAllow it in System Settings → Privacy & Security → Automation")
+            return true
+        } catch {
+            log.error("Could not read Finder's selection: \(error)")
+            return false
         }
     }
 
@@ -1729,33 +1748,30 @@ class ContextualMenuServiceProvider: NSObject {
             return
         }
 
-        for item in items.map(ClipboardType.fromPasteboardItem) {
-            guard item != .unknown else {
-                continue
-            }
-            Task {
-                do {
-                    try await optimiseItem(
-                        item,
-                        id: item.id,
-                        hideFloatingResult: false,
-                        downscaleTo: nil,
-                        changePlaybackSpeedBy: nil,
-                        aggressiveOptimisation: nil,
-                        copyToClipboard: false,
-                        source: .service
-                    )
-                } catch let error as PolcError {
-                    // A bare `try await` inside this Task discarded every failure: the result card sat
-                    // at "Optimising" forever and the file was silently left untouched, which read as
-                    // "Polc stopped working" for anyone optimising into a read-only folder. Every other
-                    // entry point (Shortcuts, drop zone, URL handler, CLI) already reports its errors.
-                    log.error("Error optimising \(item.id) from the Services menu: \(error.description)")
-                    await MainActor.run { opt(item.id)?.finish(error: error.humanDescription) }
-                } catch {
-                    log.error("Error optimising \(item.id) from the Services menu: \(error)")
-                    await MainActor.run { opt(item.id)?.finish(error: "Optimisation failed") }
-                }
+        optimiseFiles(items.map(ClipboardType.fromPasteboardItem), aggressive: nil, source: .service)
+    }
+}
+
+func optimiseFiles(_ items: [ClipboardType], aggressive: Bool?, source: OptimisationSource) {
+    for item in items where item != .unknown {
+        Task { @MainActor in
+            do {
+                try await optimiseItem(
+                    item,
+                    id: item.id,
+                    hideFloatingResult: false,
+                    downscaleTo: nil,
+                    changePlaybackSpeedBy: nil,
+                    aggressiveOptimisation: aggressive,
+                    copyToClipboard: false,
+                    source: source
+                )
+            } catch let error as PolcError {
+                log.error("Error optimising \(item.id) from \(source.string): \(error.description)")
+                opt(item.id)?.finish(error: error.humanDescription)
+            } catch {
+                log.error("Error optimising \(item.id) from \(source.string): \(error)")
+                opt(item.id)?.finish(error: "Optimisation failed")
             }
         }
     }

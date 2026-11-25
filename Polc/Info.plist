@@ -225,6 +225,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Polc reads the files selected in Finder when you press its optimise shortcuts there.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Polc needs access to your Photos library to retrieve full-resolution images copied from Photos.app</string>
 	<key>NSPrincipalClass</key>

@@ -462,6 +462,7 @@
 				FileOps.swift,
 				FileOptimisationWatcher.swift,
 				FilePlacement.swift,
+				FinderSelection.swift,
 				FloatingResult.swift,
 				FolderMerge.swift,
 				GlobalAction.swift,
