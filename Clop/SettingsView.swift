@@ -2157,62 +2157,36 @@ struct KeysSettingsView: View {
 
 }
 
-import LowtechIndie
-import LowtechPro
-import LowtechProSentry
 
-struct MadeBy: View {
+struct LegalNotice: View {
     var body: some View {
-        HStack(spacing: 6) {
-            SwiftUI.Image("lowtech")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 24, height: 24)
-                .opacity(0.7)
-            Text("by")
-            Link("The low-tech guys", destination: "https://lowtechguys.com/".url!)
-                .bold()
-                .foregroundColor(.primary)
-                .underline()
-        }
-        .font(.mono(12, weight: .regular))
-        .kerning(-0.5)
-    }
-}
-
-struct LicenseUpdatesSettingsView: View {
-    @ObservedObject var um: UpdateManager = UM
-    @ObservedObject var pm: ProManager = PM
-
-    var body: some View {
-        if let pro = pm.pro, let updater = um.updater {
-            Form {
-                LicenseAndUpdatesView(pro: pro, updater: updater, appName: "Clop", changelogURL: URL(string: "https://files.lowtechguys.com/clop/changelog.html"))
-            }
-            .formStyle(.grouped)
-            .scrollContentBackground(.hidden)
-        } else {
-            ProgressView()
-                .fill()
-        }
+        Text("Based on Clop by The low-tech guys. Licensed under GPLv3, without any warranty.")
+            .font(.mono(11, weight: .regular))
+            .foregroundColor(.secondary)
     }
 }
 
 struct AboutSettingsView: View {
-    @ObservedObject var um: UpdateManager = UM
-    @ObservedObject var pm: ProManager = PM
-
     var body: some View {
-        AboutView(
-            appName: "Clop",
-            pro: pm.pro,
-            updater: um.updater,
-            websiteURL: URL(string: "https://lowtechguys.com/clop"),
-            contactURL: URL(string: "https://lowtechguys.com/contact?app=Clop"),
-            discordURL: URL(string: "https://discord.gg/YeTuy6adXk"),
-            sourceURL: URL(string: "https://github.com/FuzzyIdeas/Clop"),
-            changelogURL: URL(string: "https://files.lowtechguys.com/clop/changelog.html")
-        )
+        VStack(spacing: 14) {
+            SwiftUI.Image(nsImage: NSApp.applicationIconImage)
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .frame(width: 128, height: 128)
+            Text("Clop")
+                .round(48, weight: .black)
+                .padding(.top, -4)
+            Text("v\(Bundle.main.version)")
+                .mono(13, weight: .regular)
+                .foregroundColor(.secondary)
+            Link("Source", destination: "https://github.com/stephenangeloni/Clop".url!)
+                .underline()
+                .opacity(0.75)
+                .padding(.top, 6)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 24)
         .fill()
     }
 }
@@ -2863,11 +2837,9 @@ struct GeneralSettingsView: View {
     @Default(.showMenubarIcon) var showMenubarIcon
     @Default(.useClassicMenubarIcon) var useClassicMenubarIcon
     @Default(.useGeometricMenubarIcon) var useGeometricMenubarIcon
-    @Default(.defaultLinkExpiration) var defaultLinkExpiration
     @Default(.stripMetadata) var stripMetadata
     @Default(.preserveColorMetadata) var preserveColorMetadata
     @Default(.preserveDates) var preserveDates
-    @Default(.syncSettingsCloud) var syncSettingsCloud
     @Default(.optimisedFileProtectionMs) var optimisedFileProtectionMs
 
     @Default(.workdir) var workdir
@@ -2920,22 +2892,6 @@ struct GeneralSettingsView: View {
             }
             LaunchAtLogin.Toggle()
                 .accessibilityLabel("Launch at login")
-            Toggle("Sync settings with other Macs via iCloud", isOn: $syncSettingsCloud)
-                .searchAnchor("general.main.syncSettingsCloud", namesControl: true)
-            HStack {
-                Text("Secure send links expire after")
-                Spacer()
-                Picker("Secure send links expire after", selection: $defaultLinkExpiration) {
-                    ForEach(LINK_EXPIRATION_PRESETS, id: \.self) { preset in
-                        Text(expirationDurationLabel(preset)).tag(preset)
-                    }
-                    Divider()
-                    Text("Never").tag(LINK_EXPIRATION_NEVER)
-                }
-                .labelsHidden()
-                .frame(width: 150)
-                .searchAnchor("general.main.defaultLinkExpiration")
-            }
 
             Section(header: SectionHeader(title: "Edit with external app", subtitle: "Hand an optimised file to an editor of your choice with ⌘E or the right-click menu")) {
                 EditorAppRow(label: "Images", systemImage: "photo", key: .editorAppImage)
@@ -3007,13 +2963,6 @@ struct GeneralSettingsView: View {
                         + Text("\nIncrease if files on iCloud Drive get optimised twice").round(11, weight: .regular).foregroundColor(.secondary)
                 }
                 .searchAnchor("general.optimisation.optimisedFileProtectionMs", namesControl: true)
-            }
-
-            Section(header: SectionHeader(title: "Privacy")) {
-                SentryToggleRow(
-                    title: "Send error reports",
-                    subtitle: "Help improve Clop by sending anonymous crash and error reports to the developer"
-                )
             }
         }
         .scrollContentBackground(.hidden)
@@ -3129,7 +3078,7 @@ struct SettingsSidebarRow: View {
 
 struct SettingsView: View {
     enum Tabs: Int, Hashable, CaseIterable, Identifiable {
-        case general, clipboard, files, video, audio, images, pdf, dropzone, presetZones, floating, keys, pipelines, automation, mcp, licenseUpdates, about
+        case general, clipboard, files, video, audio, images, pdf, dropzone, presetZones, floating, keys, pipelines, automation, mcp, about
 
         var id: Int {
             rawValue
@@ -3159,7 +3108,6 @@ struct SettingsView: View {
             case .pipelines: "Pipelines"
             case .automation: "Automation"
             case .mcp: "MCP"
-            case .licenseUpdates: "License & updates"
             case .about: "About"
             }
         }
@@ -3180,7 +3128,6 @@ struct SettingsView: View {
             case .pipelines: "arrow.triangle.branch"
             case .automation: "hammer"
             case .mcp: "sparkles"
-            case .licenseUpdates: "key"
             case .about: "info.circle"
             }
         }
@@ -3201,7 +3148,6 @@ struct SettingsView: View {
             case .pipelines: .periwinkle
             case .automation: .sage
             case .mcp: .mutedTeal
-            case .licenseUpdates: .ochre
             case .about: .dustyRose
             }
         }
@@ -3211,7 +3157,7 @@ struct SettingsView: View {
     static let fileTypeTabs: [Tabs] = [.video, .audio, .images, .pdf]
     static let dropTabs: [Tabs] = [.dropzone, .presetZones, .floating]
     static let automationTabs: [Tabs] = [.keys, .pipelines, .automation, .mcp]
-    static let supportTabs: [Tabs] = [.licenseUpdates, .about]
+    static let supportTabs: [Tabs] = [.about]
 
     @ObservedObject var svm = settingsViewManager
 
@@ -3446,11 +3392,10 @@ struct SettingsView: View {
         case .pipelines: PipelinesSettingsView()
         case .automation: AutomationSettingsView()
         case .mcp: MCPSettingsView()
-        case .licenseUpdates: LicenseUpdatesSettingsView()
         case .about:
             AboutSettingsView()
                 .overlay(alignment: .bottomTrailing) {
-                    MadeBy().offset(x: -6, y: 0)
+                    LegalNotice().padding(8)
                 }
         }
     }

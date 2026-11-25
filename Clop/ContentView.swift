@@ -8,18 +8,13 @@
 import Defaults
 import LaunchAtLogin
 import Lowtech
-import LowtechIndie
-import LowtechPro
 import SwiftUI
 import System
 
 // MARK: - MenuView
 
 struct MenuView: View {
-    @ObservedObject var um = UM
-    @ObservedObject var pm = PM
     @ObservedObject var om = OM
-    @ObservedObject var wdm = WDM
     @ObservedObject var lastApp = LastFocusedAppTracker.shared
     @Environment(\.openWindow) var openWindow
 
@@ -35,20 +30,6 @@ struct MenuView: View {
     @Default(.clipboardIgnoredAppBundleIds) var clipboardIgnoredAppBundleIds
 
     @State var cliInstallResult: String?
-
-    var proErrors: some View {
-        Section("Skipped items because of free version limits") {
-            ForEach(om.skippedBecauseNotPro, id: \.self) { url in
-                let str = url.isFileURL ? url.filePath!.shellString : url.absoluteString
-                Button("    \(str.count > 50 ? (str.prefix(25) + "..." + str.suffix(15)) : str)") {
-                    QuickLooker.quicklook(url: url)
-                }
-            }
-            Button("Get Clop Pro") {
-                manageLicenceInSettings()
-            }
-        }
-    }
 
     var body: some View {
         Button("Settings") {
@@ -163,68 +144,11 @@ struct MenuView: View {
             }
         }
 
-        if wdm.hasSessions {
-            Menu("Sending files (\(wdm.sessions.count))") {
-                ForEach(wdm.sessions) { session in
-                    Menu(session.fileNames) {
-                        Button("Copy link") {
-                            session.copyLink()
-                        }
-                        if session.downloadCount > 0 {
-                            Text("Downloaded \(session.downloadCount) time\(session.downloadCount == 1 ? "" : "s")")
-                        }
-                        Button("Stop sending") {
-                            wdm.stopSession(session)
-                        }
-                    }
-                }
-                Divider()
-                Button("Copy all links") {
-                    let links = wdm.sessions.map(\.shareURL).joined(separator: "\n")
-                    withGeneralPasteboard { pb in
-                        pb.clearContents()
-                        pb.setString(links, forType: .string)
-                    }
-                }
-                Button("Stop all") {
-                    wdm.stopAll()
-                }
-            }
-        }
-
-        if !proactive, !om.skippedBecauseNotPro.isEmpty {
-            proErrors
-        }
-
         Menu("About...") {
-            Button("Contact the developer") {
-                NSWorkspace.shared.open(contactURL())
-            }
             Button("Create debug dump") {
                 DebugDump.confirmAndRun()
             }
-            Button("Privacy policy") {
-                NSWorkspace.shared.open("https://lowtechguys.com/clop/privacy".url!)
-            }
-            Text("License: \(proactive ? "Pro" : "Free")")
-            #if DEBUG
-                Button("Reset Trial") {
-                    product?.resetTrial()
-                }
-                Button("Expire Trial") {
-                    product?.expireTrial()
-                }
-            #endif
             Text("Version: v\(Bundle.main.version)")
-        }
-
-        Button("Manage license") {
-            manageLicenceInSettings()
-        }
-
-        Button(um.newVersion != nil ? "v\(um.newVersion!) update available" : "Check for updates") {
-            checkForUpdates()
-            focus()
         }
 
         Toggle("Show Clop UI in screenshots", isOn: $allowClopToAppearInScreenshots)
@@ -234,23 +158,6 @@ struct MenuView: View {
             NSApp.terminate(nil)
         }.keyboardShortcut("q")
     }
-}
-
-func contactURL() -> URL {
-    guard var urlBuilder = URLComponents(url: "https://lowtechguys.com/contact".url!, resolvingAgainstBaseURL: false) else {
-        return "https://lowtechguys.com/contact".url!
-    }
-    urlBuilder.queryItems = [URLQueryItem(name: "userid", value: SERIAL_NUMBER_HASH), URLQueryItem(name: "app", value: "Clop")]
-
-    if let licenseCode = product?.licenseCode {
-        urlBuilder.queryItems?.append(URLQueryItem(name: "code", value: licenseCode))
-    }
-
-    if let email = product?.activationEmail {
-        urlBuilder.queryItems?.append(URLQueryItem(name: "email", value: email))
-    }
-
-    return urlBuilder.url ?? "https://lowtechguys.com/contact".url!
 }
 
 extension View {

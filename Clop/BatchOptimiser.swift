@@ -1281,7 +1281,7 @@ private func batchPDFDPIArgs(_ mode: PDFDPIMode, aggressive: Bool?) -> (dpi: Int
     // or "to folder" but not per-file output templates, so those keep the per-file path:
     // dropping a requested operation silently is worse than skipping the batch window.
     let outputExpressible = req.output == nil || req.output?.existingFilePath?.isDir == true
-    return req.pipeline == nil && outputExpressible && proactive && req.urls.count > Defaults[.batchModeFileCountThreshold]
+    return req.pipeline == nil && outputExpressible && req.urls.count > Defaults[.batchModeFileCountThreshold]
 }
 
 /// The CLI batch that ran last, which the next one waits for.

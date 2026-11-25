@@ -86,8 +86,6 @@ enum MCPServer {
     /// lexicographically, which is why a plain string compare is enough.
     static let mrtrFrom = "2026-07-28"
 
-    static let buyURL = "https://lowtechguys.com/clop"
-
     static var state = State()
     static var current = Call()
     static var depth = 0

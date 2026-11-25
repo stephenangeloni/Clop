@@ -44,7 +44,6 @@ enum MCPSettingsBridge {
         behaviour("manualConvertedAudioBehaviour", .manualConvertedAudioBehaviour),
 
         // General
-        bool("syncSettingsCloud", .syncSettingsCloud),
         bool("stripMetadata", .stripMetadata),
         bool("preserveColorMetadata", .preserveColorMetadata),
         bool("preserveDates", .preserveDates),
@@ -571,9 +570,6 @@ extension MCPSettingsBridge {
         }
 
         if req.origin == "mcp" {
-            guard proactive else {
-                return SettingsResponse(ok: false, error: "Clop's MCP server needs Clop Pro.")
-            }
             if req.action == .set, !Defaults[.mcpEnabled] {
                 return SettingsResponse(
                     ok: false,
@@ -619,9 +615,6 @@ extension MCPSettingsBridge {
 @MainActor func mcpRefusal(origin: String?, pipeline: String?) -> String? {
     guard origin == "mcp" else { return nil }
 
-    guard proactive else {
-        return "Clop's MCP server needs Clop Pro."
-    }
     guard Defaults[.mcpEnabled] else {
         return "Clop is not accepting changes from agents. Ask the user to allow it in Clop Settings, MCP."
     }
