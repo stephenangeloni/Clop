@@ -337,6 +337,7 @@ struct FloatingGridButtonStyle: ButtonStyle {
 
 struct CloseStopButton: View {
     @ObservedObject var optimiser: Optimiser
+    var size: CGFloat = 23
     @Environment(\.preview) var preview
 
     var body: some View {
@@ -355,7 +356,7 @@ struct CloseStopButton: View {
             },
             label: { SwiftUI.Image(systemName: optimiser.running ? "stop.fill" : "xmark") }
         )
-        .buttonStyle(FloatingCornerButtonStyle())
+        .buttonStyle(FloatingCornerButtonStyle(size: size))
         .accessibilityLabel(optimiser.running ? "Stop" : "Dismiss")
     }
 }

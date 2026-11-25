@@ -52,4 +52,10 @@ struct ResolutionField: View {
     }
 }
 
+extension ButtonStyle where Self == FlatButton {
+    static func resolutionField(textColor: Color) -> FlatButton {
+        FlatButton(color: .black.opacity(0.1), textColor: textColor, radius: 3, horizontalPadding: 3, verticalPadding: 1)
+    }
+}
+
 extension CropSize: Defaults.Serializable {}

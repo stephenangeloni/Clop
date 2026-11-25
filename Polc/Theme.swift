@@ -17,9 +17,6 @@ enum Palette {
     static let video = Color(light: rgb(0.722, 0.196, 0.478), dark: rgb(1.0, 0.494, 0.753))
     static let audio = Color(light: rgb(0.180, 0.490, 0.310), dark: rgb(0.435, 0.816, 0.549))
     static let pdf = Color(light: rgb(0.761, 0.271, 0.176), dark: rgb(1.0, 0.541, 0.439))
-
-    static let dismissFill = Color(light: rgb(1.0, 0.89, 0.89), dark: rgb(0.32, 0.14, 0.14))
-    static let dismissFillHovered = Color(light: rgb(1.0, 0.82, 0.82), dark: rgb(0.42, 0.17, 0.17))
 }
 
 /// A muted, earthy sidebar colour with a light/dark pair: deeper on the light

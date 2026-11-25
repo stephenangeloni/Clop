@@ -1170,7 +1170,7 @@ struct FloatingResult: View {
     @ViewBuilder var sizeDiff: some View {
         if let oldSize = optimiser.oldSize {
             ResolutionField(optimiser: optimiser, size: oldSize)
-                .buttonStyle(FlatButton(color: .black.opacity(0.1), textColor: .white, radius: 3, horizontalPadding: 3, verticalPadding: 1))
+                .buttonStyle(.resolutionField(textColor: .white))
                 .font(.round(TextSize.caption))
                 .foregroundColor(optimiser.thumbnail != nil ? .lightGray : .secondary)
                 .fixedSize()
