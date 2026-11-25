@@ -386,7 +386,7 @@ struct BatchPrepContent: View {
                 Divider()
                 // Fixed-size inline panel (no scroll), like the results view's "Adjust optimisation
                 // parameters" panel. The window min height (set below) keeps the cards fully visible.
-                BatchParamColumns(form: form, present: present).padding(16)
+                BatchParamColumns(form: form, present: present).padding(Space.xl)
             }
 
             Divider()
@@ -402,9 +402,9 @@ struct BatchPrepContent: View {
         .onDrop(of: [.fileURL], isTargeted: $dropTargeted) { providers in handleDrop(providers) }
         .overlay {
             if dropTargeted {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: Radius.xlarge)
                     .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: 3))
-                    .padding(6)
+                    .padding(Space.s)
                     .allowsHitTesting(false)
             }
         }
@@ -418,9 +418,9 @@ struct BatchPrepContent: View {
     }
 
     private var dropZone: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Space.l) {
             SwiftUI.Image(systemName: "square.and.arrow.down.on.square")
-                .font(.system(size: 52, weight: .light))
+                .font(.system(size: IconSize.xlarge, weight: .light))
                 .foregroundStyle(.secondary)
             Text("Drop files and folders here")
                 .font(.title2.weight(.medium))
@@ -430,18 +430,18 @@ struct BatchPrepContent: View {
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(40)
+        .padding(Space.xxxl)
         .background {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: Radius.panel)
                 .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [9]))
                 .foregroundStyle(.quaternary)
-                .padding(24)
+                .padding(Space.xxl)
         }
         .contentShape(Rectangle())
     }
 
     private var footer: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Space.m) {
             if !manager.phase.isEmpty {
                 Text(manager.phase).foregroundStyle(.secondary)
             } else {
@@ -462,7 +462,7 @@ struct BatchPrepContent: View {
                 .keyboardShortcut(.defaultAction)
                 .disabled(manager.items.isEmpty || !manager.phase.isEmpty)
         }
-        .padding(12)
+        .padding(Space.l)
     }
 
     private func setWindowMinHeight(_ h: CGFloat) {
@@ -561,10 +561,10 @@ struct BatchParamColumns: View {
     let present: PresentTypes
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Space.xl) {
             OutputRow(form: form)
-            HStack(alignment: .top, spacing: 16) {
-                VStack(spacing: 16) {
+            HStack(alignment: .top, spacing: Space.xl) {
+                VStack(spacing: Space.xl) {
                     imageCard
                     pdfCard
                 }
@@ -611,7 +611,7 @@ struct BatchParamColumns: View {
             ParamRow("Encoder") { choicePicker("Encoder", $form.videoEncoder, VideoEncoderChoice.allCases) { $0.title } }
             Divider()
             ParamRow("Frame rate") {
-                HStack(spacing: 6) {
+                HStack(spacing: Space.s) {
                     numberField($form.videoFPS).disabled(!form.videoFPSCap)
                     Text("fps").foregroundStyle(.tertiary)
                     Toggle("Frame rate", isOn: $form.videoFPSCap).labelsHidden().toggleStyle(.switch).controlSize(.mini)
@@ -640,7 +640,7 @@ struct BatchParamColumns: View {
             }
             Divider()
             ParamRow("Cover size", disabled: form.audioCoverSizeDisabled) {
-                HStack(spacing: 6) {
+                HStack(spacing: Space.s) {
                     numberSuffix($form.audioCoverSize, "px")
                     Picker("Cover size", selection: $form.audioCoverSquaring) {
                         Text("Square if landscape").tag(CoverArtSquaring.landscapeOnly)
@@ -663,7 +663,7 @@ private struct OutputRow: View {
     @ObservedObject var form: BatchParamsModel
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Space.m) {
             Text("Save to").foregroundStyle(.secondary)
             Picker("Save to", selection: Binding(
                 get: { form.outputFolder == nil ? 0 : 1 },
@@ -711,19 +711,19 @@ struct ParamCard<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: Space.m) {
+            HStack(spacing: Space.s) {
                 SwiftUI.Image(systemName: icon).foregroundStyle(dimmed ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.tint))
                 Text(title)
             }
-            .font(.system(size: 14, weight: .semibold))
-            .padding(.leading, 2)
+            .font(.system(size: TextSize.body, weight: .semibold))
+            .padding(.leading, Space.xxs)
 
             VStack(spacing: 0) { content() }
                 .frame(maxWidth: .infinity)
                 .background(Color(nsColor: .controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.quaternary, lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: Radius.xlarge))
+                .overlay(RoundedRectangle(cornerRadius: Radius.xlarge).strokeBorder(.quaternary, lineWidth: 1))
         }
         .disabled(dimmed)
         .opacity(dimmed ? 0.5 : 1)
@@ -742,13 +742,13 @@ struct ParamRow<Control: View>: View {
     @ViewBuilder let control: () -> Control
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Space.l) {
             Text(label).foregroundStyle(.secondary)
             Spacer(minLength: 12)
             control()
         }
         .frame(maxWidth: .infinity, minHeight: 36)
-        .padding(.horizontal, 12)
+        .padding(.horizontal, Space.l)
         .disabled(disabled)
         .opacity(disabled ? 0.45 : 1)
         // A group named after the row: the label sits beside the control but is never linked to
@@ -778,7 +778,7 @@ struct ToggleRow: View {
         .toggleStyle(.switch)
         .controlSize(.small)
         .frame(maxWidth: .infinity, minHeight: 36)
-        .padding(.horizontal, 12)
+        .padding(.horizontal, Space.l)
         .disabled(disabled)
         .opacity(disabled ? 0.45 : 1)
     }
@@ -811,7 +811,7 @@ private struct CommitCompressionSlider: View {
 
     var body: some View {
         let shown = drag ?? value
-        HStack(spacing: 8) {
+        HStack(spacing: Space.m) {
             Slider(
                 value: Binding(get: { drag ?? value }, set: { drag = $0 }),
                 in: 0 ... 100,
@@ -834,7 +834,7 @@ private struct CommitDownscaleSlider: View {
 
     var body: some View {
         let shown = drag ?? value
-        HStack(spacing: 8) {
+        HStack(spacing: Space.m) {
             Slider(
                 value: Binding(get: { drag ?? value }, set: { drag = $0 }),
                 in: 0 ... 1,
@@ -872,7 +872,7 @@ private struct CommitBitrateSlider: View {
 
     var body: some View {
         let shown = drag.map { snapBitrate(Int($0.rounded()), range: range) } ?? value
-        HStack(spacing: 8) {
+        HStack(spacing: Space.m) {
             Slider(
                 value: Binding(get: { drag ?? Double(value) }, set: { drag = $0 }),
                 in: 0 ... Double(range.upperBound), step: 2,
@@ -902,7 +902,7 @@ private func snapBitrate(_ v: Int, range: ClosedRange<Int>) -> Int {
 }
 
 private func numberSuffix(_ value: Binding<Int>, _ suffix: String) -> some View {
-    HStack(spacing: 6) {
+    HStack(spacing: Space.s) {
         numberField(value)
         Text(suffix).foregroundStyle(.tertiary)
     }
@@ -1009,7 +1009,7 @@ struct BatchResultsContent: View {
     /// Fixed-size inline panel (no scroll): the per-type cards fit the window width.
     private var adjustPanel: some View {
         VStack(spacing: 0) {
-            BatchParamColumns(form: adjustForm, present: PresentTypes(manager.items)).padding(16)
+            BatchParamColumns(form: adjustForm, present: PresentTypes(manager.items)).padding(Space.xl)
             Divider()
             HStack {
                 Text(affectedSummary).foregroundStyle(.secondary).font(.callout)
@@ -1020,12 +1020,12 @@ struct BatchResultsContent: View {
                     .disabled(changedTypes.isEmpty)
                     .keyboardShortcut(.defaultAction)
             }
-            .padding(12)
+            .padding(Space.l)
         }
     }
 
     private var controlsBar: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Space.l) {
             batchProgress
             if manager.aggregate.savedBytes > 0 {
                 savingsPills
@@ -1042,13 +1042,13 @@ struct BatchResultsContent: View {
             .disabled(!canTune)
             Button("Cancel") { manager.cancel() }.disabled(!manager.isRunning)
         }
-        .padding(12)
+        .padding(Space.l)
     }
 
     @ViewBuilder private var batchProgress: some View {
         let a = manager.aggregate
         if manager.isRunning || !manager.phase.isEmpty {
-            HStack(spacing: 8) {
+            HStack(spacing: Space.m) {
                 ProgressView(value: a.overallFraction).frame(width: 120)
                 Text(manager.phase.isEmpty ? "\(a.finished)/\(a.total)" : manager.phase)
                     .font(.callout).monospacedDigit().foregroundStyle(.secondary)
@@ -1062,7 +1062,7 @@ struct BatchResultsContent: View {
     private var savingsPills: some View {
         let a = manager.aggregate
         let pct = Int((a.savedFraction * 100).rounded())
-        return HStack(spacing: 6) {
+        return HStack(spacing: Space.s) {
             pill(humanBytes(a.totalOldBytes), .red)
             SwiftUI.Image(systemName: "arrow.right").font(.caption2).foregroundStyle(.secondary)
             pill(humanBytes(a.totalNewBytes), .green)
@@ -1071,7 +1071,7 @@ struct BatchResultsContent: View {
     }
 
     private var actionBar: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Space.m) {
             Button("Show in Finder") { batchReveal(selectedItems) }.disabled(selection.isEmpty)
             Button("Open") { BatchQuickLooker.quicklook(batchResultURLs(selectedItems)) }.disabled(selection.isEmpty)
             Button("Copy") { batchCopyFiles(selectedItems) }.disabled(selection.isEmpty)
@@ -1103,13 +1103,13 @@ struct BatchResultsContent: View {
                     )
                 }
         }
-        .padding(12)
+        .padding(Space.l)
     }
 
     private func pill(_ text: String, _ color: Color, prominent: Bool = false) -> some View {
         Text(text)
-            .font(.system(size: 11, weight: prominent ? .semibold : .regular)).monospacedDigit()
-            .padding(.horizontal, 8).padding(.vertical, 3)
+            .font(.system(size: TextSize.subheadline, weight: prominent ? .semibold : .regular)).monospacedDigit()
+            .padding(.horizontal, Space.m).padding(.vertical, Space.xxs)
             .background(color.opacity(prominent ? 0.22 : 0.14), in: Capsule())
             .foregroundStyle(color)
     }
@@ -1344,23 +1344,23 @@ struct BatchFailuresSheet: View {
                     .foregroundStyle(.orange).font(.headline)
                 Spacer()
             }
-            .padding(12)
+            .padding(Space.l)
             Divider()
 
             List(failures) { item in
                 DisclosureGroup {
                     if let log = item.errorLog {
                         ScrollView(.horizontal) {
-                            Text(log).font(.system(size: 11, design: .monospaced)).textSelection(.enabled)
-                                .padding(8)
+                            Text(log).font(.system(size: TextSize.subheadline, design: .monospaced)).textSelection(.enabled)
+                                .padding(Space.m)
                         }
                         .frame(maxHeight: 220)
-                        .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+                        .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: Radius.medium))
                     } else {
                         Text("No tool output captured for this failure.").font(.callout).foregroundStyle(.secondary)
                     }
                 } label: {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Space.xxs) {
                         Text(item.name).fontWeight(.medium)
                         Text(item.error ?? "Unknown error").font(.callout).foregroundStyle(.secondary)
                     }
@@ -1373,7 +1373,7 @@ struct BatchFailuresSheet: View {
                 Spacer()
                 Button("Done") { dismiss() }.keyboardShortcut(.defaultAction)
             }
-            .padding(12)
+            .padding(Space.l)
         }
         .frame(minWidth: 520, minHeight: 360)
     }

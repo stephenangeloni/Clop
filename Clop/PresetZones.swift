@@ -155,7 +155,7 @@ struct PresetZoneRow: View {
                 }
             }
         } label: {
-            HStack(spacing: 3) {
+            HStack(spacing: Space.xxs) {
                 if let ft = zone.type {
                     SwiftUI.Image(systemName: ft.symbolName).foregroundColor(ft.color)
                 } else {
@@ -164,7 +164,7 @@ struct PresetZoneRow: View {
                 Text(zone.type.map { $0 == .pdf ? "PDF" : $0.description.capitalized } ?? "Any type")
                     .foregroundColor(.blue.opacity(0.7))
             }
-            .font(.regular(10))
+            .font(.regular(TextSize.caption))
         }
         .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize()
         .help("Move to another file type")
@@ -174,12 +174,12 @@ struct PresetZoneRow: View {
     var confirmCancel: some View {
         HStack(spacing: 0) {
             Button(action: commit) {
-                SwiftUI.Image(systemName: "checkmark").font(.regular(11)).foregroundColor(.green.opacity(0.8))
-                    .padding(.horizontal, 7).padding(.vertical, 3)
+                SwiftUI.Image(systemName: "checkmark").font(.regular(TextSize.subheadline)).foregroundColor(.green.opacity(0.8))
+                    .padding(.horizontal, Space.s).padding(.vertical, Space.xxs)
             }.buttonStyle(.plain).help("Done").accessibilityLabel("Done")
             Button(action: cancel) {
-                SwiftUI.Image(systemName: "xmark").font(.regular(11)).foregroundColor(.red.opacity(0.8))
-                    .padding(.horizontal, 7).padding(.vertical, 3)
+                SwiftUI.Image(systemName: "xmark").font(.regular(TextSize.subheadline)).foregroundColor(.red.opacity(0.8))
+                    .padding(.horizontal, Space.s).padding(.vertical, Space.xxs)
             }.buttonStyle(.plain).help("Cancel").accessibilityLabel("Cancel")
         }
         .background(Capsule().fill(Color.primary.opacity(0.05)))
@@ -187,10 +187,10 @@ struct PresetZoneRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 6) {
+            HStack(spacing: Space.s) {
                 IconPickerView(icon: $icon)
                     .buttonStyle(.plain)
-                    .font(.system(size: 13))
+                    .font(.system(size: TextSize.body))
                     .onChange(of: icon) { newIcon in
                         if newIcon != zone.icon {
                             replaceMeta(name: editName, icon: newIcon, type: zone.type)
@@ -219,8 +219,8 @@ struct PresetZoneRow: View {
                 ) { idx in setFlag(hide: idx == 1) }
                 confirmCancel
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
+            .padding(.horizontal, Space.m)
+            .padding(.vertical, Space.xs)
             .background(PipelineTheme.topBarBackground)
 
             Divider().opacity(0.5)
@@ -236,16 +236,16 @@ struct PresetZoneRow: View {
                 coordinatorRef: { coordHolder.value = $0 }
             )
             .frame(height: max(36, CGFloat(1 + editText.count / 80) * 18))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
+            .padding(.horizontal, Space.m)
+            .padding(.vertical, Space.xs)
             .background(PipelineTheme.editorBackground)
             if isEditingSteps {
                 PipelineEditingSuggestions(prefix: currentPrefix, fileType: zone.type, coordinator: coordinator)
-                    .padding(.horizontal, 8)
-                    .padding(.bottom, 6)
+                    .padding(.horizontal, Space.m)
+                    .padding(.bottom, Space.s)
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.xlarge, style: .continuous))
         .card(radius: 10, fill: .clear, borderColor: .primary.opacity(0.2), borderWidth: 1)
         .onAppear {
             editName = zone.name

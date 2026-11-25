@@ -495,6 +495,7 @@
 				SettingsURL.swift,
 				SettingsView.swift,
 				ShortcutsCompat.swift,
+				Theme.swift,
 				Uploads.swift,
 				Video.swift,
 				VideoPipeline.swift,

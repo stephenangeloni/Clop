@@ -274,7 +274,7 @@ struct DropZonePresetsView: View {
             .resizable()
             .scaledToFit()
             .frame(width: 21, height: 21)
-            .padding(6)
+            .padding(Space.s)
 //            .background(
 //                roundRect(5, fill: .bg.warm.opacity(colorScheme == .dark ? 0.6 : 0.4))
 //                    .shadow(color: .black.opacity(0.5), radius: 5, x: 0, y: 4)
@@ -327,12 +327,12 @@ struct DropZonePresetsView: View {
     func zoneLabel(zone: PresetZone?, nextPreset: Bool, hovered: Bool, index: Int) -> some View {
         let isLeft = index % 2 == 0
 
-        VStack(spacing: 2) {
+        VStack(spacing: Space.xxs) {
             zoneIcon(systemName: zone.map(\.icon) ?? (nextPreset ? "plus.square.dashed" : "square.dashed"))
                 .rotation3DEffect(.degrees(hovered ? 170 : 0), axis: (x: 0, y: 1, z: 0), perspective: 1.2)
 
             Text(zone.map(\.name) ?? (nextPreset ? "Add preset" : "No preset"))
-                .round(10)
+                .round(TextSize.caption)
                 .foregroundColor(nextPreset ? .fg.warm.opacity(0.7) : .secondary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -340,7 +340,7 @@ struct DropZonePresetsView: View {
                 .frame(width: DROPZONE_SIZE.width / 2, height: 14)
         }
         .frame(width: DROPZONE_SIZE.width / 2 - 2, height: DROPZONE_SIZE.height / 2)
-        .padding(.vertical, 4)
+        .padding(.vertical, Space.xs)
         .padding(isLeft ? .trailing : .leading, 4)
         // Make the whole quadrant the hit target (so the menu opens anywhere on the zone, not just on the
         // icon/label pixels).
@@ -468,11 +468,11 @@ struct DropZoneView: View {
                 DropZonePresetsView(type: presetFileType ?? dragManager.fileType, selectedPreset: $selectedPreset)
             } else {
                 Text("Drop to optimise")
-                    .round(14, weight: .heavy)
-                    .padding(.top, 10)
+                    .round(TextSize.body, weight: .heavy)
+                    .padding(.top, Space.m)
 
                 SwiftUI.Image(systemName: "livephoto")
-                    .font(.bold(36))
+                    .font(.bold(IconSize.xlarge))
                     .foregroundStyle(colorScheme == .dark ? Color.orange : Color.hotRed)
                     .padding(1)
                     .rotationEffect(rotation)
@@ -490,18 +490,18 @@ struct DropZoneView: View {
 
                 VStack(spacing: -1) {
                     Text("^: show preset zones")
-                        .medium(10)
+                        .medium(TextSize.caption)
                         .foregroundColor(.primary)
                         .opacity(0.8)
                     Text(dragManager.dropZoneAtCursor ? "⌥: hide drop zone" : "⌥: show drop zone at cursor")
-                        .medium(10)
+                        .medium(TextSize.caption)
                         .foregroundColor(.primary)
                         .opacity(0.8)
                     Text("⌘: use aggressive optimisation")
-                        .medium(10)
+                        .medium(TextSize.caption)
                         .foregroundColor(keysManager.flags.sideIndependentModifiers.contains(.command) ? .red : .primary)
                         .opacity(0.8)
-                        .padding(.bottom, 6)
+                        .padding(.bottom, Space.s)
                 }
                 .lineLimit(1)
                 .multilineTextAlignment(.center)
@@ -559,7 +559,7 @@ let DROPZONE_PADDING = CGSize(width: 14, height: 10)
 // Match the floating result thumbnail card footprint (cardW × cardH); the inner content frame is
 // the card size minus the dropzone's own padding so the bordered box ends up the same size.
 let DROPZONE_SIZE = CGSize(width: FloatingResult.cardW - DROPZONE_PADDING.width * 2, height: FloatingResult.cardH - DROPZONE_PADDING.height * 2)
-let DROPZONE_SHAPE = RoundedRectangle(cornerRadius: 22, style: .continuous)
+let DROPZONE_SHAPE = RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
 
 extension DropZoneView: DropDelegate {
     func dropEntered(info: DropInfo) {

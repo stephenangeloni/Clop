@@ -15,15 +15,15 @@ struct MCPSettingsView: View {
         Form {
             Section(header: SectionHeader(title: "MCP")) {
                 Toggle(isOn: $mcpEnabled) {
-                    Text("Enable MCP").regular(13)
-                        + Text("\nAllow agents to control Clop, run file optimisations, change settings, write pipelines").round(11, weight: .regular).foregroundColor(.secondary)
+                    Text("Enable MCP").regular(TextSize.body)
+                        + Text("\nAllow agents to control Clop, run file optimisations, change settings, write pipelines").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                 }
                 .onChange(of: mcpEnabled) { _ in MCPInstaller.writeServerCard() }
                 .searchAnchor("mcp.main.mcpEnabled", namesControl: true)
 
                 Toggle(isOn: $mcpAllowScriptSteps) {
-                    Text("Allow agents to write arbitrary scripts in pipelines").regular(13)
-                        + Text("\nUsing scripts in pipelines allows for flexible operations but can be dangerous if not properly verified").round(11, weight: .regular).foregroundColor(.secondary)
+                    Text("Allow agents to write arbitrary scripts in pipelines").regular(TextSize.body)
+                        + Text("\nUsing scripts in pipelines allows for flexible operations but can be dangerous if not properly verified").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                 }
                 .disabled(!mcpEnabled)
                 .onChange(of: mcpAllowScriptSteps) { on in
@@ -40,16 +40,16 @@ struct MCPSettingsView: View {
                 DisclosureGroup(isExpanded: $showMoreClients) {
                     clientRows(MCPInstaller.moreClients)
                 } label: {
-                    Text("See more").regular(13)
+                    Text("See more").regular(TextSize.body)
                 }
             }
 
             Section(header: SectionHeader(title: "Install by hand")) {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: Space.l) {
                     CopyableValueRow(title: "Command line", value: MCPInstaller.cliCommand)
                     CopyableValueRow(title: "Server", value: MCPInstaller.cliPath + " " + MCPInstaller.serveArgs.joined(separator: " "))
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, Space.xs)
             }
         }
         .formStyle(.grouped)
@@ -64,20 +64,20 @@ struct MCPSettingsView: View {
     @Default(.mcpAllowScriptSteps) private var mcpAllowScriptSteps
 
     private func clientRows(_ clients: [MCPInstaller.Client]) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: Space.m) {
             ForEach(clients) { client in
                 clientRow(client)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Space.xs)
     }
 
     private func clientRow(_ client: MCPInstaller.Client) -> some View {
         HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(client.name).medium(13)
+            VStack(alignment: .leading, spacing: Space.xxs) {
+                Text(client.name).medium(TextSize.body)
                 Text(rowDetail(client))
-                    .round(11)
+                    .round(TextSize.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -150,8 +150,8 @@ private struct CopyableValueRow: View {
     let value: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title).medium(13)
+        VStack(alignment: .leading, spacing: Space.xs) {
+            Text(title).medium(TextSize.body)
             CopyablePill(value: value)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -170,20 +170,20 @@ private struct CopyablePill: View {
             copied = true
             mainAsyncAfter(ms: 1200) { copied = false }
         } label: {
-            HStack(spacing: 5) {
+            HStack(spacing: Space.xs) {
                 // `SwiftUI.Image` qualified: Clop has its own `Image` type for optimisable files.
                 SwiftUI.Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.doc")
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: TextSize.micro, weight: .semibold))
                     // Fixed footprint so the glyph swap can't reflow the pill.
                     .frame(width: 12, height: 12)
                 Text(copied ? "Copied!" : value)
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(.system(size: TextSize.caption, design: .monospaced))
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
             .foregroundStyle(.secondary)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
+            .padding(.horizontal, Space.m)
+            .padding(.vertical, Space.xxs)
             .background(Capsule().fill(Color.primary.opacity(0.08)))
             .overlay(Capsule().strokeBorder(Color.primary.opacity(0.10), lineWidth: 1))
         }

@@ -1138,10 +1138,10 @@ struct StepActionGrid: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Space.xs) {
             Text("Possible actions")
                 .dimmed(9, weight: .medium)
-            FlowLayout(spacing: 4) {
+            FlowLayout(spacing: Space.xs) {
                 ForEach(templates, id: \.name) { template in
                     let color = colorForCategory(template)
                     Button(action: {
@@ -1156,22 +1156,22 @@ struct StepActionGrid: View {
                         }
                         onSelect(text)
                     }) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: Space.xs) {
                             Circle()
                                 .fill(color)
                                 .frame(width: 6, height: 6)
                             Text(template.name)
-                                .mono(10, weight: .medium)
+                                .mono(TextSize.caption, weight: .medium)
                         }
                         .fixedSize()
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
+                        .padding(.horizontal, Space.s)
+                        .padding(.vertical, Space.xxs)
                         .background(
-                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                            RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                                 .fill(color.opacity(0.08))
                         )
                         .overlay(
-                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                            RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                                 .strokeBorder(color.opacity(0.2), lineWidth: 0.5)
                         )
                     }

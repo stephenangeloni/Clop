@@ -115,7 +115,7 @@ struct SidebarIcon: View {
             .frame(width: 20, height: 20)
             .background(
                 color.opacity(tileOpacity),
-                in: RoundedRectangle(cornerRadius: 6, style: .continuous)
+                in: RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
             )
     }
 
@@ -143,28 +143,28 @@ struct DirListView: View {
     @ViewBuilder var ignoreRulesView: some View {
         if selectedDirs.count == 1, let dir = selectedDirs.first {
             HStack {
-                Text("Ignore rules").semibold(12).fixedSize()
+                Text("Ignore rules").semibold(TextSize.callout).fixedSize()
                 Spacer()
                 Text("\(dir.replacingOccurrences(of: HOME.string, with: "~"))/.clopignore-\(fileType.rawValue)")
-                    .mono(11)
+                    .mono(TextSize.subheadline)
                     .truncationMode(.middle)
                     .lineLimit(1)
                     .frame(maxWidth: 400, alignment: .trailing)
-            }.padding(.top, 2).opacity(0.8)
+            }.padding(.top, Space.xxs).opacity(0.8)
             TextEditor(text: $textDebounce.text)
-                .font(.mono(12))
+                .font(.mono(TextSize.callout))
                 .onChange(of: textDebounce.debouncedText, perform: { value in
                     guard Self.shouldSave else { return }
                     saveIgnoreRules(text: value)
                 })
                 .frame(height: 100)
             HStack {
-                Text("Follows the standard .gitignore rules.").regular(10)
+                Text("Follows the standard .gitignore rules.").regular(TextSize.caption)
                 Button("\(SwiftUI.Image(systemName: "arrowtriangle.down.square")) Click for more info") {
                     clopignoreHelpVisible.toggle()
                 }
                 .buttonStyle(.plain)
-                .font(.semibold(10))
+                .font(.semibold(TextSize.caption))
             }
             .opacity(0.8)
 
@@ -212,17 +212,17 @@ struct DirListView: View {
             }
         } else {
             (Text("Select a single path to edit its ") + Text("Ignore rules").bold())
-                .padding(.top, 6)
+                .padding(.top, Space.s)
                 .opacity(0.8)
         }
 
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: Space.s) {
             ScrollView {
                 Table(dirs.sorted(), selection: $selectedDirs) {
-                    TableColumn("Path") { dir in Text(dir.replacingOccurrences(of: HOME.string, with: "~")).mono(12) }
+                    TableColumn("Path") { dir in Text(dir.replacingOccurrences(of: HOME.string, with: "~")).mono(TextSize.callout) }
                     TableColumn("Show floating results") { dir in
                         Toggle("Show floating results", isOn: showFloatingBinding(for: dir))
                             .toggleStyle(.checkbox)
@@ -235,7 +235,7 @@ struct DirListView: View {
                         Button(dirHasAutomation(dir) ? "Edit automation" : "Add automation") {
                             showAutomations(folder: dir, addNew: !dirHasAutomation(dir))
                         }
-                        .font(.round(10))
+                        .font(.round(TextSize.caption))
                         .buttonStyle(.borderless)
                         .foregroundColor(.accentColor)
                     }
@@ -245,12 +245,12 @@ struct DirListView: View {
                 .frame(height: 150)
                 .disabled(!enabled)
                 .opacity(enabled ? 1 : 0.6)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .clipShape(RoundedRectangle(cornerRadius: Radius.large))
                 .searchAnchor("images.watchpaths.dirsHideFloatingResult")
             }.frame(height: 150)
 
-            HStack(spacing: 2) {
-                Button(action: { chooseFile = true }, label: { SwiftUI.Image(systemName: "plus").font(.bold(12)).frame(width: 16, height: 16) })
+            HStack(spacing: Space.xxs) {
+                Button(action: { chooseFile = true }, label: { SwiftUI.Image(systemName: "plus").font(.bold(TextSize.callout)).frame(width: 16, height: 16) })
                     .fileImporter(
                         isPresented: $chooseFile,
                         allowedContentTypes: [.directory],
@@ -271,12 +271,12 @@ struct DirListView: View {
                         dirs = Set(dirs).without(selectedDirs)
                         selectedDirs = []
                     },
-                    label: { SwiftUI.Image(systemName: "minus").font(.bold(12)).frame(width: 16, height: 16) }
+                    label: { SwiftUI.Image(systemName: "minus").font(.bold(TextSize.callout)).frame(width: 16, height: 16) }
                 )
                 .disabled(selectedDirs.isEmpty || !enabled)
                 Spacer()
                 Toggle(" Enable **\(fileType == .pdf ? "PDF" : fileType.rawValue)** auto-optimiser", isOn: $enabled)
-                    .font(.round(11, weight: .regular))
+                    .font(.round(TextSize.subheadline, weight: .regular))
                     .controlSize(.mini)
                     .toggleStyle(.checkbox)
                     .fixedSize()
@@ -293,7 +293,7 @@ struct DirListView: View {
                 ignoreRulesView
             }
         }
-        .padding(4)
+        .padding(Space.xs)
         .onChange(of: selectedDirs) { [selectedDirs] newSelectedDirs in
             Self.shouldSave = false
             guard newSelectedDirs.count == 1, let dir = newSelectedDirs.first else {
@@ -383,15 +383,15 @@ struct FolderAutomationsSection: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: Space.s) {
             Button(action: { withAnimation(.easeOut(duration: 0.15)) { expanded.toggle() } }) {
-                HStack(spacing: 5) {
+                HStack(spacing: Space.xs) {
                     SwiftUI.Image(systemName: expanded ? "chevron.down" : "chevron.right")
-                        .font(.semibold(9)).foregroundColor(.secondary)
-                    Text("Automations").semibold(12)
+                        .font(.semibold(TextSize.micro)).foregroundColor(.secondary)
+                    Text("Automations").semibold(TextSize.callout)
                     if count > 0 {
-                        Text("\(count)").mono(10)
-                            .padding(.horizontal, 5).padding(.vertical, 1)
+                        Text("\(count)").mono(TextSize.caption)
+                            .padding(.horizontal, Space.xs).padding(.vertical, 1)
                             .background(Capsule().fill(Color.primary.opacity(0.1)))
                     }
                     Spacer()
@@ -410,7 +410,7 @@ struct FolderAutomationsSection: View {
                 )
             }
         }
-        .padding(.top, 6)
+        .padding(.top, Space.s)
     }
 
     @State private var editingKey: String?
@@ -435,15 +435,15 @@ struct SourceAutomationsSection: View {
     @Default(.pipelinesToRunOnAudio) var audioPipelines
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: Space.m) {
             ForEach(ClopFileType.allCases, id: \.self) { fileType in
                 let isDisabled = disabledTypes.contains(fileType)
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 4) {
+                VStack(alignment: .leading, spacing: Space.xs) {
+                    HStack(spacing: Space.xs) {
                         SwiftUI.Image(systemName: fileType.symbolName)
                             .frame(width: 14)
                         Text(fileType == .pdf ? "PDF" : fileType.description.capitalized)
-                            .semibold(10)
+                            .semibold(TextSize.caption)
                     }
                     .foregroundColor(fileType.color)
                     PipelineEditorRow(
@@ -460,7 +460,7 @@ struct SourceAutomationsSection: View {
                 .opacity(isDisabled ? 0.5 : 1)
             }
         }
-        .padding(.top, 6)
+        .padding(.top, Space.s)
     }
 
     func binding(for fileType: ClopFileType) -> Binding<[String: [Pipeline]]> {
@@ -491,14 +491,14 @@ struct PDFSettingsView: View {
             }
             .searchAnchor("pdf.watchpaths.pdfDirs")
             Section(header: SectionHeader(title: "Optimisation rules")) {
-                HStack(spacing: 4) {
+                HStack(spacing: Space.xs) {
                     SwiftUI.Image(systemName: "folder.badge.gearshape")
                     Text("Where files go is set in").foregroundColor(.secondary)
                     Button("File handling") { settingsViewManager.tab = .files }.buttonStyle(.link)
-                }.font(.system(size: 11))
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text("Compression").regular(13)
+                }.font(.system(size: TextSize.subheadline))
+                VStack(alignment: .leading, spacing: Space.xs) {
+                    HStack(spacing: Space.m) {
+                        Text("Compression").regular(TextSize.body)
                             .searchAnchor("pdf.optimisationrules.pdfDPI")
                         Slider(
                             value: Binding(
@@ -510,7 +510,7 @@ struct PDFSettingsView: View {
                         .accessibilityLabel("Compression")
                         .disabled(pdfDPI == PDF_DPI_ADAPTIVE)
                         Text("\(pdfDPI == PDF_DPI_ADAPTIVE ? lastPDFDPI : pdfDPI) DPI")
-                            .mono(11).foregroundColor(.secondary)
+                            .mono(TextSize.subheadline).foregroundColor(.secondary)
                             .opacity(pdfDPI == PDF_DPI_ADAPTIVE ? 0.2 : 1)
                             .frame(width: 56, alignment: .trailing)
                         Button("Adaptive") {
@@ -522,9 +522,9 @@ struct PDFSettingsView: View {
                             }
                         }
                         .buttonStyle(ToggleButton(isOn: .oneway { pdfDPI == PDF_DPI_ADAPTIVE }))
-                        .font(.mono(11))
+                        .font(.mono(TextSize.subheadline))
                     }
-                    Text(pdfCompressionSubtitle).round(10, weight: .regular).foregroundColor(.secondary)
+                    Text(pdfCompressionSubtitle).round(TextSize.caption, weight: .regular).foregroundColor(.secondary)
                 }
             }
             Section(header: SectionHeader(title: "Watched file filters", subtitle: "Only files within these limits are optimised")) {
@@ -535,7 +535,7 @@ struct PDFSettingsView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .padding(4)
+        .padding(Space.xs)
     }
 
     @State private var lastPDFDPI = 150
@@ -594,13 +594,13 @@ struct VideoSettingsView: View {
             }
             .searchAnchor("video.watchpaths.videoDirs")
             Section(header: SectionHeader(title: "Optimisation rules")) {
-                HStack(spacing: 4) {
+                HStack(spacing: Space.xs) {
                     SwiftUI.Image(systemName: "folder.badge.gearshape")
                     Text("Where files go is set in").foregroundColor(.secondary)
                     Button("File handling") { settingsViewManager.tab = .files }.buttonStyle(.link)
-                }.font(.system(size: 11))
-                HStack(spacing: 8) {
-                    Text("Compression").regular(13)
+                }.font(.system(size: TextSize.subheadline))
+                HStack(spacing: Space.m) {
+                    Text("Compression").regular(TextSize.body)
                         .searchAnchor("video.optimisationrules.videoCompression")
                     Spacer()
                     Menu {
@@ -624,8 +624,8 @@ struct VideoSettingsView: View {
                     .fixedSize()
                 }
                 if videoCompression.tier == .smaller || videoCompression.tier == .custom {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: Space.xs) {
+                        HStack(spacing: Space.m) {
                             Button("Auto") {
                                 if videoCompression.videoUsesAutoCRF {
                                     videoCompression = CompressionQuality(tier: .smaller, factor: lastVideoFactor)
@@ -635,7 +635,7 @@ struct VideoSettingsView: View {
                                 }
                             }
                             .buttonStyle(ToggleButton(isOn: .oneway { videoCompression.videoUsesAutoCRF }))
-                            .font(.mono(11))
+                            .font(.mono(TextSize.subheadline))
                             Slider(
                                 value: Binding(
                                     get: { Double(videoCompression.videoUsesAutoCRF ? lastVideoFactor : max(5, videoCompression.factor)) },
@@ -645,22 +645,22 @@ struct VideoSettingsView: View {
                             ) {
                                 EmptyView()
                             } minimumValueLabel: {
-                                Text("Better quality").round(9, weight: .regular).foregroundColor(.secondary)
+                                Text("Better quality").round(TextSize.micro, weight: .regular).foregroundColor(.secondary)
                             } maximumValueLabel: {
-                                Text("Smaller size").round(9, weight: .regular).foregroundColor(.secondary)
+                                Text("Smaller size").round(TextSize.micro, weight: .regular).foregroundColor(.secondary)
                             }
                             .accessibilityLabel("Compression")
                             .frame(maxWidth: .infinity)
                             .disabled(videoCompression.videoUsesAutoCRF)
                             .help("Drag toward Better quality for better-looking video, toward Smaller size for a smaller file")
                             Text("\(videoCompression.videoUsesAutoCRF ? lastVideoFactor : videoCompression.factor)%")
-                                .mono(11).foregroundColor(.secondary)
+                                .mono(TextSize.subheadline).foregroundColor(.secondary)
                                 .opacity(videoCompression.videoUsesAutoCRF ? 0.2 : 1)
                                 .frame(width: 38, alignment: .trailing)
                         }
                         if videoCompression.videoUsesAutoCRF {
                             Text("The encoder will choose the best compression factor based on the video contents")
-                                .round(10, weight: .regular).foregroundColor(.secondary)
+                                .round(TextSize.caption, weight: .regular).foregroundColor(.secondary)
                         }
                     }
                 }
@@ -668,7 +668,7 @@ struct VideoSettingsView: View {
                     .searchAnchor("video.optimisationrules.removeAudioFromVideos", namesControl: true)
                 Toggle(isOn: $capVideoFPS.animation(.spring())) {
                     HStack {
-                        Text("Cap frames per second to").regular(13).padding(.trailing, 10)
+                        Text("Cap frames per second to").regular(TextSize.body).padding(.trailing, Space.m)
                         Spacer()
 
                         Button("30fps") {
@@ -689,7 +689,7 @@ struct VideoSettingsView: View {
                 .searchAnchor("video.optimisationrules.capVideoFPS")
                 if targetVideoFPS < 0, capVideoFPS {
                     HStack {
-                        Text("but no less than").regular(13).padding(.trailing, 10)
+                        Text("but no less than").regular(TextSize.body).padding(.trailing, Space.m)
                             .searchAnchor("video.optimisationrules.minVideoFPS")
                         Spacer()
 
@@ -706,13 +706,13 @@ struct VideoSettingsView: View {
                             minVideoFPS = 60
                         }.buttonStyle(ToggleButton(isOn: .oneway { minVideoFPS == 60 }))
                     }
-                    .padding(.leading, 10)
+                    .padding(.leading, Space.m)
                 }
                 Picker(selection: $playbackSpeedFrameBehaviour) {
                     Text("Keep frames (smoother, higher fps)").tag(PlaybackSpeedFrameBehaviour.keepFrames)
                     Text("Drop frames (smaller file)").tag(PlaybackSpeedFrameBehaviour.dropFrames)
                 } label: {
-                    Text("Playback speed change").regular(13)
+                    Text("Playback speed change").regular(TextSize.body)
                 }
                 .accessibilityLabel("Playback speed change")
                 .searchAnchor("video.optimisationrules.playbackSpeedFrameBehaviour")
@@ -726,7 +726,7 @@ struct VideoSettingsView: View {
                 CountSliderRow(count: $maxVideoFileCount, caption: { "Skips optimisation when more than \($0) \($0 == 1 ? "video is" : "videos are") copied or moved at once" })
                     .searchAnchor("video.watchedfilefilters.maxVideoFileCount")
                 HStack {
-                    Text("Ignore videos with extension").regular(13).padding(.trailing, 10)
+                    Text("Ignore videos with extension").regular(TextSize.body).padding(.trailing, Space.m)
                         .searchAnchor("video.watchedfilefilters.videoFormatsToSkip")
                     Spacer()
 
@@ -734,13 +734,13 @@ struct VideoSettingsView: View {
                         Button(format.preferredFilenameExtension!) {
                             videoFormatsToSkip.toggle(format)
                         }.buttonStyle(ToggleButton(isOn: .oneway { videoFormatsToSkip.contains(format) }))
-                            .font(.mono(11))
+                            .font(.mono(TextSize.subheadline))
                     }
                 }
             }
             Section(header: SectionHeader(title: "Compatibility", subtitle: "Converts less known formats to more compatible ones before optimisation")) {
                 HStack {
-                    (Text("Convert to ").regular(13) + Text("mp4").mono(13)).padding(.trailing, 10)
+                    (Text("Convert to ").regular(TextSize.body) + Text("mp4").mono(TextSize.body)).padding(.trailing, Space.m)
                         .searchAnchor("video.compatibility.formatsToConvertToMP4")
                     Spacer()
 
@@ -748,7 +748,7 @@ struct VideoSettingsView: View {
                         Button(format.preferredFilenameExtension!) {
                             formatsToConvertToMP4.toggle(format)
                         }.buttonStyle(ToggleButton(isOn: .oneway { formatsToConvertToMP4.contains(format) }))
-                            .font(.mono(11))
+                            .font(.mono(TextSize.subheadline))
                     }
                 }
                 Toggle("Convert audio to AAC", isOn: $convertAudioToAAC)
@@ -757,7 +757,7 @@ struct VideoSettingsView: View {
             .id("compatibility")
         }
         .scrollContentBackground(.hidden)
-        .padding(4)
+        .padding(Space.xs)
     }
 
     func videoCompressionTitle(_ tier: CompressionTier) -> String {
@@ -787,7 +787,7 @@ struct SectionHeader: View {
     var subtitle: String?
 
     var body: some View {
-        Text(title).round(15, weight: .semibold)
+        Text(title).round(TextSize.title3, weight: .semibold)
             + (subtitle.map { Text("\n\($0)").font(.caption).foregroundColor(.secondary) } ?? Text(""))
     }
 }
@@ -831,14 +831,14 @@ struct CompactSameFolderTemplate: View {
     }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 8) {
+        HStack(alignment: .center, spacing: Space.m) {
             TextField("", text: $template, prompt: Text(DEFAULT_SAME_FOLDER_NAME_TEMPLATE))
                 .accessibilityLabel("File name template")
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 6)
+                .padding(.horizontal, Space.s)
                 .frame(height: 24)
                 .background(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                         .stroke(Color.gray, lineWidth: 1)
                 )
             ExampleContainer(inputName: inputName, outputName: outputName, inputExt: inputExtension, outputExt: outputExtension)
@@ -890,14 +890,14 @@ struct CompactSpecificFolderTemplate: View {
     }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 8) {
+        HStack(alignment: .center, spacing: Space.m) {
             TextField("", text: portableTemplate, prompt: Text(DEFAULT_SPECIFIC_FOLDER_NAME_TEMPLATE))
                 .accessibilityLabel("Folder template")
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 6)
+                .padding(.horizontal, Space.s)
                 .frame(height: 24)
                 .background(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                         .stroke(Color.gray, lineWidth: 1)
                 )
             ExampleContainer(inputName: inputName, outputName: outputPath, inputExt: inputExtension, outputExt: outputExtension)
@@ -918,11 +918,11 @@ private struct ExampleFilePill: View {
 
     var body: some View {
         Text(name)
-            .font(.mono(10))
+            .font(.mono(TextSize.caption))
             .lineLimit(1)
             .truncationMode(.middle)
-            .padding(.horizontal, 5)
-            .padding(.vertical, 2)
+            .padding(.horizontal, Space.xs)
+            .padding(.vertical, Space.xxs)
             .fixedSize()
             .background(Capsule().fill(fillColor))
             .foregroundColor(.primary)
@@ -932,7 +932,7 @@ private struct ExampleFilePill: View {
         if let tint {
             return tint.opacity(0.11)
         }
-        return adaptiveColor(
+        return Color(
             light: Color(white: 0.0).opacity(0.07),
             dark: Color(white: 1.0).opacity(0.10)
         )
@@ -949,47 +949,47 @@ private struct ExampleContainer: View {
     var outputExt: String?
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Space.xs) {
             Text("Example:")
-                .font(.round(11))
+                .font(.round(TextSize.subheadline))
                 .foregroundColor(.secondary)
                 .fixedSize()
             ExampleFilePill(name: inputName, tint: tint(for: inputExt))
             Text("becomes")
-                .font(.round(11))
+                .font(.round(TextSize.subheadline))
                 .foregroundColor(.secondary)
                 .fixedSize()
             ExampleFilePill(name: middleTruncated(outputName), tint: tint(for: outputExt ?? inputExt))
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, Space.m)
         .frame(height: 24)
         .background(
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                 .fill(bgColor)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                 .stroke(Color.secondary.opacity(0.25), lineWidth: 1)
         )
     }
 
     private static let extensionTints: [String: Color] = [
-        "jpeg": Color(red: 1.0, green: 0.83, blue: 0.0),
-        "jpg": Color(red: 1.0, green: 0.83, blue: 0.0),
-        "png": .blue,
-        "mp4": Color(red: 0.6, green: 0.3, blue: 0.9),
-        "webp": Color(red: 0.0, green: 0.7, blue: 0.5),
-        "avif": Color(red: 0.0, green: 0.6, blue: 0.9),
-        "heic": Color(red: 0.5, green: 0.0, blue: 0.8),
-        "m4a": Color(red: 0.2, green: 0.7, blue: 0.3),
-        "mp3": Color(red: 0.3, green: 0.6, blue: 1.0),
-        "ogg": Color(red: 0.8, green: 0.4, blue: 0.0),
-        "mov": Color(red: 0.8, green: 0.1, blue: 0.1),
-        "pdf": Color(red: 0.8, green: 0.3, blue: 0.1),
+        "jpeg": Palette.image,
+        "jpg": Palette.image,
+        "png": Palette.image,
+        "webp": Palette.image,
+        "avif": Palette.image,
+        "heic": Palette.image,
+        "mp4": Palette.video,
+        "mov": Palette.video,
+        "m4a": Palette.audio,
+        "mp3": Palette.audio,
+        "ogg": Palette.audio,
+        "pdf": Palette.pdf,
     ]
 
     private var bgColor: Color {
-        adaptiveColor(
+        Color(
             light: Color(white: 0.0).opacity(0.035),
             dark: Color(white: 1.0).opacity(0.06)
         )
@@ -1013,26 +1013,6 @@ private struct ExampleContainer: View {
 
 }
 
-// MARK: - Adaptive colour helper
-
-/// Returns a colour that picks between `light` and `dark` variants based on the current appearance.
-/// Uses NSColor's dynamic provider, which is supported on macOS 13+.
-private func adaptiveColor(light: Color, dark: Color) -> Color {
-    Color(nsColor: NSColor(name: nil) { appearance in
-        appearance.bestMatch(from: [.darkAqua, .vibrantDark]) != nil
-            ? NSColor(dark)
-            : NSColor(light)
-    })
-}
-
-// Adaptive text colours for each format hue: dark/saturated in light mode, bright in dark mode.
-private let sourceAdaptive = adaptiveColor(light: Color(red: 0.72, green: 0.12, blue: 0.12), dark: Color(red: 1.0, green: 0.55, blue: 0.55))
-private let jpegAdaptive = adaptiveColor(light: Color(red: 0.62, green: 0.44, blue: 0.0), dark: Color(red: 1.0, green: 0.83, blue: 0.35))
-private let pngAdaptive = adaptiveColor(light: Color(red: 0.1, green: 0.35, blue: 0.75), dark: Color(red: 0.5, green: 0.75, blue: 1.0))
-private let mp4Adaptive = adaptiveColor(light: Color(red: 0.45, green: 0.2, blue: 0.7), dark: Color(red: 0.78, green: 0.6, blue: 1.0))
-private let audioAdaptive = adaptiveColor(light: Color(red: 0.12, green: 0.5, blue: 0.22), dark: Color(red: 0.45, green: 0.85, blue: 0.55))
-private let orangeAdaptive = adaptiveColor(light: Color(red: 0.65, green: 0.35, blue: 0.0), dark: Color(red: 1.0, green: 0.7, blue: 0.35))
-
 // MARK: - Auto-conversion pills
 
 private struct PillView: View {
@@ -1042,9 +1022,9 @@ private struct PillView: View {
 
     var body: some View {
         Text(text)
-            .font(.mono(10, weight: .medium))
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
+            .font(.mono(TextSize.caption, weight: .medium))
+            .padding(.horizontal, Space.s)
+            .padding(.vertical, Space.xxs)
             .background(Capsule().fill(tint.opacity(0.15)))
             .foregroundColor(textColor)
     }
@@ -1056,29 +1036,29 @@ private struct AutoConvertPills: View {
 
     var body: some View {
         if !groups.isEmpty {
-            HStack(spacing: 6) {
+            HStack(spacing: Space.s) {
                 Text("Converts:")
-                    .round(11)
+                    .round(TextSize.subheadline)
                     .foregroundColor(.secondary)
                 ForEach(groups.indices, id: \.self) { idx in
                     let group = groups[idx]
                     if idx > 0 {
                         Text("|")
-                            .font(.mono(10, weight: .regular))
+                            .font(.mono(TextSize.caption, weight: .regular))
                             .foregroundColor(.secondary.opacity(0.4))
                     }
-                    PillView(text: group.sources.joined(separator: ", "), tint: group.sourceTint, textColor: group.sourceTextColor)
+                    PillView(text: group.sources.joined(separator: ", "), tint: .gray, textColor: .secondary)
                     Text("->")
-                        .font(.mono(10, weight: .regular))
+                        .font(.mono(TextSize.caption, weight: .regular))
                         .foregroundColor(.secondary)
-                    PillView(text: group.target, tint: group.targetTint, textColor: group.targetTextColor)
+                    PillView(text: group.target, tint: group.targetColor, textColor: group.targetColor)
                 }
                 Spacer(minLength: 0)
                 Button {
                     settingsViewManager.tab = compatibilityTab
                     settingsViewManager.scrollToCompatibility = true
                 } label: {
-                    HStack(spacing: 3) {
+                    HStack(spacing: Space.xxs) {
                         Text("Configured in")
                         Text("Compatibility").underline()
                     }
@@ -1093,7 +1073,7 @@ private struct AutoConvertPills: View {
                         NSCursor.pop()
                     }
                 }
-                .font(.round(11))
+                .font(.round(TextSize.subheadline))
             }
         }
     }
@@ -1163,10 +1143,7 @@ struct FileHandlingSettingsView: View {
     struct ConvertGroup {
         let sources: [String]
         let target: String
-        let sourceTint: Color
-        let targetTint: Color
-        let sourceTextColor: Color
-        let targetTextColor: Color
+        let targetColor: Color
     }
 
     // Optimised placement
@@ -1214,15 +1191,15 @@ struct FileHandlingSettingsView: View {
 
             Section(header: SectionHeader(title: "Images")) {
                 // Optimise row: picker + optional template in a single Form row (no divider between them).
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Space.s) {
                     Picker(selection: $optimisedImageBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Optimised file placement").regular(13)
-                            + Text("\nWhere the smaller file is saved, and whether it replaces the original").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Optimised file placement").regular(TextSize.body)
+                            + Text("\nWhere the smaller file is saved, and whether it replaces the original").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("files.images.optimisedImageBehaviour", namesControl: true)
                     if optimisedImageBehaviour == .sameFolder {
@@ -1235,15 +1212,15 @@ struct FileHandlingSettingsView: View {
                 }
 
                 // Auto-convert row: picker + Converts pills + optional template in a single Form row.
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Space.s) {
                     Picker(selection: $convertedImageBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Auto-conversion behaviour for compatible formats").regular(13)
-                            + Text("\nFormats that many apps cannot open well are converted to a widely supported one automatically before optimising.").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Auto-conversion behaviour for compatible formats").regular(TextSize.body)
+                            + Text("\nFormats that many apps cannot open well are converted to a widely supported one automatically before optimising.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("files.images.convertedImageBehaviour", namesControl: true)
                     AutoConvertPills(groups: imageAutoConvertGroups, compatibilityTab: .images)
@@ -1257,15 +1234,15 @@ struct FileHandlingSettingsView: View {
                 }
 
                 // Manual-convert row: picker + optional template in a single Form row.
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Space.s) {
                     Picker(selection: $manualConvertedImageBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Manual conversion behaviour").regular(13)
-                            + Text("\nWhen you pick a new format by clicking the file extension on a floating result, or via the submenu **Convert to...** in the right-click menu.").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Manual conversion behaviour").regular(TextSize.body)
+                            + Text("\nWhen you pick a new format by clicking the file extension on a floating result, or via the submenu **Convert to...** in the right-click menu.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("files.images.manualConvertedImageBehaviour", namesControl: true)
                     if manualConvertedImageBehaviour == .sameFolder {
@@ -1283,15 +1260,15 @@ struct FileHandlingSettingsView: View {
             // MARK: Videos
 
             Section(header: SectionHeader(title: "Videos")) {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Space.s) {
                     Picker(selection: $optimisedVideoBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Optimised file placement").regular(13)
-                            + Text("\nWhere the smaller file is saved, and whether it replaces the original").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Optimised file placement").regular(TextSize.body)
+                            + Text("\nWhere the smaller file is saved, and whether it replaces the original").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("files.videos.optimisedVideoBehaviour", namesControl: true)
                     if optimisedVideoBehaviour == .sameFolder {
@@ -1303,15 +1280,15 @@ struct FileHandlingSettingsView: View {
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Space.s) {
                     Picker(selection: $convertedVideoBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Auto-conversion behaviour for compatible formats").regular(13)
-                            + Text("\nFormats that many apps cannot open well are converted to a widely supported one automatically before optimising.").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Auto-conversion behaviour for compatible formats").regular(TextSize.body)
+                            + Text("\nFormats that many apps cannot open well are converted to a widely supported one automatically before optimising.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("files.videos.convertedVideoBehaviour", namesControl: true)
                     AutoConvertPills(groups: videoAutoConvertGroups, compatibilityTab: .video)
@@ -1324,15 +1301,15 @@ struct FileHandlingSettingsView: View {
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Space.s) {
                     Picker(selection: $manualConvertedVideoBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Manual conversion behaviour").regular(13)
-                            + Text("\nWhen you pick a new format by clicking the file extension on a floating result, or via the submenu **Convert to...** in the right-click menu.").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Manual conversion behaviour").regular(TextSize.body)
+                            + Text("\nWhen you pick a new format by clicking the file extension on a floating result, or via the submenu **Convert to...** in the right-click menu.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("files.videos.manualConvertedVideoBehaviour", namesControl: true)
                     if manualConvertedVideoBehaviour == .sameFolder {
@@ -1350,15 +1327,15 @@ struct FileHandlingSettingsView: View {
             // MARK: Audio
 
             Section(header: SectionHeader(title: "Audio")) {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Space.s) {
                     Picker(selection: $optimisedAudioBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Optimised file placement").regular(13)
-                            + Text("\nWhere the smaller file is saved, and whether it replaces the original").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Optimised file placement").regular(TextSize.body)
+                            + Text("\nWhere the smaller file is saved, and whether it replaces the original").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("files.audio.optimisedAudioBehaviour", namesControl: true)
                     if optimisedAudioBehaviour == .sameFolder {
@@ -1370,15 +1347,15 @@ struct FileHandlingSettingsView: View {
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Space.s) {
                     Picker(selection: $convertedAudioBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Auto-conversion behaviour for compatible formats").regular(13)
-                            + Text("\nFormats that many apps cannot open well are converted to a widely supported one automatically before optimising.").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Auto-conversion behaviour for compatible formats").regular(TextSize.body)
+                            + Text("\nFormats that many apps cannot open well are converted to a widely supported one automatically before optimising.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("files.audio.convertedAudioBehaviour", namesControl: true)
                     AutoConvertPills(groups: audioAutoConvertGroups, compatibilityTab: .audio)
@@ -1391,15 +1368,15 @@ struct FileHandlingSettingsView: View {
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Space.s) {
                     Picker(selection: $manualConvertedAudioBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Manual conversion behaviour").regular(13)
-                            + Text("\nWhen you pick a new format by clicking the file extension on a floating result, or via the submenu **Convert to...** in the right-click menu.").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Manual conversion behaviour").regular(TextSize.body)
+                            + Text("\nWhen you pick a new format by clicking the file extension on a floating result, or via the submenu **Convert to...** in the right-click menu.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("files.audio.manualConvertedAudioBehaviour", namesControl: true)
                     if manualConvertedAudioBehaviour == .sameFolder {
@@ -1417,15 +1394,15 @@ struct FileHandlingSettingsView: View {
             // MARK: PDF
 
             Section(header: SectionHeader(title: "PDF")) {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Space.s) {
                     Picker(selection: $optimisedPDFBehaviour) {
                         Text("Temporary folder").tag(FileBehaviour.temporary)
                         Text("In place (replace original)").tag(FileBehaviour.inPlace)
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Optimised file placement").regular(13)
-                            + Text("\nWhere the smaller file is saved, and whether it replaces the original").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Optimised file placement").regular(TextSize.body)
+                            + Text("\nWhere the smaller file is saved, and whether it replaces the original").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("files.pdf.optimisedPDFBehaviour", namesControl: true)
                     if optimisedPDFBehaviour == .sameFolder {
@@ -1444,7 +1421,7 @@ struct FileHandlingSettingsView: View {
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
-        .padding(4)
+        .padding(Space.xs)
     }
 
     @State private var expandedVars: Set<ClopFileType> = []
@@ -1522,10 +1499,7 @@ struct FileHandlingSettingsView: View {
             groups.append(ConvertGroup(
                 sources: toJPEG,
                 target: "JPEG",
-                sourceTint: .red,
-                targetTint: Color(red: 1.0, green: 0.83, blue: 0.0),
-                sourceTextColor: sourceAdaptive,
-                targetTextColor: jpegAdaptive
+                targetColor: Palette.image
             ))
         }
         let toPNG = formatsToConvertToPNG.compactMap { $0.preferredFilenameExtension?.uppercased() }.sorted()
@@ -1533,10 +1507,7 @@ struct FileHandlingSettingsView: View {
             groups.append(ConvertGroup(
                 sources: toPNG,
                 target: "PNG",
-                sourceTint: Color(red: 1.0, green: 0.5, blue: 0.0),
-                targetTint: .blue,
-                sourceTextColor: orangeAdaptive,
-                targetTextColor: pngAdaptive
+                targetColor: Palette.image
             ))
         }
         return groups
@@ -1548,10 +1519,7 @@ struct FileHandlingSettingsView: View {
         return [ConvertGroup(
             sources: fmts,
             target: "MP4",
-            sourceTint: .red,
-            targetTint: Color(red: 0.6, green: 0.3, blue: 0.9),
-            sourceTextColor: sourceAdaptive,
-            targetTextColor: mp4Adaptive
+            targetColor: Palette.video
         )]
     }
 
@@ -1562,10 +1530,7 @@ struct FileHandlingSettingsView: View {
             groups.append(ConvertGroup(
                 sources: toAAC,
                 target: "AAC (M4A)",
-                sourceTint: .red,
-                targetTint: Color(red: 0.2, green: 0.8, blue: 0.4),
-                sourceTextColor: sourceAdaptive,
-                targetTextColor: audioAdaptive
+                targetColor: Palette.audio
             ))
         }
         let toMP3 = formatsToConvertToMP3.compactMap { $0.preferredFilenameExtension?.uppercased() }.sorted()
@@ -1573,10 +1538,7 @@ struct FileHandlingSettingsView: View {
             groups.append(ConvertGroup(
                 sources: toMP3,
                 target: "MP3",
-                sourceTint: Color(red: 1.0, green: 0.5, blue: 0.0),
-                targetTint: .blue,
-                sourceTextColor: orangeAdaptive,
-                targetTextColor: pngAdaptive
+                targetColor: Palette.audio
             ))
         }
         return groups
@@ -1593,10 +1555,10 @@ struct FileHandlingSettingsView: View {
                     expandedVars.insert(type)
                 }
             }}) {
-                HStack(spacing: 5) {
+                HStack(spacing: Space.xs) {
                     SwiftUI.Image(systemName: expanded ? "chevron.down" : "chevron.right")
-                        .font(.semibold(9)).foregroundColor(.secondary)
-                    Text("Template variables").semibold(12)
+                        .font(.semibold(TextSize.micro)).foregroundColor(.secondary)
+                    Text("Template variables").semibold(TextSize.callout)
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -1605,7 +1567,7 @@ struct FileHandlingSettingsView: View {
             .buttonStyle(.plain)
 
             if expanded {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: Space.m) {
                     HStack(alignment: .top) {
                         Text("""
                         **Date**                | **Time**
@@ -1626,14 +1588,14 @@ struct FileHandlingSettingsView: View {
                         Auto-incrementing number               **%i**
                         """)
                     }
-                    .font(.mono(11, weight: .light))
+                    .font(.mono(TextSize.subheadline, weight: .light))
                     .foregroundColor(.secondary)
-                    .padding(6)
+                    .padding(Space.s)
                 }
-                .padding(.top, 6)
+                .padding(.top, Space.s)
             }
         }
-        .padding(.top, 4)
+        .padding(.top, Space.xs)
     }
 
 }
@@ -1665,14 +1627,14 @@ struct AudioSettingsView: View {
             }
             .searchAnchor("audio.watchpaths.audioDirs")
             Section(header: SectionHeader(title: "Optimisation rules")) {
-                HStack(spacing: 4) {
+                HStack(spacing: Space.xs) {
                     SwiftUI.Image(systemName: "folder.badge.gearshape")
                     Text("Where files go is set in").foregroundColor(.secondary)
                     Button("File handling") { settingsViewManager.tab = .files }.buttonStyle(.link)
-                }.font(.system(size: 11))
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text("Compression").regular(13)
+                }.font(.system(size: TextSize.subheadline))
+                VStack(alignment: .leading, spacing: Space.xs) {
+                    HStack(spacing: Space.m) {
+                        Text("Compression").regular(TextSize.body)
                             .searchAnchor("audio.optimisationrules.audioCompression")
                         Slider(
                             value: Binding(
@@ -1683,22 +1645,22 @@ struct AudioSettingsView: View {
                         )
                         .accessibilityLabel("Compression")
                         Text("\(audioCompression.factor)%")
-                            .mono(11).foregroundColor(.secondary).frame(width: 38, alignment: .trailing)
+                            .mono(TextSize.subheadline).foregroundColor(.secondary).frame(width: 38, alignment: .trailing)
                     }
-                    Text(audioCompressionCaption).round(10, weight: .regular).foregroundColor(.secondary)
+                    Text(audioCompressionCaption).round(TextSize.caption, weight: .regular).foregroundColor(.secondary)
                 }
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     Picker(selection: $audioCoverArt) {
                         ForEach(AudioCoverArtBehaviour.allCases, id: \.self) { behaviour in
                             Text(behaviour.name).tag(behaviour)
                         }
                     } label: {
-                        Text("Cover art").regular(13)
+                        Text("Cover art").regular(TextSize.body)
                             .searchAnchor("audio.optimisationrules.audioCoverArt")
                     }
                     .accessibilityLabel("Cover art")
                     Text("Cover art is kept only for formats that can store it (AAC, MP3, FLAC); it is dropped for others.")
-                        .round(10, weight: .regular).foregroundColor(.secondary)
+                        .round(TextSize.caption, weight: .regular).foregroundColor(.secondary)
                 }
             }
             Section(header: SectionHeader(title: "Watched file filters", subtitle: "Only files within these limits are optimised")) {
@@ -1709,7 +1671,7 @@ struct AudioSettingsView: View {
             }
             Section(header: SectionHeader(title: "Compatibility", subtitle: "Convert less compatible formats to AAC or MP3 before optimisation; anything not picked keeps its own format")) {
                 HStack {
-                    (Text("Convert to ").regular(13) + Text("AAC (M4A)").mono(13)).padding(.trailing, 10)
+                    (Text("Convert to ").regular(TextSize.body) + Text("AAC (M4A)").mono(TextSize.body)).padding(.trailing, Space.m)
                     Spacer()
                     ForEach(FORMATS_CONVERTIBLE_TO_COMPRESSED_AUDIO, id: \.identifier) { format in
                         Button(format.preferredFilenameExtension ?? format.identifier) {
@@ -1718,11 +1680,11 @@ struct AudioSettingsView: View {
                                 formatsToConvertToMP3.remove(format)
                             }
                         }.buttonStyle(ToggleButton(isOn: .oneway { formatsToConvertToAAC.contains(format) }))
-                            .font(.mono(11))
+                            .font(.mono(TextSize.subheadline))
                     }
                 }
                 HStack {
-                    (Text("Convert to ").regular(13) + Text("MP3").mono(13)).padding(.trailing, 10)
+                    (Text("Convert to ").regular(TextSize.body) + Text("MP3").mono(TextSize.body)).padding(.trailing, Space.m)
                     Spacer()
                     ForEach(FORMATS_CONVERTIBLE_TO_COMPRESSED_AUDIO, id: \.identifier) { format in
                         Button(format.preferredFilenameExtension ?? format.identifier) {
@@ -1731,7 +1693,7 @@ struct AudioSettingsView: View {
                                 formatsToConvertToAAC.remove(format)
                             }
                         }.buttonStyle(ToggleButton(isOn: .oneway { formatsToConvertToMP3.contains(format) }))
-                            .font(.mono(11))
+                            .font(.mono(TextSize.subheadline))
                     }
                 }
             }
@@ -1787,24 +1749,24 @@ struct ImagesSettingsView: View {
     }
 
     var customNameTemplate: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Custom name template").regular(13)
-                + Text("\nRename the file using this template before copying the path to the clipboard").round(11, weight: .regular).foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: Space.s) {
+            Text("Custom name template").regular(TextSize.body)
+                + Text("\nRename the file using this template before copying the path to the clipboard").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
 
             VStack(alignment: .leading) {
                 TextField("", text: $customNameTemplateForClipboardImages, prompt: Text(DEFAULT_NAME_TEMPLATE))
                     .accessibilityLabel("Custom name template")
                     .frame(width: TEXT_FIELD_WIDTH, height: 18, alignment: .leading)
-                    .padding(6)
+                    .padding(Space.s)
                     .background(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous).stroke(Color.gray.opacity(useCustomNameTemplateForClipboardImages ? 1 : 0.35), lineWidth: 1).scaleEffect(y: TEXT_FIELD_SCALE)
+                        RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).stroke(Color.gray.opacity(useCustomNameTemplateForClipboardImages ? 1 : 0.35), lineWidth: 1).scaleEffect(y: TEXT_FIELD_SCALE)
                             .offset(x: TEXT_FIELD_OFFSET)
                     )
                     .disabled(!useCustomNameTemplateForClipboardImages)
                     .searchAnchor("images.main.customNameTemplateForClipboardImages", namesControl: true)
                 if useCustomNameTemplateForClipboardImages {
                     Text("Result: " + generateFileName(template: customNameTemplateForClipboardImages ?! DEFAULT_NAME_TEMPLATE, autoIncrementingNumber: &Defaults[.lastAutoIncrementingNumber]))
-                        .round(12)
+                        .round(TextSize.callout)
                         .lineLimit(1)
                         .allowsTightening(true)
                         .truncationMode(.middle)
@@ -1825,9 +1787,9 @@ struct ImagesSettingsView: View {
                 Random characters **%r**
                 Auto-incrementing number **%i**
                 """)
-                .mono(12, weight: .light)
+                .mono(TextSize.callout, weight: .light)
                 .foregroundColor(.secondary)
-                .padding(.top, 6)
+                .padding(.top, Space.s)
             }
         }
 
@@ -1846,7 +1808,7 @@ struct ImagesSettingsView: View {
         .fixedSize()
         .pickerStyle(.segmented)
         .labelStyle(.titleAndIcon)
-        .font(.heavy(10))
+        .font(.heavy(TextSize.caption))
         .searchAnchor("images.main.photoCropOrientation")
     }
 
@@ -1858,8 +1820,8 @@ struct ImagesSettingsView: View {
             .searchAnchor("images.watchpaths.imageDirs")
             Section(header: SectionHeader(title: "File name handling")) {
                 Toggle(isOn: $copyImageFilePath) {
-                    Text("Copy image paths").regular(13)
-                        + Text("\nWhen copying optimised image data, also copy the path of the image file").round(11, weight: .regular).foregroundColor(.secondary)
+                    Text("Copy image paths").regular(TextSize.body)
+                        + Text("\nWhen copying optimised image data, also copy the path of the image file").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                 }
                 .searchAnchor("images.filenamehandling.copyImageFilePath", namesControl: true)
                 Toggle(isOn: $useCustomNameTemplateForClipboardImages.animation(.default)) {
@@ -1871,7 +1833,7 @@ struct ImagesSettingsView: View {
 
             Section(header: SectionHeader(title: "Photos integration", subtitle: "Handle images copied from the Photos app")) {
                 Toggle(isOn: $enablePhotosIntegration.animation(.spring())) {
-                    Text("Optimise images copied from Photos.app").regular(13)
+                    Text("Optimise images copied from Photos.app").regular(TextSize.body)
                 }
                 .searchAnchor("images.photosintegration.enablePhotosIntegration", namesControl: true)
 
@@ -1879,8 +1841,8 @@ struct ImagesSettingsView: View {
                     .disabled(!enablePhotosIntegration)
                     .searchAnchor("images.photosintegration.maxCopiedPhotosCount")
 
-                HStack(spacing: 6) {
-                    Text("Downscale to").regular(13).lineLimit(1).fixedSize()
+                HStack(spacing: Space.s) {
+                    Text("Downscale to").regular(TextSize.body).lineLimit(1).fixedSize()
                         .searchAnchor("images.photosintegration.maxPhotosLength")
                     // No .fixedSize() here: it collapses the field to its ideal width, which is ~0
                     // while the value is unset, leaving nothing to click inside the 70pt frame.
@@ -1889,9 +1851,9 @@ struct ImagesSettingsView: View {
                         .lineLimit(1)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 70, alignment: .trailing)
-                        .background(RoundedRectangle(cornerRadius: 6, style: .continuous).stroke(Color.gray, lineWidth: 1).scaleEffect(y: TEXT_FIELD_SCALE).offset(x: TEXT_FIELD_OFFSET))
-                    Text("px").mono(13).opacity(maxPhotosLength != nil ? 1 : 0.3).lineLimit(1).fixedSize()
-                    Text("on").regular(13).lineLimit(1).fixedSize()
+                        .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).stroke(Color.gray, lineWidth: 1).scaleEffect(y: TEXT_FIELD_SCALE).offset(x: TEXT_FIELD_OFFSET))
+                    Text("px").mono(TextSize.body).opacity(maxPhotosLength != nil ? 1 : 0.3).lineLimit(1).fixedSize()
+                    Text("on").regular(TextSize.body).lineLimit(1).fixedSize()
                         .searchAnchor("images.photosintegration.photoCropOrientation")
                     Spacer()
                     cropOrientationPicker
@@ -1900,15 +1862,15 @@ struct ImagesSettingsView: View {
             }
 
             Section(header: SectionHeader(title: "Optimisation rules")) {
-                HStack(spacing: 4) {
+                HStack(spacing: Space.xs) {
                     SwiftUI.Image(systemName: "folder.badge.gearshape")
                     Text("Where files go is set in").foregroundColor(.secondary)
                     Button("File handling") { settingsViewManager.tab = .files }.buttonStyle(.link)
-                }.font(.system(size: 11))
+                }.font(.system(size: TextSize.subheadline))
 
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text("Compression").regular(13)
+                VStack(alignment: .leading, spacing: Space.xs) {
+                    HStack(spacing: Space.m) {
+                        Text("Compression").regular(TextSize.body)
                             .searchAnchor("images.optimisationrules.imageCompression")
                         Slider(
                             value: Binding(
@@ -1920,26 +1882,26 @@ struct ImagesSettingsView: View {
                         .accessibilityLabel("Compression")
                         .disabled(imageCompression.tier == .adaptive)
                         Text("\(imageCompression.factor)%")
-                            .mono(11).foregroundColor(.secondary)
+                            .mono(TextSize.subheadline).foregroundColor(.secondary)
                             .opacity(imageCompression.tier == .adaptive ? 0.2 : 1)
                             .frame(width: 38, alignment: .trailing)
                         Button("Adaptive") {
                             imageCompression.tier = imageCompression.tier == .adaptive ? .custom : .adaptive
                         }
                         .buttonStyle(ToggleButton(isOn: .oneway { imageCompression.tier == .adaptive }))
-                        .font(.mono(11))
+                        .font(.mono(TextSize.subheadline))
                         .help("Convert detail heavy images to JPEG and low-detail ones to PNG, ignoring the compression factor's format")
                     }
                     if imageCompression.tier == .adaptive {
                         Text("Clop will automatically pick between JPEG or PNG conversion based on image entropy, and choose a fitting compression factor adaptively")
-                            .round(10, weight: .regular).foregroundColor(.secondary)
+                            .round(TextSize.caption, weight: .regular).foregroundColor(.secondary)
                     }
                 }
                 Picker(selection: $gifFrameDropBehaviour) {
                     Text("Play faster").tag(GIFFrameDropBehaviour.playFaster)
                     Text("Keep duration (choppier motion)").tag(GIFFrameDropBehaviour.keepDuration)
                 } label: {
-                    Text("GIF frame dropping").regular(13)
+                    Text("GIF frame dropping").regular(TextSize.body)
                         + Text("\nCompression factors above 80% drop every 4th, 3rd or 2nd frame of animated GIFs. The animation can either play faster with the remaining frames, or keep its duration by showing each frame longer").round(
                             11,
                             weight: .regular
@@ -1947,7 +1909,7 @@ struct ImagesSettingsView: View {
                 }
                 .searchAnchor("images.optimisationrules.gifFrameDropBehaviour", namesControl: true)
                 Toggle(isOn: $convertHDRToSDR) {
-                    Text("Convert HDR to SDR").regular(13)
+                    Text("Convert HDR to SDR").regular(TextSize.body)
                 }
                 .searchAnchor("images.optimisationrules.convertHDRToSDR", namesControl: true)
                 // Toggle(isOn: $downscaleRetinaImages) {
@@ -1964,7 +1926,7 @@ struct ImagesSettingsView: View {
                 CountSliderRow(count: $maxImageFileCount, caption: { "Skips optimisation when more than \($0) \($0 == 1 ? "image is" : "images are") copied or moved at once" })
                     .searchAnchor("images.watchedfilefilters.maxImageFileCount")
                 HStack {
-                    Text("Ignore images with extension").regular(13).padding(.trailing, 10)
+                    Text("Ignore images with extension").regular(TextSize.body).padding(.trailing, Space.m)
                         .searchAnchor("images.watchedfilefilters.imageFormatsToSkip")
                     Spacer()
 
@@ -1972,13 +1934,13 @@ struct ImagesSettingsView: View {
                         Button(format.preferredFilenameExtension!) {
                             imageFormatsToSkip.toggle(format)
                         }.buttonStyle(ToggleButton(isOn: .oneway { imageFormatsToSkip.contains(format) }))
-                            .font(.mono(11))
+                            .font(.mono(TextSize.subheadline))
                     }
                 }
             }
             Section(header: SectionHeader(title: "Compatibility", subtitle: "Converts less known formats to more compatible ones before optimisation")) {
                 HStack {
-                    (Text("Convert to ").regular(13) + Text("jpeg").mono(13)).padding(.trailing, 10)
+                    (Text("Convert to ").regular(TextSize.body) + Text("jpeg").mono(TextSize.body)).padding(.trailing, Space.m)
                         .searchAnchor("images.compatibility.formatsToConvertToJPEG")
                     Spacer()
 
@@ -1989,11 +1951,11 @@ struct ImagesSettingsView: View {
                                 formatsToConvertToPNG.remove(format)
                             }
                         }.buttonStyle(ToggleButton(isOn: .oneway { formatsToConvertToJPEG.contains(format) }))
-                            .font(.mono(11))
+                            .font(.mono(TextSize.subheadline))
                     }
                 }
                 HStack {
-                    (Text("Convert to ").regular(13) + Text("png").mono(13)).padding(.trailing, 10)
+                    (Text("Convert to ").regular(TextSize.body) + Text("png").mono(TextSize.body)).padding(.trailing, Space.m)
                         .searchAnchor("images.compatibility.formatsToConvertToPNG")
                     Spacer()
 
@@ -2004,7 +1966,7 @@ struct ImagesSettingsView: View {
                                 formatsToConvertToJPEG.remove(format)
                             }
                         }.buttonStyle(ToggleButton(isOn: .oneway { formatsToConvertToPNG.contains(format) }))
-                            .font(.mono(11))
+                            .font(.mono(TextSize.subheadline))
                     }
                 }
             }
@@ -2012,7 +1974,7 @@ struct ImagesSettingsView: View {
 
         }
         .scrollContentBackground(.hidden)
-        .padding(4)
+        .padding(Space.xs)
     }
 }
 
@@ -2070,7 +2032,7 @@ struct KeysSettingsView: View {
                     ToggleButton(isOn: .oneway { quickResizeKeys.contains(key) })
                 )
                 Text("\(number)0%")
-                    .mono(10)
+                    .mono(TextSize.caption)
                     .foregroundColor(.secondary)
             }
         }
@@ -2094,22 +2056,22 @@ struct KeysSettingsView: View {
                 keyToggle(.p, actionName: "Pause optimisations", description: "Pause or stop automatic optimisations")
                 keyToggle(.c, actionName: "Optimise current clipboard", description: "Apply optimisations on the copied image, URL or path")
                 keyToggle(.a, actionName: "Optimise aggressively", description: "Apply aggressive optimisations on the copied image, URL or path")
-            }.padding(.leading, 20)
+            }.padding(.leading, Space.window)
                 .searchAnchor("keys.actionkeys.enabledKeys")
             Section(header: SectionHeader(title: "Resize keys")) {
-                HStack(alignment: .bottom, spacing: 10) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Hold the trigger keys and").round(12, weight: .regular)
-                        Text("press a number to downscale to").mono(10).foregroundColor(.secondary)
+                HStack(alignment: .bottom, spacing: Space.m) {
+                    VStack(alignment: .leading, spacing: Space.xs) {
+                        Text("Hold the trigger keys and").round(TextSize.callout, weight: .regular)
+                        Text("press a number to downscale to").mono(TextSize.caption).foregroundColor(.secondary)
                     }
                     VStack(spacing: 1) {
                         triggerKeyCap
                         // Kept for vertical alignment with the number keys' percentage labels, but hidden.
-                        Text("hold").mono(10).foregroundColor(.secondary).hidden()
+                        Text("hold").mono(TextSize.caption).foregroundColor(.secondary).hidden()
                     }
                     resizeKeys
                 }.fixedSize()
-            }.padding(.leading, 20)
+            }.padding(.leading, Space.window)
                 .searchAnchor("keys.resizekeys.quickResizeKeys")
         }
         .scrollContentBackground(.hidden)
@@ -2122,14 +2084,14 @@ struct KeysSettingsView: View {
     /// together with that key. Styled lighter than the action keys (secondary text, fainter fill) so it
     /// reads as the held prefix, not the key itself.
     var triggerKeyCap: some View {
-        HStack(spacing: 3) {
+        HStack(spacing: Space.xxs) {
             ForEach(keyComboModifiers) { key in
                 Text(key.str)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: TextSize.title3, weight: .semibold))
                     .foregroundColor(.secondary)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Color.primary.opacity(0.08)))
+                    .padding(.horizontal, Space.s)
+                    .padding(.vertical, Space.xxs)
+                    .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).fill(Color.primary.opacity(0.08)))
             }
         }
     }
@@ -2144,10 +2106,10 @@ struct KeysSettingsView: View {
             HStack {
                 triggerKeyCap
                 DynamicKey(key: .constant(key))
-                    .font(.mono(15, weight: SauceKey.ALPHANUMERIC_KEYS.contains(key) ? .medium : .heavy))
+                    .font(.mono(TextSize.title3, weight: SauceKey.ALPHANUMERIC_KEYS.contains(key) ? .medium : .heavy))
                 VStack(alignment: .leading, spacing: -1) {
                     Text(actionName)
-                    Text(description).mono(10)
+                    Text(description).mono(TextSize.caption)
                 }
             }
         })
@@ -2161,32 +2123,32 @@ struct KeysSettingsView: View {
 struct LegalNotice: View {
     var body: some View {
         Text("Based on Clop by The low-tech guys. Licensed under GPLv3, without any warranty.")
-            .font(.mono(11, weight: .regular))
+            .font(.mono(TextSize.subheadline, weight: .regular))
             .foregroundColor(.secondary)
     }
 }
 
 struct AboutSettingsView: View {
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: Space.l) {
             SwiftUI.Image(nsImage: NSApp.applicationIconImage)
                 .resizable()
                 .interpolation(.high)
                 .scaledToFit()
                 .frame(width: 128, height: 128)
             Text("Clop")
-                .round(48, weight: .black)
+                .round(TextSize.display, weight: .black)
                 .padding(.top, -4)
             Text("v\(Bundle.main.version)")
-                .mono(13, weight: .regular)
+                .mono(TextSize.body, weight: .regular)
                 .foregroundColor(.secondary)
             Link("Source", destination: "https://github.com/stephenangeloni/Clop".url!)
                 .underline()
                 .opacity(0.75)
-                .padding(.top, 6)
+                .padding(.top, Space.s)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
+        .padding(.vertical, Space.xxl)
         .fill()
     }
 }
@@ -2225,42 +2187,42 @@ struct DropZoneSettingsView: View {
     var toggles: some View {
         VStack(alignment: .leading, spacing: 0) {
             SectionHeader(title: "Drop zone", subtitle: "Drag files, paths and URLs onto a global zone to optimise them")
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: Space.m) {
                 Toggle(isOn: $enableDragAndDrop) {
-                    Text("Enable drop zone").regular(13)
-                        + Text("\nAllows dragging files, paths and URLs to a global drop zone for optimisation").round(11, weight: .regular).foregroundColor(.secondary)
+                    Text("Enable drop zone").regular(TextSize.body)
+                        + Text("\nAllows dragging files, paths and URLs to a global drop zone for optimisation").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                 }
                 .searchAnchor("dropzone.dropzone.enableDragAndDrop")
                 Toggle(isOn: $onlyShowDropZoneOnOption) {
-                    Text("Require pressing ⌥ Option to show drop zone").regular(13)
-                        + Text("\nHide drop zone by default to avoid distractions while dragging files, show it by manually pressing ⌥ Option once").round(11, weight: .regular).foregroundColor(.secondary)
+                    Text("Require pressing ⌥ Option to show drop zone").regular(TextSize.body)
+                        + Text("\nHide drop zone by default to avoid distractions while dragging files, show it by manually pressing ⌥ Option once").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                 }
-                .padding(.leading, 20)
+                .padding(.leading, Space.window)
                 .disabled(!enableDragAndDrop)
                 .searchAnchor("dropzone.dropzone.onlyShowDropZoneOnOption")
                 Toggle(isOn: $autoCopyToClipboard) {
-                    Text("Auto Copy optimised files to clipboard").regular(13)
-                        + Text("\nCopy files resulting from drop zone or file watch optimisation\nso they can be pasted right after optimisation ends").round(11, weight: .regular).foregroundColor(.secondary)
+                    Text("Auto Copy optimised files to clipboard").regular(TextSize.body)
+                        + Text("\nCopy files resulting from drop zone or file watch optimisation\nso they can be pasted right after optimisation ends").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                 }
                 .searchAnchor("dropzone.dropzone.autoCopyToClipboard")
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, Space.xl)
+            .padding(.vertical, Space.m)
         }
     }
 
     var preview: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Space.m) {
             DropZoneView()
                 .disabled(!enableDragAndDrop)
                 .saturation(enableDragAndDrop ? 1 : 0.5)
                 .preview(true)
-                .padding(6)
-                .background(RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(Color.gray.opacity(0.2), lineWidth: 2))
+                .padding(Space.s)
+                .background(RoundedRectangle(cornerRadius: Radius.large, style: .continuous).stroke(Color.gray.opacity(0.2), lineWidth: 2))
                 .fixedSize()
 
             Text("Drag files onto the drop zone\nto optimise them")
-                .font(.system(size: 12))
+                .font(.system(size: TextSize.callout))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
         }
@@ -2268,8 +2230,8 @@ struct DropZoneSettingsView: View {
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .center, spacing: 24) {
+            VStack(alignment: .leading, spacing: Space.xl) {
+                HStack(alignment: .center, spacing: Space.xxl) {
                     toggles
                     Spacer()
                     preview
@@ -2283,9 +2245,9 @@ struct DropZoneSettingsView: View {
 
                 VStack(alignment: .leading, spacing: 0) {
                     SectionHeader(title: "Batch mode", subtitle: "Process a large drop in a fast native window instead of one floating result per file")
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: Space.m) {
                         Toggle(isOn: $useBatchModeForFolders) {
-                            Text("Use batch mode for large drops").regular(13)
+                            Text("Use batch mode for large drops").regular(TextSize.body)
                                 + Text("\nDropping many files at once (or a folder with many files) opens a single batch window that optimises them all efficiently. Originals are backed up first and can be restored.").round(
                                     11,
                                     weight: .regular
@@ -2293,23 +2255,23 @@ struct DropZoneSettingsView: View {
                         }
                         .searchAnchor("dropzone.batchmode.useBatchModeForFolders")
                         HStack {
-                            Text("Switch to batch mode when dropping more than").regular(13)
+                            Text("Switch to batch mode when dropping more than").regular(TextSize.body)
                             Spacer()
                             TextField("", value: $batchModeFileCountThreshold, format: .number)
                                 .accessibilityLabel("Switch to batch mode when dropping more than")
                                 .multilineTextAlignment(.center)
-                                .font(.mono(12))
+                                .font(.mono(TextSize.callout))
                                 .frame(width: 60)
                                 .searchAnchor("dropzone.batchmode.batchModeFileCountThreshold", namesControl: true)
-                            Text("files").regular(13)
+                            Text("files").regular(TextSize.body)
                         }
                         .disabled(!useBatchModeForFolders)
                         .opacity(useBatchModeForFolders ? 1 : 0.6)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, Space.xl)
+                    .padding(.vertical, Space.m)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, Space.xl)
                 .frame(maxWidth: 780)
                 .frame(maxWidth: .infinity)
 
@@ -2319,9 +2281,9 @@ struct DropZoneSettingsView: View {
                     SectionHeader(title: "Automation", subtitle: "Run actions on files dropped here: convert, crop, copy, rename and more")
                     SourceAutomationsSection(source: .dropZone)
                         .disabled(!enableDragAndDrop)
-                        .padding(.bottom, 8)
+                        .padding(.bottom, Space.m)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, Space.xl)
                 .frame(maxWidth: 780)
                 .frame(maxWidth: .infinity)
                 .id("automation")
@@ -2352,7 +2314,7 @@ struct PresetZonesSettingsView: View {
             }
         }
         .hfill()
-        .padding(.vertical, 4)
+        .padding(.vertical, Space.xs)
     }
 
     var body: some View {
@@ -2373,12 +2335,12 @@ struct PresetZonesSettingsView: View {
                     if let id = svm.editingPresetZoneID, let zone = presetZones.first(where: { $0.id == id }) {
                         PresetZoneRow(zone: zone) { svm.editingPresetZoneID = nil }
                             .id("editor-\(id)")
-                            .padding(.top, 6)
+                            .padding(.top, Space.s)
                     }
                 }
                 .searchAnchor("presetZones.presetzones.presetZones")
             }
-            .padding(4)
+            .padding(Space.xs)
             .disabled(!enableDragAndDrop)
             .saturation(enableDragAndDrop ? 1 : 0.5)
             .onChange(of: svm.editingPresetZoneID) { id in
@@ -2392,17 +2354,17 @@ struct PresetZonesSettingsView: View {
     }
 
     func zonePreview(_ type: ClopFileType) -> some View {
-        VStack(spacing: 6) {
+        VStack(spacing: Space.s) {
             DropZoneView(presetFileType: type)
                 .preview(true)
-            HStack(spacing: 4) {
+            HStack(spacing: Space.xs) {
                 SwiftUI.Image(systemName: type.symbolName)
                 Text(typeName(type))
             }
-            .font(.system(size: 13, weight: .semibold))
+            .font(.system(size: TextSize.body, weight: .semibold))
             .foregroundColor(type.color)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 2)
+            .padding(.horizontal, Space.m)
+            .padding(.vertical, Space.xxs)
             .background(Capsule().fill(type.color.opacity(0.15)))
             .padding(.top, 1)
         }
@@ -2440,9 +2402,9 @@ struct FloatingSettingsView: View {
     var settings: some View {
         Form {
             Toggle(isOn: $enableFloatingResults) {
-                Text("Show floating results").regular(13)
+                Text("Show floating results").regular(TextSize.body)
                     + Text("\n\nDisabling this will make Clop run in an UI-less mode, but keep optimising files in the background. Drop zone can be disabled separately in the Drop zone tab")
-                    .round(10, weight: .regular)
+                    .round(TextSize.caption, weight: .regular)
                     .foregroundColor(.secondary)
             }
             .searchAnchor("floating.main.enableFloatingResults", namesControl: true)
@@ -2455,23 +2417,23 @@ struct FloatingSettingsView: View {
                 }
                 .searchAnchor("floating.layout.floatingResultsCorner", namesControl: true)
                 Toggle(isOn: $followCursorScreen) {
-                    Text("Follow the cursor across screens").regular(13)
+                    Text("Follow the cursor across screens").regular(TextSize.body)
                         + Text("\n\nWhen the cursor stays on another screen for a couple of seconds, move the results to that screen")
-                        .round(10, weight: .regular)
+                        .round(TextSize.caption, weight: .regular)
                         .foregroundColor(.secondary)
                 }
                 .searchAnchor("floating.layout.followCursorScreen", namesControl: true)
                 Toggle(isOn: $hideFloatingResultTooltips) {
-                    Text("Hide button tooltips").regular(13)
+                    Text("Hide button tooltips").regular(TextSize.body)
                         + Text("\n\nDon't show the action name labels that pop up while hovering result buttons")
-                        .round(10, weight: .regular)
+                        .round(TextSize.caption, weight: .regular)
                         .foregroundColor(.secondary)
                 }
                 .searchAnchor("floating.layout.hideFloatingResultTooltips", namesControl: true)
                 Toggle(isOn: $alwaysShowCompactResults) {
-                    Text("Always use compact layout").regular(13)
+                    Text("Always use compact layout").regular(TextSize.body)
                         + Text("\n\nBy default, the layout switches to compact automatically when there are more than 5 results on the screen")
-                        .round(10, weight: .regular)
+                        .round(TextSize.caption, weight: .regular)
                         .foregroundColor(.secondary)
                 }
                 .searchAnchor("floating.layout.alwaysShowCompactResults", namesControl: true)
@@ -2480,25 +2442,25 @@ struct FloatingSettingsView: View {
             Section(header: SectionHeader(title: "Full layout")) {
                 // Subtitle sits under both the label and the picker so it can wrap across the whole
                 // row width instead of being squeezed into the label column by the picker.
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     Picker(selection: $formatPickerStyle) {
                         Text("format bar at the bottom").tag(FormatPickerStyle.bar)
                         Text("hover on the file extension").tag(FormatPickerStyle.extensionHover)
                     } label: {
-                        Text("Change format by").regular(13)
+                        Text("Change format by").regular(TextSize.body)
                     }
                     .searchAnchor("floating.fulllayout.formatPickerStyle", namesControl: true)
                     Text("The format bar shows all convertible formats as one-click segments at the bottom of the result; the extension chip pops the formats up on hover")
-                        .round(10, weight: .regular)
+                        .round(TextSize.caption, weight: .regular)
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Toggle("Show Copy all / Clear all buttons", isOn: $showCopyClearButtons)
                     .searchAnchor("floating.fulllayout.showCopyClearButtons", namesControl: true)
                 Text("Dismiss result after")
-                Toggle("drag and drop outside", isOn: $dismissFloatingResultOnDrop).padding(.leading, 20)
+                Toggle("drag and drop outside", isOn: $dismissFloatingResultOnDrop).padding(.leading, Space.window)
                     .searchAnchor("floating.fulllayout.dismissFloatingResultOnDrop", namesControl: true)
-                Toggle("upload to Dropshare", isOn: $dismissFloatingResultOnUpload).padding(.leading, 20)
+                Toggle("upload to Dropshare", isOn: $dismissFloatingResultOnUpload).padding(.leading, Space.window)
                     .searchAnchor("floating.fulllayout.dismissFloatingResultOnUpload", namesControl: true)
 
                 Toggle("Auto hide", isOn: $autoHideFloatingResults)
@@ -2513,7 +2475,7 @@ struct FloatingSettingsView: View {
                     Text("5 minutes").tag(300)
                     Text("10 minutes").tag(600)
                     Text("never").tag(0)
-                }.disabled(!autoHideFloatingResults).padding(.leading, 20)
+                }.disabled(!autoHideFloatingResults).padding(.leading, Space.window)
                     .searchAnchor("floating.fulllayout.autoHideFloatingResultsAfter", namesControl: true)
                 Picker("clipboard after", selection: $autoHideClipboardResultAfter) {
                     Text("1 seconds").tag(1)
@@ -2525,7 +2487,7 @@ struct FloatingSettingsView: View {
                     Text("30 seconds").tag(30)
                     Text("same as non-clipboard").tag(-1)
                     Text("never").tag(0)
-                }.disabled(!autoHideFloatingResults).padding(.leading, 20)
+                }.disabled(!autoHideFloatingResults).padding(.leading, Space.window)
                     .searchAnchor("floating.fulllayout.autoHideClipboardResultAfter", namesControl: true)
             }.disabled(!enableFloatingResults)
 
@@ -2533,9 +2495,9 @@ struct FloatingSettingsView: View {
                 Toggle("Show images", isOn: $showCompactImages)
                     .searchAnchor("floating.compactlayout.showCompactImages", namesControl: true)
                 Text("Dismiss result after")
-                Toggle("drag and drop outside", isOn: $dismissCompactResultOnDrop).padding(.leading, 20)
+                Toggle("drag and drop outside", isOn: $dismissCompactResultOnDrop).padding(.leading, Space.window)
                     .searchAnchor("floating.compactlayout.dismissCompactResultOnDrop", namesControl: true)
-                Toggle("upload to Dropshare", isOn: $dismissCompactResultOnUpload).padding(.leading, 20)
+                Toggle("upload to Dropshare", isOn: $dismissCompactResultOnUpload).padding(.leading, Space.window)
                     .searchAnchor("floating.compactlayout.dismissCompactResultOnUpload", namesControl: true)
 
                 Picker("Auto clear all after", selection: $autoClearAllCompactResultsAfter) {
@@ -2571,7 +2533,7 @@ struct FloatingSettingsView: View {
                 if compact {
                     CompactPreview()
                         .frame(width: THUMB_SIZE.width + 60, height: 550, alignment: .center)
-                        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(Color.gray.opacity(0.2), lineWidth: 2))
+                        .background(RoundedRectangle(cornerRadius: Radius.large, style: .continuous).stroke(Color.gray.opacity(0.2), lineWidth: 2))
                         .disabled(!enableFloatingResults)
                         .saturation(enableFloatingResults ? 1 : 0.5)
                 } else {
@@ -2585,7 +2547,7 @@ struct FloatingSettingsView: View {
                             }
                         }
                         .frame(width: THUMB_SIZE.width + 60, height: 550)
-                        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(Color.gray.opacity(0.2), lineWidth: 2))
+                        .background(RoundedRectangle(cornerRadius: Radius.large, style: .continuous).stroke(Color.gray.opacity(0.2), lineWidth: 2))
                         .disabled(!enableFloatingResults)
                         .saturation(enableFloatingResults ? 1 : 0.5)
                         .onAppear {
@@ -2601,10 +2563,10 @@ struct FloatingSettingsView: View {
                 }.pickerStyle(.segmented).frame(width: 200)
                     .labelsHidden()
                 Text("only for preview")
-                    .round(10)
+                    .round(TextSize.caption)
                     .foregroundColor(.secondary)
 
-                Divider().frame(width: 100).padding(.vertical, 4)
+                Divider().frame(width: 100).padding(.vertical, Space.xs)
 
                 if compact {
                     ActionListPicker(label: "Side actions", vertical: false, actions: $compactResultActions)
@@ -2727,66 +2689,66 @@ struct ClipboardSettingsView: View {
         Form {
             Section(header: SectionHeader(title: "Clipboard", subtitle: "Watch for copied data and optimise it automatically")) {
                 Toggle(isOn: $enableClipboardOptimiser) {
-                    Text("Enable clipboard optimiser").regular(13)
-                        + Text("\nWatch for copied data and optimise it automatically").round(11, weight: .regular).foregroundColor(.secondary)
+                    Text("Enable clipboard optimiser").regular(TextSize.body)
+                        + Text("\nWatch for copied data and optimise it automatically").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                 }
                 .searchAnchor("clipboard.clipboard.enableClipboardOptimiser", namesControl: true)
                 Group {
                     Toggle(isOn: .constant(true)) {
-                        Text("Image data").regular(13)
-                            + Text("\nCopied image data (e.g. screenshots)").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Image data").regular(TextSize.body)
+                            + Text("\nCopied image data (e.g. screenshots)").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }.disabled(true)
                         .accessibilityLabel("Image data")
                     Toggle(isOn: $optimiseTIFF) {
-                        Text("TIFF data").regular(13)
-                            + Text("\nUsually from graphical design apps, sometimes better left alone").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("TIFF data").regular(TextSize.body)
+                            + Text("\nUsually from graphical design apps, sometimes better left alone").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("clipboard.clipboard.optimiseTIFF", namesControl: true)
                     Toggle(isOn: $optimiseHEICAVIFClipboard) {
-                        Text("HEIC and AVIF data").regular(13)
+                        Text("HEIC and AVIF data").regular(TextSize.body)
                     }
                     .searchAnchor("clipboard.clipboard.optimiseHEICAVIFClipboard", namesControl: true)
                     Toggle(isOn: $optimiseImagePathClipboard) {
-                        Text("Image files").regular(13)
-                            + Text("\nCopying images from Finder results in file paths instead of image data").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Image files").regular(TextSize.body)
+                            + Text("\nCopying images from Finder results in file paths instead of image data").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("clipboard.clipboard.optimiseImagePathClipboard", namesControl: true)
                     Toggle(isOn: $optimiseVideoClipboard) {
-                        Text("Video files").regular(13)
-                            + Text("\nOptimise copied video file paths").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Video files").regular(TextSize.body)
+                            + Text("\nOptimise copied video file paths").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("clipboard.clipboard.optimiseVideoClipboard", namesControl: true)
                     Toggle(isOn: $optimiseAudioClipboard) {
-                        Text("Audio files").regular(13)
-                            + Text("\nOptimise copied audio file paths").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("Audio files").regular(TextSize.body)
+                            + Text("\nOptimise copied audio file paths").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("clipboard.clipboard.optimiseAudioClipboard", namesControl: true)
                     Toggle(isOn: $optimisePDFClipboard) {
-                        Text("PDF files").regular(13)
-                            + Text("\nOptimise copied PDF file paths").round(11, weight: .regular).foregroundColor(.secondary)
+                        Text("PDF files").regular(TextSize.body)
+                            + Text("\nOptimise copied PDF file paths").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                     }
                     .searchAnchor("clipboard.clipboard.optimisePDFClipboard", namesControl: true)
                 }
                 .disabled(!enableClipboardOptimiser)
-                .padding(.leading, 20)
+                .padding(.leading, Space.window)
 
                 Toggle(isOn: $appendClipboardResults) {
-                    Text("Keep all clipboard results").regular(13)
-                        + Text("\nShow each clipboard optimisation as a separate result instead of replacing the previous one").round(11, weight: .regular).foregroundColor(.secondary)
+                    Text("Keep all clipboard results").regular(TextSize.body)
+                        + Text("\nShow each clipboard optimisation as a separate result instead of replacing the previous one").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                 }.disabled(!enableClipboardOptimiser)
                     .searchAnchor("clipboard.clipboard.appendClipboardResults", namesControl: true)
                 if appendClipboardResults {
                     Toggle(isOn: $copyConsecutiveClipboardImages) {
-                        Text("Accumulate optimised images in clipboard").regular(13)
-                            + Text("\nEach new optimised image is added to a file list in the clipboard, so you can paste them all at once into image editor apps like Pixelmator or Affinity, or into notes").round(11, weight: .regular)
+                        Text("Accumulate optimised images in clipboard").regular(TextSize.body)
+                            + Text("\nEach new optimised image is added to a file list in the clipboard, so you can paste them all at once into image editor apps like Pixelmator or Affinity, or into notes").round(TextSize.subheadline, weight: .regular)
                             .foregroundColor(.secondary)
                     }
                     .disabled(!enableClipboardOptimiser)
-                    .padding(.leading, 20)
+                    .padding(.leading, Space.window)
                     .searchAnchor("clipboard.clipboard.copyConsecutiveClipboardImages", namesControl: true)
 
                     HStack {
-                        Text("Reset after").regular(13)
+                        Text("Reset after").regular(TextSize.body)
                         Picker("Reset after", selection: $clipboardAccumulationTimeout) {
                             Text("10 seconds").tag(10)
                             Text("30 seconds").tag(30)
@@ -2798,16 +2760,16 @@ struct ClipboardSettingsView: View {
                         .labelsHidden()
                         .frame(width: 140)
                         .searchAnchor("clipboard.clipboard.clipboardAccumulationTimeout")
-                        Text("of inactivity").regular(13)
+                        Text("of inactivity").regular(TextSize.body)
                     }
-                    .padding(.leading, 20)
+                    .padding(.leading, Space.window)
                 }
             }
 
             Section(header: SectionHeader(title: "Ignored apps", subtitle: "Skip clipboard optimisation while one of these apps is in front")) {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Space.xs) {
                     IgnoredAppsPicker(bundleIds: $clipboardIgnoredAppBundleIds, enabled: enableClipboardOptimiser)
-                        .padding(.top, 2)
+                        .padding(.top, Space.xxs)
                         .searchAnchor("clipboard.ignoredapps.clipboardIgnoredAppBundleIds")
                 }
                 .disabled(!enableClipboardOptimiser)
@@ -2821,8 +2783,8 @@ struct ClipboardSettingsView: View {
             .id("automation")
         }
         .scrollContentBackground(.hidden)
-        .padding(.horizontal, 50)
-        .padding(.vertical, 20)
+        .padding(.horizontal, Space.huge)
+        .padding(.vertical, Space.window)
         .scrollsToAutomation()
     }
 }
@@ -2906,18 +2868,18 @@ struct GeneralSettingsView: View {
 
             Section(header: SectionHeader(title: "Working directory", subtitle: "Where temporary files and backups are stored and where the optimised files are saved")) {
                 HStack {
-                    Text("Path").regular(13).padding(.trailing, 10)
+                    Text("Path").regular(TextSize.body).padding(.trailing, Space.m)
                         .searchAnchor("general.workingdirectory.workdir")
                     TextField("", text: workdirBinding)
                         .accessibilityLabel("Working directory")
                         .multilineTextAlignment(.center)
-                        .font(.mono(12))
-                        .background(RoundedRectangle(cornerRadius: 6, style: .continuous).stroke(Color.gray, lineWidth: 1).scaleEffect(y: TEXT_FIELD_SCALE).offset(x: TEXT_FIELD_OFFSET))
+                        .font(.mono(TextSize.callout))
+                        .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).stroke(Color.gray, lineWidth: 1).scaleEffect(y: TEXT_FIELD_SCALE).offset(x: TEXT_FIELD_OFFSET))
                     Button("Reset") {
                         workdir = Defaults.Keys.workdir.defaultValue
                     }
                     .buttonStyle(.bordered)
-                    .font(.regular(11))
+                    .font(.regular(TextSize.subheadline))
                 }
 
                 Picker("Periodically cleanup files older than", selection: $workdirCleanupInterval) {
@@ -2935,21 +2897,21 @@ struct GeneralSettingsView: View {
 
             Section(header: SectionHeader(title: "Optimisation")) {
                 Toggle(isOn: $stripMetadata) {
-                    Text("Strip EXIF Metadata").regular(13)
-                        + Text("\nDeleted identifiable metadata from files (e.g. camera that took the photo, location, date and time etc.)").round(11, weight: .regular).foregroundColor(.secondary)
+                    Text("Strip EXIF Metadata").regular(TextSize.body)
+                        + Text("\nDeleted identifiable metadata from files (e.g. camera that took the photo, location, date and time etc.)").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                 }
                 .searchAnchor("general.optimisation.stripMetadata", namesControl: true)
                 Toggle(isOn: $preserveColorMetadata) {
-                    Text("Preserve color profile metadata").regular(13)
-                        + Text("\nKeep color profile metadata tags untouched when stripping EXIF metadata").round(11, weight: .regular).foregroundColor(.secondary)
+                    Text("Preserve color profile metadata").regular(TextSize.body)
+                        + Text("\nKeep color profile metadata tags untouched when stripping EXIF metadata").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                 }
-                .padding(.leading, 20)
+                .padding(.leading, Space.window)
                 .disabled(!stripMetadata)
                 .searchAnchor("general.optimisation.preserveColorMetadata", namesControl: true)
 
                 Toggle(isOn: $preserveDates) {
-                    Text("Preserve file creation and modification dates").regular(13)
-                        + Text("\nThe optimised file will have the same creation and modification dates as the original file").round(11, weight: .regular).foregroundColor(.secondary)
+                    Text("Preserve file creation and modification dates").regular(TextSize.body)
+                        + Text("\nThe optimised file will have the same creation and modification dates as the original file").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                 }
                 .searchAnchor("general.optimisation.preserveDates", namesControl: true)
 
@@ -2959,15 +2921,15 @@ struct GeneralSettingsView: View {
                     Text("30 seconds").tag(30000)
                     Text("60 seconds").tag(60000)
                 } label: {
-                    Text("Re-optimisation loop detection window").regular(13)
-                        + Text("\nIncrease if files on iCloud Drive get optimised twice").round(11, weight: .regular).foregroundColor(.secondary)
+                    Text("Re-optimisation loop detection window").regular(TextSize.body)
+                        + Text("\nIncrease if files on iCloud Drive get optimised twice").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                 }
                 .searchAnchor("general.optimisation.optimisedFileProtectionMs", namesControl: true)
             }
         }
         .scrollContentBackground(.hidden)
-        .padding(.horizontal, 50)
-        .padding(.vertical, 20)
+        .padding(.horizontal, Space.huge)
+        .padding(.vertical, Space.window)
     }
 
     @ViewBuilder
@@ -2982,11 +2944,11 @@ struct GeneralSettingsView: View {
                 .frame(width: 46, height: 28)
                 .foregroundStyle(selected ? Color.white : Color.primary)
                 .background(
-                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                         .fill(selected ? Color.accentColor : Color.primary.opacity(0.06))
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                         .strokeBorder(selected ? Color.clear : Color.primary.opacity(0.12))
                 )
         }
@@ -3189,10 +3151,10 @@ struct SettingsView: View {
     /// `.searchable` field from code needs macOS 15 and Clop runs on 13. rcmd's Settings window has
     /// the same field for the same reason.
     var searchField: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: Space.s) {
             // `SwiftUI.Image` qualified: Clop has its own `Image` type for optimisable files.
             SwiftUI.Image(systemName: "magnifyingglass")
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: TextSize.callout, weight: .semibold))
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
             TextField("Search settings", text: $svm.searchQuery)
@@ -3203,19 +3165,19 @@ struct SettingsView: View {
             if !svm.searchQuery.isEmpty {
                 Button { svm.searchQuery = "" } label: {
                     SwiftUI.Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 12))
+                        .font(.system(size: TextSize.callout))
                         .foregroundStyle(.tertiary)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Clear search")
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
-        .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(.quaternary))
-        .padding(.horizontal, 10)
-        .padding(.top, 10)
-        .padding(.bottom, 6)
+        .padding(.horizontal, Space.m)
+        .padding(.vertical, Space.s)
+        .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).fill(.quaternary))
+        .padding(.horizontal, Space.m)
+        .padding(.top, Space.m)
+        .padding(.bottom, Space.s)
         .onExitCommand { svm.searchQuery = "" }
     }
 
@@ -3229,23 +3191,23 @@ struct SettingsView: View {
         if results.isEmpty {
             List {
                 Text("Nothing matches \"\(svm.searchQuery)\"")
-                    .round(12)
+                    .round(TextSize.callout)
                     .foregroundColor(.secondary)
             }
         } else {
             List {
                 ForEach(results) { entry in
                     Button(action: { svm.jump(to: entry) }) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(entry.title).medium(12)
+                        VStack(alignment: .leading, spacing: Space.xxs) {
+                            Text(entry.title).medium(TextSize.callout)
                             if !entry.subtitle.isEmpty {
                                 Text(entry.subtitle)
-                                    .round(10)
+                                    .round(TextSize.caption)
                                     .foregroundColor(.secondary)
                                     .lineLimit(2)
                             }
                             Text([entry.tab.title, entry.section].filter { !$0.isEmpty }.joined(separator: " › "))
-                                .round(9)
+                                .round(TextSize.micro)
                                 .foregroundColor(.secondary.opacity(0.8))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -3395,7 +3357,7 @@ struct SettingsView: View {
         case .about:
             AboutSettingsView()
                 .overlay(alignment: .bottomTrailing) {
-                    LegalNotice().padding(8)
+                    LegalNotice().padding(Space.m)
                 }
         }
     }
@@ -3558,19 +3520,19 @@ struct FileSizeRangeRow: View {
     @Binding var maxMB: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Space.xs) {
             HStack {
-                Text(label).regular(13)
+                Text(label).regular(TextSize.body)
                 Spacer()
                 Text("\(minKB == 0 ? "0" : formatSkipFileSize(Double(minKB) * 1000)) - \(maxMB == 0 ? "∞" : formatSkipFileSize(Double(maxMB) * 1_000_000))")
-                    .mono(11).foregroundColor(.secondary)
+                    .mono(TextSize.subheadline).foregroundColor(.secondary)
             }
             DualKnobSlider(
                 low: Binding(get: { minKB == 0 ? 0 : frac(Double(minKB) * 1000) }, set: setLow),
                 high: Binding(get: { maxMB == 0 ? 1 : frac(Double(maxMB) * 1_000_000) }, set: setHigh),
                 label: label
             )
-            Text(caption).round(10, weight: .regular).foregroundColor(.secondary)
+            Text(caption).round(TextSize.caption, weight: .regular).foregroundColor(.secondary)
         }
     }
 
@@ -3612,19 +3574,19 @@ struct ResolutionRangeRow: View {
     @Binding var maxRes: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Space.xs) {
             HStack {
-                Text(label).regular(13)
+                Text(label).regular(TextSize.body)
                 Spacer()
                 Text("\(minRes == 0 ? "0" : "\(minRes)") - \(maxRes == 0 ? "∞" : "\(maxRes)") px")
-                    .mono(11).foregroundColor(.secondary)
+                    .mono(TextSize.subheadline).foregroundColor(.secondary)
             }
             DualKnobSlider(
                 low: Binding(get: { minRes == 0 ? 0 : frac(Double(minRes)) }, set: setLow),
                 high: Binding(get: { maxRes == 0 ? 1 : frac(Double(maxRes)) }, set: setHigh),
                 label: label
             )
-            Text(caption).round(10, weight: .regular).foregroundColor(.secondary)
+            Text(caption).round(TextSize.caption, weight: .regular).foregroundColor(.secondary)
         }
     }
 
@@ -3672,18 +3634,18 @@ struct CountSliderRow: View {
     var caption: (Int) -> String = { _ in "" }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Space.xs) {
             HStack {
-                Text(label).regular(13)
+                Text(label).regular(TextSize.body)
                 Spacer()
-                Text("\(count)").mono(11).foregroundColor(.secondary)
+                Text("\(count)").mono(TextSize.subheadline).foregroundColor(.secondary)
             }
             SingleKnobSlider(value: Binding(
                 get: { Double(count - range.lowerBound) / Double(range.upperBound - range.lowerBound) },
                 set: { count = range.lowerBound + Int(($0 * Double(range.upperBound - range.lowerBound)).rounded()) }
             ), label: label)
             if !caption(count).isEmpty {
-                Text(caption(count)).round(10, weight: .regular).foregroundColor(.secondary)
+                Text(caption(count)).round(TextSize.caption, weight: .regular).foregroundColor(.secondary)
             }
         }
     }

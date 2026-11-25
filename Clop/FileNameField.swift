@@ -67,7 +67,7 @@ struct FileNameField: View {
                 optimiser.editingFilename = false
             }, label: { SwiftUI.Image(systemName: "xmark").foregroundColor(.primary) })
                 .buttonStyle(FlatButton(color: .clear, textColor: .white, horizontalPadding: 0, verticalPadding: 0))
-                .font(.bold(9))
+                .font(.bold(TextSize.micro))
                 .frame(width: 18)
                 .contentShape(Rectangle())
                 .keyboardShortcut(.escape, modifiers: [])
@@ -91,9 +91,9 @@ struct FileNameField: View {
 
     var body: some View {
         editorViewer
-            .padding(.horizontal, 6)
-            .padding(.vertical, 3)
-            .if(glass) { $0.glassOrMaterial(in: RoundedRectangle(cornerRadius: 6, style: .continuous)) }
+            .padding(.horizontal, Space.s)
+            .padding(.vertical, Space.xxs)
+            .if(glass) { $0.glassOrMaterial(in: RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)) }
             .onChange(of: optimiser.running) { running in
                 if running {
                     optimiser.editingFilename = false

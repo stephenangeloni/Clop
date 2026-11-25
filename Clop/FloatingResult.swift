@@ -49,7 +49,7 @@ extension View {
     }
 
     @ViewBuilder func noThumbBackground(isError: Bool) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 14, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
         if isError {
             if #available(macOS 26.0, *) {
                 background(.red.opacity(0.5), in: shape)
@@ -99,14 +99,14 @@ struct FloatingActionChip: ViewModifier {
     var pressed = false
 
     func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 7, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
         content
-            .font(hovered ? .bold(11) : .semibold(11))
-            .foregroundStyle(Self.warmInk)
+            .font(hovered ? .bold(TextSize.subheadline) : .semibold(TextSize.subheadline))
+            .foregroundStyle(Palette.ink)
             .frame(height: 18)
-            .padding(.horizontal, 8)
+            .padding(.horizontal, Space.m)
             .modifier(GlassChipFill(shape: shape, tintOpacity: hovered ? (pressed ? 1 : 0.9) : 0))
-            .overlay(shape.strokeBorder(Self.warmInk.opacity(hovered ? 0 : 1), lineWidth: hovered ? 0 : 1.5))
+            .overlay(shape.strokeBorder(Palette.ink.opacity(hovered ? 0 : 1), lineWidth: hovered ? 0 : 1.5))
             .shadow(color: .black.opacity(hovered ? 0.16 : 0), radius: 3, y: 1)
             .scaleEffect(pressed ? 0.96 : 1)
             .contentShape(shape)
@@ -118,7 +118,6 @@ struct FloatingActionChip: ViewModifier {
 
     /// Warm-tinted ink for the label and border: a warm near-black in light mode, warm ivory in dark, so
     /// the chips read warmer than neutral gray.
-    private static let warmInk = Color(light: Color(red: 0.24, green: 0.17, blue: 0.09), dark: Color(red: 0.98, green: 0.93, blue: 0.84))
 
 }
 
@@ -203,7 +202,7 @@ struct FloatingResultList: View {
         // Fixed-geometry overlay cards no longer grow on hover, so the list spacing is constant
         // (the old hover-driven 4↔10 shuffle is gone). The copy/clear row gets a little breathing
         // room above it and sits close to the cards' edge so it lines up with the result rects.
-        VStack(alignment: floatingResultsCorner.isTrailing ? .trailing : .leading, spacing: 4) {
+        VStack(alignment: floatingResultsCorner.isTrailing ? .trailing : .leading, spacing: Space.xs) {
             ForEach(Array(optimisers.enumerated()), id: \.element.id) { index, optimiser in
                 FloatingResult(optimiser: optimiser, linear: optimisers.count > 1)
                     .zIndex(Double(optimisers.count - index))
@@ -219,7 +218,7 @@ struct FloatingResultList: View {
                     copyAllButton
                     clearAllButton
                 }
-                .padding(.top, 6)
+                .padding(.top, Space.s)
                 .padding(floatingResultsCorner.isTrailing ? .trailing : .leading, 16)
                 .padding(.bottom, preview ? 0 : 30)
                 // Every card carries a zIndex >= 1 (for the piled look), so without this the row sits
@@ -293,13 +292,13 @@ struct FloatingResultContainer: View {
         let optimisers = isPreview
             ? om.optimisers.filter(!\.hidden)
             : (enableFloatingResults ? om.optimisers.filter(!\.hidden).sorted(by: \.startedAt, order: .reverse) : [])
-        VStack(alignment: floatingResultsCorner.isTrailing ? .trailing : .leading, spacing: 10) {
+        VStack(alignment: floatingResultsCorner.isTrailing ? .trailing : .leading, spacing: Space.m) {
             if shouldShowDropZone, floatingResultsCorner.isTop {
                 DropZoneView()
                     // .transition(
                     //     .asymmetric(insertion: .scale.animation(.fastSpring), removal: .identity)
                     // )
-                    .padding(.bottom, 10)
+                    .padding(.bottom, Space.m)
             }
 
             if optimisers.isNotEmpty {
@@ -316,8 +315,8 @@ struct FloatingResultContainer: View {
                         visibleCount: om.visibleCount
                     )
                     .preview(isPreview)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 15)
+                    .padding(.horizontal, Space.m)
+                    .padding(.vertical, Space.xl)
                     .onAppear {
                         om.compactResults = true
                     }
@@ -332,7 +331,7 @@ struct FloatingResultContainer: View {
                     // .transition(
                     //     .asymmetric(insertion: .scale.animation(.fastSpring), removal: .identity)
                     // )
-                    .padding(.bottom, 10)
+                    .padding(.bottom, Space.m)
             }
         }
         .onHover { hovering in
@@ -547,11 +546,11 @@ struct OnboardingFloatingPreview: View {
             Button {
                 NSWorkspace.shared.open(folderURL)
             } label: {
-                HStack(spacing: 3) {
+                HStack(spacing: Space.xxs) {
                     SwiftUI.Image(systemName: "folder")
                     Text("Open folder with pages")
                 }
-                .font(.medium(8))
+                .font(.medium(TextSize.micro))
             }
             .buttonStyle(PickerButton(
                 color: .bg.warm.opacity(0.7),
@@ -574,7 +573,7 @@ struct OnboardingFloatingPreview: View {
                     }
                 }
             }
-            .font(.medium(8))
+            .font(.medium(TextSize.micro))
         }
     }
 
@@ -642,7 +641,7 @@ struct NameFormatPill: View {
                 segments
             }
         }
-        .padding(.horizontal, 4)
+        .padding(.horizontal, Space.xs)
         .frame(height: 18)
         // Only the inline editor gets a solid warm backing so the text field stays legible over the
         // thumbnail; at rest the two faint-accent chips carry their own fill, with no warm pill behind.
@@ -664,9 +663,9 @@ struct NameFormatPill: View {
     }
 
     var segments: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Space.xs) {
             Text(stem.isEmpty ? "filename" : stem)
-                .font(.system(size: 9, weight: .medium)).lineLimit(1).truncationMode(.middle)
+                .font(.system(size: TextSize.micro, weight: .medium)).lineLimit(1).truncationMode(.middle)
                 // Shrink the text a little more while hovering the name so more of a long filename
                 // shows, but not so much it stops being readable.
                 .minimumScaleFactor(optimiser.hoveringFilename ? 0.75 : 0.9)
@@ -674,7 +673,7 @@ struct NameFormatPill: View {
                 // Fixed height so the hover scale factor only changes width-fitting, never the chip height.
                 .frame(maxWidth: fullWidth ? .infinity : (formatBarActive ? 128 : 92), alignment: .trailing)
                 .frame(height: 12)
-                .padding(.horizontal, 6).padding(.vertical, 2)
+                .padding(.horizontal, Space.s).padding(.vertical, Space.xxs)
                 // Mono warm chip so the name reads as tappable at a glance; border firms up on hover.
                 .cardChip(hovering: optimiser.hoveringFilename)
                 .onHover { inside in
@@ -699,9 +698,9 @@ struct NameFormatPill: View {
                 // Hovering the extension chip springs the convert targets up from behind it; one click on a
                 // target converts. The accordion sits in an overlay so it doesn't affect the pill's layout,
                 // and rises into the card interior (over the thumbnail) rather than past the clipped edge.
-                Text(optimiser.formatChipText).font(.system(size: 9, weight: .bold))
+                Text(optimiser.formatChipText).font(.system(size: TextSize.micro, weight: .bold))
                     .frame(height: 12)
-                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .padding(.horizontal, Space.s).padding(.vertical, Space.xxs)
                     .cardChip(hovering: hoveringExt || optimiser.showingFormats)
                     .onHover { hovering in
                         hoveringExt = hovering
@@ -710,19 +709,19 @@ struct NameFormatPill: View {
                     .overlay(alignment: .bottomTrailing) { formatAccordion }
             }
         } else {
-            Text(optimiser.formatChipText).font(.system(size: 9, weight: .semibold)).foregroundColor(.white).padding(.leading, 1).padding(.trailing, 4)
+            Text(optimiser.formatChipText).font(.system(size: TextSize.micro, weight: .semibold)).foregroundColor(.white).padding(.leading, 1).padding(.trailing, Space.xs)
         }
     }
 
     @ViewBuilder var formatAccordion: some View {
         let formats = targetFormats
-        VStack(alignment: .trailing, spacing: 3) {
+        VStack(alignment: .trailing, spacing: Space.xxs) {
             ForEach(Array(formats.enumerated()), id: \.offset) { idx, item in
                 Button { convert(to: item.type) } label: {
                     Text((additiveConvert ? "+" : "") + item.ext.uppercased())
-                        .font(.mono(9, weight: .bold))
+                        .font(.mono(TextSize.micro, weight: .bold))
                         .frame(height: 12)
-                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .padding(.horizontal, Space.s).padding(.vertical, Space.xxs)
                         .cardChip(hovering: hoveredFormatIdx == idx)
                 }
                 .buttonStyle(.plain)
@@ -739,7 +738,7 @@ struct NameFormatPill: View {
         }
         // Bottom padding sits over the chip so moving the cursor from chip to list stays continuous;
         // when closed the overlay is non-interactive so the chip's own hover/taps work normally.
-        .padding(.bottom, 22)
+        .padding(.bottom, Space.window)
         .fixedSize()
         .onHover { hovering in
             hoveringList = hovering
@@ -751,10 +750,10 @@ struct NameFormatPill: View {
     }
 
     var editor: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Space.xs) {
             TextField("", text: $tempName)
                 .textFieldStyle(.plain)
-                .font(.system(size: 9, weight: .medium))
+                .font(.system(size: TextSize.micro, weight: .medium))
                 .foregroundColor(.primary)
                 .focused($focused)
                 .onSubmit {
@@ -762,7 +761,7 @@ struct NameFormatPill: View {
                     optimiser.editingFilename = false
                 }
             Button(action: { optimiser.editingFilename = false }, label: {
-                SwiftUI.Image(systemName: "xmark").font(.bold(8)).foregroundColor(.secondary)
+                SwiftUI.Image(systemName: "xmark").font(.bold(TextSize.micro)).foregroundColor(.secondary)
             })
             .buttonStyle(.plain)
             .keyboardShortcut(.escape, modifiers: [])
@@ -861,7 +860,7 @@ struct FormatPickerBar: View {
             ForEach(Array(items.enumerated()), id: \.offset) { idx, item in
                 if idx > 0 {
                     Rectangle().fill(Color.white.opacity(0.12))
-                        .frame(width: 1).padding(.vertical, 5)
+                        .frame(width: 1).padding(.vertical, Space.xs)
                         .offset(x: pushOffset(at: CGFloat(idx) - 0.5, count: items.count))
                         .animation(.spring(response: 0.25, dampingFraction: 0.6), value: hoveredIdx)
                         // Fade outside the spring: opacity must never bounce.
@@ -871,10 +870,10 @@ struct FormatPickerBar: View {
                 let hovered = hoveredIdx == idx && !optimiser.running
                 Button { convert(to: item.format) } label: {
                     Text((additiveConvert && !item.active ? "+" : "") + item.label)
-                        .font(.mono(8, weight: item.active ? .heavy : .bold))
+                        .font(.mono(TextSize.micro, weight: item.active ? .heavy : .bold))
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
-                        .padding(.horizontal, 2)
+                        .padding(.horizontal, Space.xxs)
                 }
                 .buttonStyle(FormatBarSegmentStyle(
                     active: item.active,
@@ -896,7 +895,7 @@ struct FormatPickerBar: View {
                 .onHover { hovering in hoveredIdx = hovering ? idx : (hoveredIdx == idx ? nil : hoveredIdx) }
             }
         }
-        .padding(.horizontal, 3)
+        .padding(.horizontal, Space.xxs)
         .frame(maxWidth: .infinity)
         .frame(height: Self.height)
         // Lifted slightly off the bottom edge; together with the capsule ends this keeps the end
@@ -1010,17 +1009,17 @@ struct FormatBarSegmentStyle: ButtonStyle {
             .background {
                 if active {
                     chip.fill(Color.white.opacity(0.92))
-                        .padding(1.5)
+                        .padding(Space.xxs)
                         .matchedGeometryEffect(id: "formatBarChip", in: chipNS)
                 } else if pending {
                     chip.fill(Color.white.opacity(pulseOn ? 0.4 : 0.12))
-                        .padding(1.5)
+                        .padding(Space.xxs)
                 } else if hovered {
                     // Bright ring + shadow so the hovered chip reads lit-up, not washed-out/disabled.
                     chip.fill(Color.white.opacity(configuration.isPressed ? 0.45 : 0.28))
                         .overlay(chip.strokeBorder(Color.white.opacity(0.85), lineWidth: 1))
                         .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
-                        .padding(1.5)
+                        .padding(Space.xxs)
                 }
             }
             .contentShape(Rectangle())
@@ -1030,15 +1029,6 @@ struct FormatBarSegmentStyle: ButtonStyle {
 // MARK: - FloatingResult
 
 struct FloatingResult: View {
-    /// color(display-p3 0.9983 0.818 0.3296)
-    static let yellow = Color(.displayP3, red: 1, green: 0.768, blue: 0.4296, opacity: 1)
-    /// color(display-p3 0.0193 0.4224 0.646)
-    static let darkBlue = Color(.displayP3, red: 0.0193, green: 0.4224, blue: 0.646, opacity: 1)
-    /// color(display-p3 0.037 0.6578 0.9928)
-    static let lightBlue = Color(.displayP3, red: 0.037, green: 0.6578, blue: 0.9928, opacity: 1)
-    /// color(display-p3 1 0.015 0.3)
-    static let red = Color(.displayP3, red: 1, green: 0.015, blue: 0.2, opacity: 1)
-
     // MARK: - Overlay-grid thumbnail card
 
     //
@@ -1063,7 +1053,6 @@ struct FloatingResult: View {
     @Default(.formatPickerStyle) var formatPickerStyle
 
     @Environment(\.openWindow) var openWindow
-    @Environment(\.colorScheme) var colorScheme
 
     var isExpanded: Bool {
         // While results are dropping after a removal, keep the overlay collapsed so a card sliding under the
@@ -1139,7 +1128,7 @@ struct FloatingResult: View {
     @ViewBuilder var progressURLView: some View {
         if optimiser.type.isURL, let url = optimiser.url {
             Text(url.absoluteString)
-                .medium(10)
+                .medium(TextSize.caption)
                 .foregroundColor(.secondary.opacity(0.75))
                 .lineLimit(1)
                 .allowsTightening(true)
@@ -1148,8 +1137,8 @@ struct FloatingResult: View {
     }
     @ViewBuilder var progressView: some View {
         if optimiser.progress.isIndeterminate, !linear, optimiser.thumbnail == nil, optimiser.progress.kind != .file {
-            HStack(spacing: 10) {
-                Text(optimiser.operation).round(14, weight: .semibold)
+            HStack(spacing: Space.m) {
+                Text(optimiser.operation).round(TextSize.body, weight: .semibold)
                 ProgressView(optimiser.progress).progressViewStyle(.circular)
             }
         } else {
@@ -1160,7 +1149,7 @@ struct FloatingResult: View {
                 }
                 ProgressView(optimiser.progress).progressViewStyle(.linear)
                 if !optimiser.progress.isIndeterminate {
-                    progressURLView.padding(.top, 5)
+                    progressURLView.padding(.top, Space.xs)
                 }
             }
         }
@@ -1169,7 +1158,7 @@ struct FloatingResult: View {
         if let oldSize = optimiser.oldSize {
             ResolutionField(optimiser: optimiser, size: oldSize)
                 .buttonStyle(FlatButton(color: .black.opacity(0.1), textColor: .white, radius: 3, horizontalPadding: 3, verticalPadding: 1))
-                .font(.round(10))
+                .font(.round(TextSize.caption))
                 .foregroundColor(optimiser.thumbnail != nil ? .lightGray : .secondary)
                 .fixedSize()
                 .disabled(!optimiser.canCrop())
@@ -1178,7 +1167,7 @@ struct FloatingResult: View {
 
     @ViewBuilder var bitrateDiff: some View {
         if optimiser.type.isAudio, let oldBitrate = optimiser.oldBitrate, oldBitrate > 0 {
-            HStack(spacing: 3) {
+            HStack(spacing: Space.xxs) {
                 let hideOldBitrate = OM.compactResults && (optimiser.newBitrate ?? 0) > 0 && optimiser.newBitrate! != oldBitrate
                 if !hideOldBitrate {
                     Text("\(oldBitrate) kbps")
@@ -1191,7 +1180,7 @@ struct FloatingResult: View {
                 }
             }
             .lineLimit(1)
-            .font(.round(10))
+            .font(.round(TextSize.caption))
             .foregroundColor(optimiser.thumbnail != nil ? .lightGray : .secondary)
             .fixedSize()
         }
@@ -1201,8 +1190,8 @@ struct FloatingResult: View {
         if optimiser.type.isAudio, let base = optimiser.coverArtSize, base.width > 0, base.height > 0 {
             let factor = optimiser.coverDownscaleFactor
             let scaled = factor < 0.999
-            HStack(spacing: 3) {
-                SwiftUI.Image(systemName: "photo").font(.system(size: 8))
+            HStack(spacing: Space.xxs) {
+                SwiftUI.Image(systemName: "photo").font(.system(size: TextSize.micro))
                 Text("\(Int(base.width.rounded()))×\(Int(base.height.rounded()))")
                 if scaled {
                     SwiftUI.Image(systemName: "arrow.right")
@@ -1210,7 +1199,7 @@ struct FloatingResult: View {
                 }
             }
             .lineLimit(1)
-            .font(.round(10))
+            .font(.round(TextSize.caption))
             .foregroundColor(optimiser.thumbnail != nil ? .lightGray : .secondary)
             .fixedSize()
         }
@@ -1218,7 +1207,7 @@ struct FloatingResult: View {
 
     @ViewBuilder var dpiDiff: some View {
         if optimiser.type.isPDF, let oldDPI = optimiser.oldDPI {
-            HStack(spacing: 3) {
+            HStack(spacing: Space.xxs) {
                 let hideOldDPI = OM.compactResults && optimiser.newDPI != nil && optimiser.newDPI! != oldDPI
                 if !hideOldDPI {
                     Text("\(oldDPI) DPI")
@@ -1231,7 +1220,7 @@ struct FloatingResult: View {
                 }
             }
             .lineLimit(1)
-            .font(.round(10))
+            .font(.round(TextSize.caption))
             .foregroundColor(optimiser.thumbnail != nil ? .lightGray : .secondary)
             .fixedSize()
         }
@@ -1239,17 +1228,19 @@ struct FloatingResult: View {
 
     @ViewBuilder var fileSizeDiff: some View {
         let improvement = optimiser.newBytes > 0 && optimiser.newBytes < optimiser.oldBytes
-        let improvementColor = (optimiser.thumbnail != nil ? FloatingResult.yellow : (colorScheme == .dark ? FloatingResult.lightBlue : FloatingResult.darkBlue))
+        let onThumbnail = optimiser.thumbnail != nil
+        let savingColor = onThumbnail ? Palette.savingOnThumbnail : Palette.saving
+        let growthColor = onThumbnail ? Palette.growthOnThumbnail : Palette.growth
 
         HStack {
             Text(optimiser.oldBytes.humanSize)
-                .mono(13, weight: .semibold)
-                .foregroundColor(improvement ? Color.red : improvementColor)
+                .mono(TextSize.body, weight: .semibold)
+                .foregroundColor(improvement ? growthColor : savingColor)
             if optimiser.newBytes > 0, optimiser.newBytes != optimiser.oldBytes {
                 SwiftUI.Image(systemName: "arrow.right")
                 Text(optimiser.newBytes.humanSize)
-                    .mono(13, weight: .semibold)
-                    .foregroundColor(improvement ? improvementColor : FloatingResult.red)
+                    .mono(TextSize.body, weight: .semibold)
+                    .foregroundColor(improvement ? savingColor : growthColor)
             }
         }
         .lineLimit(1)
@@ -1273,14 +1264,14 @@ struct FloatingResult: View {
             } else if optimiser.notice != nil {
                 noticeView
             } else {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Space.xxs) {
                     if let url = (optimiser.url ?? optimiser.originalURL), url.isFileURL {
                         FileNameField(optimiser: optimiser)
                             .foregroundColor(.primary)
-                            .font(.semibold(14)).lineLimit(1).opacity(0.8)
+                            .font(.semibold(TextSize.body)).lineLimit(1).opacity(0.8)
                             .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: THUMB_SIZE.width * 0.8, alignment: .leading)
-                            .padding(.bottom, 4)
+                            .padding(.bottom, Space.xs)
                     }
                     fileSizeDiff
                     sizeDiff
@@ -1292,39 +1283,39 @@ struct FloatingResult: View {
             closeStopButton.offset(x: -22, y: -16)
         }
         .animation(nil, value: optimiser.running)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, Space.l)
+        .padding(.vertical, Space.m)
         .noThumbBackground(isError: optimiser.error != nil)
         .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
-        .padding(.top, 4)
-        .padding(.bottom, 4)
+        .padding(.top, Space.xs)
+        .padding(.bottom, Space.xs)
         .transition(.opacity.animation(.easeOut(duration: 0.2)))
     }
     @ViewBuilder var errorView: some View {
         if let error = optimiser.error {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Space.xs) {
                 if let url = optimiser.url, url.isFileURL {
                     Text("~/" + url.path.replacingOccurrences(of: HOME.string + "/", with: ""))
-                        .round(10)
+                        .round(TextSize.caption)
                         .foregroundColor(.white.opacity(0.6))
                         .lineLimit(1)
                         .truncationMode(.middle)
                 }
                 Text(error)
-                    .medium(13)
+                    .medium(TextSize.body)
                     .foregroundColor(.white)
                     .lineLimit(3)
                     .minimumScaleFactor(0.75)
                 if let notice = optimiser.notice {
                     Text(notice)
-                        .round(10)
+                        .round(TextSize.caption)
                         .foregroundColor(.white.opacity(0.7))
                         .lineLimit(2)
                         .minimumScaleFactor(0.75)
                 }
             }
-            .padding(.leading, 8)
-            .padding(.vertical, 4)
+            .padding(.leading, Space.m)
+            .padding(.vertical, Space.xs)
             .allowsTightening(true)
             .frame(maxWidth: 250, alignment: .leading)
         }
@@ -1355,28 +1346,28 @@ struct FloatingResult: View {
             ChangePlaybackSpeedButton(optimiser: optimiser)
                 .background(
                     VisualEffectBlur(material: .popover, blendingMode: .withinWindow, state: .active, appearance: .vibrantDark)
-                        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: Radius.large, style: .continuous))
                         .shadow(radius: 2)
                 )
 
         } else {
             SwiftUI.Image(systemName: optimiser.type.systemImage)
-                .font(.bold(11))
+                .font(.bold(TextSize.subheadline))
                 .foregroundColor(.grayMauve)
-                .padding(3)
-                .padding(.top, 2)
-                .padding(.trailing, 2)
+                .padding(Space.xxs)
+                .padding(.top, Space.xxs)
+                .padding(.trailing, Space.xxs)
                 .background(
                     VisualEffectBlur(material: .popover, blendingMode: .withinWindow, state: .active, appearance: .vibrantLight)
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
                 )
                 .offset(x: 6, y: -8)
         }
     }
 
     var actionGrid: some View {
-        let cols = Array(repeating: GridItem(.fixed(34), spacing: 8), count: 3)
-        return LazyVGrid(columns: cols, spacing: 8) {
+        let cols = Array(repeating: GridItem(.fixed(34), spacing: Space.m), count: 3)
+        return LazyVGrid(columns: cols, spacing: Space.m) {
             ForEach(Array(gridSlots.enumerated()), id: \.offset) { _, slot in
                 if let action = slot {
                     let button = FloatingGridActionButton(action: action, optimiser: optimiser) {
@@ -1456,7 +1447,7 @@ struct FloatingResult: View {
                 HStack(spacing: 0) { Spacer(minLength: 0); NameFormatPill(optimiser: optimiser); Spacer(minLength: 0) }
             }
         } else {
-            VStack(spacing: 2) { fileSizeDiff; sizeDiff; bitrateDiff; coverArtDiff; dpiDiff }
+            VStack(spacing: Space.xxs) { fileSizeDiff; sizeDiff; bitrateDiff; coverArtDiff; dpiDiff }
                 .frame(maxWidth: .infinity)
                 .foregroundColor(.white)
                 .onAppear {
@@ -1516,7 +1507,7 @@ struct FloatingResult: View {
 
             OverlayMessageView(optimiser: optimiser, color: .black)
         }
-        .padding(8)
+        .padding(Space.m)
         // Bar mode: the card is taller by the bar's height (below) and the controls keep a matching
         // constant inset, so the content area stays exactly cardW×cardH and hovering never reflows it.
         .padding(.bottom, reservesFormatBar ? FormatPickerBar.height : 0)
@@ -1590,9 +1581,9 @@ struct FloatingResult: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.panel, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
                 .stroke(Color.white.opacity(0.2), lineWidth: 1)
         )
         // NOTE: no card-wide white foreground — controls sit on light warm material and must use
@@ -1619,15 +1610,15 @@ struct FloatingResult: View {
                 .resizable()
                 .scaledToFill()
                 .frame(width: 64, height: 64)
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(.white.opacity(0.5), lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: Radius.large, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: Radius.large, style: .continuous).stroke(.white.opacity(0.5), lineWidth: 1))
                 .shadow(color: .black.opacity(0.3), radius: 3, y: 2)
-                .padding(8)
+                .padding(Space.m)
         } else {
             SwiftUI.Image(systemName: "doc.fill")
-                .font(.system(size: 40))
+                .font(.system(size: IconSize.xlarge))
                 .foregroundColor(.secondary)
-                .padding(8)
+                .padding(Space.m)
         }
     }
 
@@ -1645,7 +1636,7 @@ struct FloatingResult: View {
                         }
                     }
             } else {
-                VStack(spacing: 4) {
+                VStack(spacing: Space.xs) {
                     noThumbnailView
                         .contentShape(Rectangle())
                         .onHover(perform: updateHover(_:))
@@ -1868,11 +1859,11 @@ struct FloatingResultAllStates_Previews: PreviewProvider {
     vid.isPreview = true
     vid.finish(oldBytes: 52_400_000, newBytes: 31_200_000)
 
-    return VStack(spacing: 30) {
+    return VStack(spacing: Space.xxxl) {
         FloatingResult(optimiser: img, hovering: true)
         FloatingResult(optimiser: vid, hovering: true)
     }
-    .padding(40)
+    .padding(Space.xxxl)
     .background(LinearGradient(colors: [Color.red, .orange, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
     .environment(\.preview, true)
 }

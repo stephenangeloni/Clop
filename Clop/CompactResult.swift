@@ -8,12 +8,10 @@ import System
 private let log = Logger(subsystem: LOG_SUBSYSTEM, category: "CompactResult")
 
 struct CompactResult: View {
-    static let improvementColor = Color(light: FloatingResult.darkBlue, dark: FloatingResult.yellow)
-
     // Shared typography so every row reads as one design instead of a pile of ad-hoc sizes.
-    static let nameFont = Font.medium(12)
-    static let sizeFont = Font.mono(11, weight: .semibold)
-    static let metricFont = Font.round(10, weight: .medium)
+    static let nameFont = Font.medium(TextSize.callout)
+    static let sizeFont = Font.mono(TextSize.subheadline, weight: .semibold)
+    static let metricFont = Font.round(TextSize.caption, weight: .medium)
 
     @ObservedObject var optimiser: Optimiser
     // Passed down from the list instead of each row observing the global SelectionManager,
@@ -51,7 +49,7 @@ struct CompactResult: View {
     @ViewBuilder var pathView: some View {
         if let url = optimiser.url, url.isFileURL {
             Text(url.filePath!.shellString)
-                .medium(9)
+                .medium(TextSize.micro)
                 .foregroundColor(.secondary)
                 .lineLimit(1)
                 .allowsTightening(true)
@@ -62,7 +60,7 @@ struct CompactResult: View {
     @ViewBuilder var nameView: some View {
         if let url = optimiser.url, url.isFileURL {
             Text(url.lastPathComponent)
-                .medium(9)
+                .medium(TextSize.micro)
                 .foregroundColor(.secondary)
                 .lineLimit(1)
                 .allowsTightening(true)
@@ -72,13 +70,13 @@ struct CompactResult: View {
 
     @ViewBuilder var progressURLView: some View {
         if optimiser.type.isURL, let url = optimiser.url {
-            HStack(spacing: 2) {
+            HStack(spacing: Space.xxs) {
                 SwiftUI.Image(systemName: "link")
-                    .font(.medium(10))
+                    .font(.medium(TextSize.caption))
                     .foregroundColor(.secondary.opacity(0.75))
 
                 Link(url.absoluteString, destination: url)
-                    .font(.medium(10))
+                    .font(.medium(TextSize.caption))
                     .foregroundColor(.secondary.opacity(0.75))
                     .lineLimit(1)
                     .allowsTightening(true)
@@ -96,7 +94,7 @@ struct CompactResult: View {
                         .allowsTightening(false)
                     nameView
                 }
-                progressURLView.padding(.vertical, 4)
+                progressURLView.padding(.vertical, Space.xs)
             } else {
                 VStack(alignment: .leading) {
                     Spacer()
@@ -105,7 +103,7 @@ struct CompactResult: View {
                     nameView
                 }
                 progressURLView
-                    .padding(.vertical, 4)
+                    .padding(.vertical, Space.xs)
             }
         }
     }
@@ -122,7 +120,7 @@ struct CompactResult: View {
 
     @ViewBuilder var bitrateDiff: some View {
         if optimiser.type.isAudio, let oldBitrate = optimiser.oldBitrate, oldBitrate > 0, !selecting {
-            HStack(spacing: 3) {
+            HStack(spacing: Space.xxs) {
                 let hideOldBitrate = (optimiser.newBitrate ?? 0) > 0 && optimiser.newBitrate! != oldBitrate
                 if !hideOldBitrate {
                     Text("\(oldBitrate) kbps")
@@ -143,7 +141,7 @@ struct CompactResult: View {
 
     @ViewBuilder var dpiDiff: some View {
         if optimiser.type.isPDF, let oldDPI = optimiser.oldDPI, !selecting {
-            HStack(spacing: 3) {
+            HStack(spacing: Space.xxs) {
                 let hideOldDPI = optimiser.newDPI != nil && optimiser.newDPI! != oldDPI
                 if !hideOldDPI {
                     Text("\(oldDPI) DPI")
@@ -171,10 +169,10 @@ struct CompactResult: View {
                 // sits near full intensity), so the wins you care about visibly pop.
                 let intensity = min(1.0, max(0.2, pct.d / 70.0))
                 Text("−\(pct)%")
-                    .mono(9, weight: .bold)
-                    .foregroundColor(Self.improvementColor)
-                    .padding(.horizontal, 4).padding(.vertical, 1)
-                    .background(Self.improvementColor.opacity(0.1 + intensity * 0.22), in: Capsule())
+                    .mono(TextSize.micro, weight: .bold)
+                    .foregroundColor(Palette.saving)
+                    .padding(.horizontal, Space.xs).padding(.vertical, 1)
+                    .background(Palette.saving.opacity(0.1 + intensity * 0.22), in: Capsule())
                     .fixedSize()
             }
         }
@@ -183,7 +181,7 @@ struct CompactResult: View {
     @ViewBuilder var fileSizeDiff: some View {
         let improvement = optimiser.newBytes > 0 && optimiser.newBytes < optimiser.oldBytes
 
-        HStack(spacing: 4) {
+        HStack(spacing: Space.xs) {
             Text(optimiser.oldBytes.humanSize)
                 .font(Self.sizeFont)
                 .foregroundColor(
@@ -193,14 +191,14 @@ struct CompactResult: View {
                 )
             if optimiser.newBytes > 0, optimiser.newBytes != optimiser.oldBytes {
                 SwiftUI.Image(systemName: "arrow.right")
-                    .font(.medium(11))
+                    .font(.medium(TextSize.subheadline))
                     .foregroundColor(.secondary)
                 Text(optimiser.newBytes.humanSize)
                     .font(Self.sizeFont)
                     .foregroundColor(
                         improvement
-                            ? (!selecting ? Self.improvementColor : .primary)
-                            : (!selecting ? FloatingResult.red : .secondary)
+                            ? (!selecting ? Palette.saving : .primary)
+                            : (!selecting ? Palette.growth : .secondary)
                     )
             }
         }
@@ -210,14 +208,14 @@ struct CompactResult: View {
 
     @ViewBuilder var errorView: some View {
         if let error = optimiser.error {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Space.xs) {
                 Text(error)
-                    .medium(12)
+                    .medium(TextSize.callout)
                     .foregroundColor(.primary)
                     .lineLimit(2)
                 if let notice = optimiser.notice {
                     Text(notice)
-                        .round(10)
+                        .round(TextSize.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
@@ -237,17 +235,17 @@ struct CompactResult: View {
                         .scaledToFill()
                 } else {
                     SwiftUI.Image(systemName: optimiser.type.icon)
-                        .font(.system(size: 20))
+                        .font(.system(size: IconSize.medium))
                         .foregroundColor(.secondary.opacity(0.6))
                 }
             }
             .frame(width: 40, height: 40)
             .background(Color.primary.opacity(optimiser.thumbnail == nil ? 0.05 : 0))
-            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
             // A thin ring tinted by file type, for a touch of colour and quick scanning (handy when the
             // thumbnail is a generic icon, e.g. audio/PDF).
             .overlay(
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                     .strokeBorder(typeColor.opacity(0.3), lineWidth: 1.5)
             )
             .overlay(alignment: .topLeading) {
@@ -301,13 +299,13 @@ struct CompactResult: View {
             optimiser.uiStop()
         } label: {
             SwiftUI.Image(systemName: optimiser.running ? "stop.fill" : "xmark")
-                .font(.bold(7))
+                .font(.bold(TextSize.micro))
                 .foregroundColor(.red)
                 .frame(width: 14, height: 14)
                 .background(Circle().fill(
                     hoveringCloseStopButton
-                        ? Color(light: Color(red: 1.0, green: 0.82, blue: 0.82), dark: Color(red: 0.42, green: 0.17, blue: 0.17))
-                        : Color(light: Color(red: 1.0, green: 0.89, blue: 0.89), dark: Color(red: 0.32, green: 0.14, blue: 0.14))
+                        ? Palette.dismissFillHovered
+                        : Palette.dismissFill
                 ))
                 .overlay(Circle().strokeBorder(Color.red, lineWidth: 1))
         }
@@ -340,7 +338,7 @@ struct CompactResult: View {
                             .foregroundColor(.secondary.opacity(0.7))
                     }
                 }
-                .font(.system(size: 17, weight: .medium))
+                .font(.system(size: TextSize.title2, weight: .medium))
                 .shadow(color: .black.opacity(0.15), radius: 1, y: 0.5)
             }
             .accessibilityLabel("Select")
@@ -357,7 +355,7 @@ struct CompactResult: View {
             VStack(alignment: .leading) {
                 ForEach(notice.components(separatedBy: "\n"), id: \.self) { line in
                     Text((try? AttributedString(markdown: line)) ?? AttributedString(line))
-                        .font(.system(size: 12))
+                        .font(.system(size: TextSize.callout))
                         .lineLimit(2)
                 }
                 pathView
@@ -367,7 +365,7 @@ struct CompactResult: View {
     }
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Space.m) {
             thumbnail
 
             if optimiser.running {
@@ -379,14 +377,14 @@ struct CompactResult: View {
             } else if optimiser.notice != nil {
                 noticeView
             } else {
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: Space.xxs) {
                     if let url = (optimiser.url ?? optimiser.originalURL), url.isFileURL {
                         CompactNameField(optimiser: optimiser)
                             // Grow to the row's full width while editing so the rename field has room;
                             // at rest it stays at its compact 60% width.
                             .frame(maxWidth: optimiser.editingFilename ? .infinity : THUMB_SIZE.width * 0.6, alignment: .leading)
                     }
-                    HStack(spacing: 5) {
+                    HStack(spacing: Space.xs) {
                         fileSizeDiff
                         savingsBadge
                         Spacer(minLength: 4)
@@ -396,8 +394,8 @@ struct CompactResult: View {
                     }
                     // Match the name chip's horizontal text inset so this lines up with the filename text,
                     // not the chip's background edge. Trailing padding keeps the size text off the row edge.
-                    .padding(.leading, 3)
-                    .padding(.trailing, 8)
+                    .padding(.leading, Space.xxs)
+                    .padding(.trailing, Space.m)
                     if !selecting {
                         ActionButtons(optimiser: optimiser, size: 18, revealed: hovering)
                             .padding(.top, 0)
@@ -409,10 +407,10 @@ struct CompactResult: View {
         // Always reserve a fixed leading checkbox column so the checkbox sits in its own gap (close to
         // the left edge once the list row insets are removed) and the row geometry never shifts on hover.
         // 28 leaves a small (~7pt) gap between the 17pt checkbox and the 40pt thumbnail without looking loose.
-        .padding(.leading, 28)
-        .overlay(alignment: .leading) { selectionCheckbox.padding(.leading, 4) }
+        .padding(.leading, Space.xxl)
+        .overlay(alignment: .leading) { selectionCheckbox.padding(.leading, Space.xs) }
         .animation(nil, value: optimiser.running)
-        .padding(.top, 3)
+        .padding(.top, Space.xxs)
         .frame(height: 70)
         .hfill(.leading)
         // Plain full-bleed selection fill (no rounding, no inset) so selected rows read as a clean band;
@@ -433,7 +431,7 @@ struct CompactResult: View {
         // The close button normally lives on the thumbnail's corner; when thumbnails are hidden there's
         // nothing to anchor it to, so fall back to the row's trailing edge.
         .if(!selecting && !showCompactImages) { view in
-            view.overlay(alignment: .topTrailing) { closeButton.padding(.trailing, 4) }
+            view.overlay(alignment: .topTrailing) { closeButton.padding(.trailing, Space.xs) }
         }
         .onHover(perform: updateHover(_:))
         // Resolve cover-art size for audio so the cover-art downscale button only appears when there's
@@ -463,7 +461,7 @@ struct CompactResult: View {
         // Uniform breathing room below every row (running rows render a tall progress/name stack that would
         // otherwise crowd the bottom edge); replaces the per-row action-button bottom padding so the gap is
         // consistent whether or not the buttons are shown.
-        .padding(.bottom, 8)
+        .padding(.bottom, Space.m)
     }
 
     /// Single-file drag for the row. Attached at the body ROOT (NOT a nested subview) so it bridges to the
@@ -525,14 +523,14 @@ struct CompactNameField: View {
     }
 
     var segments: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Space.xs) {
             // Bordered accent chip marks the name as tappable at a glance; it intensifies on hover and
             // shows the I-beam. Text stays `.primary` so it adapts to the compact view's color scheme.
             Text(stem.isEmpty ? "filename" : stem)
                 .font(CompactResult.nameFont)
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .padding(.horizontal, 3).padding(.vertical, 1)
+                .padding(.horizontal, Space.xxs).padding(.vertical, 1)
                 .listChip(hovering: hoveringName)
                 .onHover { inside in
                     guard !SM.selecting else { return }
@@ -572,7 +570,7 @@ struct CompactNameField: View {
             } label: {
                 Text(optimiser.formatChipText)
                     .font(CompactResult.nameFont)
-                    .padding(.horizontal, 3).padding(.vertical, 1)
+                    .padding(.horizontal, Space.xxs).padding(.vertical, 1)
                     .listChip(hovering: hoveringExt)
             }
             .menuButtonStyle(BorderlessButtonMenuButtonStyle())
@@ -589,7 +587,7 @@ struct CompactNameField: View {
     var editor: some View {
         // The X sits OUTSIDE the field's frame (not in a shared background), so the focused text field's
         // own white editing/selection background stays within the field and never overlaps the button.
-        HStack(spacing: 6) {
+        HStack(spacing: Space.s) {
             TextField("", text: $tempName)
                 .textFieldStyle(.plain)
                 .font(CompactResult.nameFont)
@@ -601,13 +599,13 @@ struct CompactNameField: View {
                     optimiser.editingFilename = false
                 }
             Button(action: { optimiser.editingFilename = false }, label: {
-                SwiftUI.Image(systemName: "xmark").font(.bold(8)).foregroundColor(.secondary)
+                SwiftUI.Image(systemName: "xmark").font(.bold(TextSize.micro)).foregroundColor(.secondary)
             })
             .buttonStyle(.plain)
             .keyboardShortcut(.escape, modifiers: [])
         }
         // Keep the X button clear of the window's rounded corner when the field spans the full width.
-        .padding(.trailing, 8)
+        .padding(.trailing, Space.m)
         .onAppear {
             tempName = stem
             floatingResultsWindow.allowToBecomeKey = true
@@ -752,7 +750,7 @@ extension View {
     /// with a hairline separator above it.
     func footerBarChrome() -> some View {
         padding(.vertical, 6)
-            .padding(.horizontal, 8)
+            .padding(.horizontal, Space.m)
             .frame(maxWidth: .infinity)
             .resultsBandBackground()
             .overlay(alignment: .top) { Rectangle().fill(Color.primary.opacity(0.06)).frame(height: 0.5) }
@@ -785,7 +783,7 @@ struct DragPilePreview: View {
         ZStack {
             if thumbs.isEmpty {
                 SwiftUI.Image(systemName: "doc.on.doc.fill")
-                    .font(.system(size: 30))
+                    .font(.system(size: IconSize.large))
                     .foregroundColor(.secondary)
                     .frame(width: 54, height: 54)
             } else {
@@ -794,22 +792,22 @@ struct DragPilePreview: View {
                         .resizable()
                         .scaledToFill()
                         .frame(width: 54, height: 54)
-                        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-                        .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).stroke(.white.opacity(0.5), lineWidth: 1))
+                        .clipShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).stroke(.white.opacity(0.5), lineWidth: 1))
                         .shadow(color: .black.opacity(0.3), radius: 3, y: 2)
                         .rotationEffect(.degrees(Double(i) * 5 - 7))
                         .offset(x: Double(i) * 6, y: Double(i) * -3)
                 }
             }
             Text("\(optimisers.count)")
-                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                .font(.system(size: TextSize.subheadline, weight: .heavy, design: .rounded))
                 .foregroundColor(.white)
                 .frame(minWidth: 20, minHeight: 20)
                 .background(Circle().fill(Color.accentColor).shadow(color: .black.opacity(0.3), radius: 2))
                 .offset(x: 32, y: -30)
         }
         .frame(width: 96, height: 80)
-        .padding(8)
+        .padding(Space.m)
     }
 }
 
@@ -824,9 +822,9 @@ struct CompactDragAllHandle: View {
 
     var body: some View {
         SwiftUI.Image(systemName: "line.3.horizontal")
-            .font(.medium(12))
+            .font(.medium(TextSize.callout))
             .frame(width: 30, height: 22)
-            .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Color.primary.opacity(0.08)))
+            .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).fill(Color.primary.opacity(0.08)))
             .foregroundColor(.primary.opacity(0.7))
             .onDragAllFiles(help: help) { preview ? [] : optimisers }
     }
@@ -841,7 +839,7 @@ struct CompactSelectionBar: View {
 
     var body: some View {
         let selected = sm.selection.compactMap { opt($0) }
-        HStack(spacing: 6) {
+        HStack(spacing: Space.s) {
             CompactDragAllHandle(optimisers: selected, help: "Drag all selected files")
 
             Menu {
@@ -850,9 +848,9 @@ struct CompactSelectionBar: View {
                 Button("Select all") { SM.selection = OM.visibleOptimisers.filter { !$0.running && $0.url != nil }.map(\.id).set }
             } label: {
                 SwiftUI.Image(systemName: "ellipsis")
-                    .font(.medium(12))
+                    .font(.medium(TextSize.callout))
                     .frame(width: 34, height: 22)
-                    .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Color.primary.opacity(0.08)))
+                    .background(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).fill(Color.primary.opacity(0.08)))
                     .foregroundColor(.primary.opacity(0.7))
                     .contentShape(Rectangle())
             }
@@ -870,17 +868,17 @@ struct CompactSelectionBar: View {
             Spacer()
 
             Text("\(sm.selection.count)")
-                .mono(11, weight: .semibold)
+                .mono(TextSize.subheadline, weight: .semibold)
                 .foregroundColor(.primary.opacity(0.6))
             Button(action: { sm.selection = [] }) {
-                SwiftUI.Image(systemName: "xmark.circle.fill").font(.medium(13))
+                SwiftUI.Image(systemName: "xmark.circle.fill").font(.medium(TextSize.body))
             }
             .buttonStyle(.plain)
             .foregroundColor(.secondary)
             .help("Clear selection")
             .accessibilityLabel("Clear selection")
         }
-        .font(.round(10))
+        .font(.round(TextSize.caption))
         .buttonStyle(FlatButton(color: .primary.opacity(0.08), textColor: .primary.opacity(0.8), shadowSize: 0))
         .footerBarChrome()
     }
@@ -895,7 +893,7 @@ struct CompactListBar: View {
     var hasRunning: Bool
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: Space.s) {
             CompactDragAllHandle(optimisers: optimisers, help: "Drag all results")
 
             if hasRunning {
@@ -913,7 +911,7 @@ struct CompactListBar: View {
 
             Spacer()
         }
-        .font(.round(10))
+        .font(.round(TextSize.caption))
         .buttonStyle(FlatButton(color: .primary.opacity(0.08), textColor: .primary.opacity(0.8), shadowSize: 0))
         .footerBarChrome()
     }
@@ -991,7 +989,7 @@ struct CompactResultList: View {
     var body: some View {
         let isTrailing = floatingResultsCorner.isTrailing
 
-        VStack(alignment: isTrailing ? .trailing : .leading, spacing: 5) {
+        VStack(alignment: isTrailing ? .trailing : .leading, spacing: Space.xs) {
             FlipGroup(if: floatingResultsCorner.isTop) {
                 listPanel
 
@@ -1064,9 +1062,9 @@ struct CompactResultList: View {
                 CompactListBar(optimisers: optimisers, hasRunning: visibleCount > (doneCount + failedCount))
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.xlarge, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.xlarge, style: .continuous)
                 .stroke(Color.primary.opacity(0.12), lineWidth: 1)
         )
         .shadow(radius: preview ? 0 : 10)
@@ -1087,10 +1085,10 @@ struct CompactResultList: View {
             ProgressView(" Done: \(doneCount)/\(visibleCount)  |  Failed: \(failedCount)/\(visibleCount)", value: (doneCount + failedCount).d, total: visibleCount.d)
                 .controlSize(.small)
                 .frame(width: THUMB_SIZE.width + (showCompactImages ? 40 : -10))
-                .padding(.top, 4)
+                .padding(.top, Space.xs)
                 .resultsBandBackground(scale: 1.1)
                 .offset(y: -Self.footerBand + 4)
-                .font(.mono(9))
+                .font(.mono(TextSize.micro))
         }
     }
 
@@ -1107,7 +1105,7 @@ struct CompactResultList: View {
             $0.overlay(
                 OverlayMessageView(optimiser: opt.optimiser, color: .inverted)
                     .foregroundColor(.primary)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.xlarge, style: .continuous))
             )
         }
         .tag(opt.id)
@@ -1231,16 +1229,16 @@ struct DragPreview: View {
                     .resizable()
                     .scaledToFill()
                     .frame(width: 64, height: 64)
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(.white.opacity(0.5), lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.large, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: Radius.large, style: .continuous).stroke(.white.opacity(0.5), lineWidth: 1))
                     .shadow(color: .black.opacity(0.3), radius: 3, y: 2)
             } else {
                 SwiftUI.Image(systemName: optimiser.type.systemImage)
-                    .font(.system(size: 40))
+                    .font(.system(size: IconSize.xlarge))
                     .foregroundColor(.secondary)
             }
         }
-        .padding(8)
+        .padding(Space.m)
     }
 }
 
@@ -1270,11 +1268,11 @@ struct ToggleCompactResultListButton: View {
                                     .background(.thinMaterial)
                                     .clipShape(Circle())
                                 Text((progress.totalUnitCount - progress.completedUnitCount).s)
-                                    .round(13, weight: .semibold)
+                                    .round(TextSize.body, weight: .semibold)
                                     .foregroundColor(.primary)
                             } else {
                                 Text(badge)
-                                    .round(13, weight: .semibold)
+                                    .round(TextSize.body, weight: .semibold)
                                     .foregroundColor(.white)
                                     .frame(width: 32, height: 32)
                                     .background(Circle().fill(Color.darkGray))
@@ -1286,7 +1284,7 @@ struct ToggleCompactResultListButton: View {
                 .buttonStyle(FlatButton(color: .clear, textColor: .primary, radius: 7, verticalPadding: 2))
 
                 Text(showList ? "Hide" : "Show")
-                    .medium(10)
+                    .medium(TextSize.caption)
                     .roundbg(radius: 5, padding: 2, color: .inverted.opacity(0.9), noFG: true)
                     .foregroundColor(.primary)
                     .opacity(hovering ? 1 : 0)

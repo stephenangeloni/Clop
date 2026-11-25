@@ -2,9 +2,12 @@ BUILD_DIR := build
 APP := $(BUILD_DIR)/Build/Products/Release/Clop.app
 BUNDLE_ID := com.stephenangeloni.Clop
 
-.PHONY: build install clean
+.PHONY: build lint install clean
 
-build:
+lint:
+	python3 Scripts/theme_literals.py
+
+build: lint
 	xcodebuild build -project Clop.xcodeproj -scheme Clop -configuration Release \
 		-derivedDataPath $(BUILD_DIR) -skipPackagePluginValidation -skipMacroValidation
 

@@ -216,9 +216,9 @@ struct CropSelectionOverlay: View {
                     .offset(x: -disp.minX * s, y: -disp.minY * s)
             }
             .frame(width: disp.width * s, height: disp.height * s, alignment: .topLeading)
-            .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous)
                     .strokeBorder(.white.opacity(0.9), lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.55), radius: 6, y: 2)
@@ -267,18 +267,18 @@ struct CropSelectionOverlay: View {
             ? "\(selection.width.i)×\(selection.height.i) → \(outputSize!.width.i)×\(outputSize!.height.i) \(unit)"
             : "\(selection.width.i)×\(selection.height.i) \(unit)"
         Text(sizeText)
-            .font(.system(size: 10, weight: .medium, design: .monospaced))
-            .padding(.horizontal, 5)
-            .padding(.vertical, 2)
-            .background(RoundedRectangle(cornerRadius: 4).fill(.black.opacity(0.7)))
+            .font(.system(size: TextSize.caption, weight: .medium, design: .monospaced))
+            .padding(.horizontal, Space.xs)
+            .padding(.vertical, Space.xxs)
+            .background(RoundedRectangle(cornerRadius: Radius.small).fill(.black.opacity(0.7)))
             .foregroundColor(.white)
             .position(x: disp.midX, y: min(disp.maxY + 14, viewSize.height - 10))
 
         if let label, label.isNotEmpty {
             Text(label)
-                .font(.round(10, weight: .semibold))
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
+                .font(.round(TextSize.caption, weight: .semibold))
+                .padding(.horizontal, Space.s)
+                .padding(.vertical, Space.xxs)
                 .background(Capsule().fill(.black.opacity(0.7)))
                 .foregroundColor(.white)
                 .position(x: disp.midX, y: max(disp.minY - 14, 10))
@@ -305,7 +305,7 @@ struct CropSelectionOverlay: View {
     private func handleView(_ handle: CropHandle) -> some View {
         Group {
             if handle.isCorner {
-                RoundedRectangle(cornerRadius: 1.5)
+                RoundedRectangle(cornerRadius: Radius.hairline)
                     .fill(.white)
                     .frame(width: 9, height: 9)
             } else {
@@ -429,7 +429,7 @@ struct AspectIcon: View {
         let w = min(maxW, maxH * aspect)
         let h = w / aspect
 
-        RoundedRectangle(cornerRadius: 2, style: .continuous)
+        RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous)
             .fill(Color.accentColor.opacity(selected ? 1 : 0.55))
             .frame(width: max(w, 3), height: max(min(h, maxH), 3))
             .frame(width: maxW, height: maxH + 1)
@@ -446,22 +446,22 @@ struct SizePresetRow: View {
 
     var body: some View {
         Button(action: apply) {
-            HStack(spacing: 6) {
+            HStack(spacing: Space.s) {
                 AspectIcon(aspect: iconAspect, selected: selected)
                 Text(size.name)
-                    .font(.round(11, weight: .medium))
+                    .font(.round(TextSize.subheadline, weight: .medium))
                     .lineLimit(1)
                 Spacer(minLength: 8)
                 ZStack(alignment: .trailing) {
                     Text(size.id)
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(.system(size: TextSize.caption, design: .monospaced))
                         .foregroundColor(.secondary)
                         .opacity(hovering ? 0 : 1)
                     Button(action: delete) {
                         SwiftUI.Image(systemName: "trash.fill")
-                            .font(.system(size: 9))
+                            .font(.system(size: TextSize.micro))
                             .foregroundColor(hoveringTrash ? .white : .red.opacity(0.85))
-                            .padding(4)
+                            .padding(Space.xs)
                             .background(Circle().fill(hoveringTrash ? Color.red : .clear))
                             .contentShape(Circle())
                     }
@@ -472,13 +472,13 @@ struct SizePresetRow: View {
                     .accessibilityLabel("Delete preset")
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
+            .padding(.horizontal, Space.m)
+            .padding(.vertical, Space.xs)
             .background(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                     .fill(selected ? Color.accentColor.opacity(0.22) : Color.primary.opacity(hovering ? 0.1 : 0.05))
             )
-            .contentShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
         }
         .buttonStyle(.plain)
         .disabled(disabled)
@@ -737,7 +737,7 @@ struct CropView: View {
             .frame(width: geo.size.width, height: geo.size.height)
         }
         .padding([.horizontal, .top])
-        .padding(.top, 14)
+        .padding(.top, Space.l)
     }
 
     var previewBar: some View {
@@ -748,7 +748,7 @@ struct CropView: View {
                 }
                 .disabled(pageIndex == 0)
                 Text("Page \(pageIndex + 1) of \(pageCount)")
-                    .font(.round(11))
+                    .font(.round(TextSize.subheadline))
                     .monospacedDigit()
                 Button(action: { pageIndex = min(pageIndex + 1, pageCount - 1) }) {
                     SwiftUI.Image(systemName: "chevron.right")
@@ -756,7 +756,7 @@ struct CropView: View {
                 .disabled(pageIndex == pageCount - 1)
             } else if optimiser.type.isVideo {
                 SwiftUI.Image(systemName: "film")
-                    .font(.system(size: 11))
+                    .font(.system(size: TextSize.subheadline))
                     .foregroundColor(.secondary)
                 Slider(value: $videoTime, in: 0 ... 1)
                     .accessibilityLabel("Frame")
@@ -766,7 +766,7 @@ struct CropView: View {
             }
         }
         .buttonStyle(.borderless)
-        .padding(.vertical, 8)
+        .padding(.vertical, Space.m)
         .frame(height: 36)
         .onChange(of: pageIndex) { _ in Task { await loadPreview() } }
         .task(id: videoTimeDebounced) {
@@ -778,9 +778,9 @@ struct CropView: View {
     // MARK: Sidebar
 
     var sidebar: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: Space.m) {
             ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: Space.m) {
                     if optimiser.type.isPDF {
                         pdfPresets
                     } else {
@@ -789,7 +789,7 @@ struct CropView: View {
                         sizePresets
                     }
                 }
-                .padding(.top, 30)
+                .padding(.top, Space.xxxl)
             }
 
             Spacer(minLength: 0)
@@ -802,13 +802,13 @@ struct CropView: View {
     }
 
     var aspectRatios: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Space.m) {
             HStack {
                 sectionHeader("Aspect ratio")
                 Spacer()
                 orientationPicker.fixedSize()
             }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 64), spacing: 4)], alignment: .leading, spacing: 4) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 64), spacing: Space.xs)], alignment: .leading, spacing: Space.xs) {
                 chip("Free", freeform: true, selected: lockedAspect == nil) { unlockAspect() }
                 ForEach(DEFAULT_CROP_ASPECT_RATIOS.map { $0.withOrientation(cropOrientation, for: sourceSize) }) { size in
                     chip(size.name, aspect: size.aspectRatio, selected: presetName == size.name) { applyAspectPreset(size) }
@@ -831,7 +831,7 @@ struct CropView: View {
         .labelsHidden()
         .pickerStyle(.segmented)
         .labelStyle(IconOnlyLabelStyle())
-        .font(.heavy(10))
+        .font(.heavy(TextSize.caption))
         .onChange(of: cropOrientation) { orientation in
             guard orientation != .adaptive else { return }
             if let aspect = lockedAspect {
@@ -844,9 +844,9 @@ struct CropView: View {
     }
 
     var sizePresets: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Space.m) {
             sectionHeader("Size presets")
-            VStack(spacing: 3) {
+            VStack(spacing: Space.xxs) {
                 ForEach(savedCropSizes.filter { !$0.isAspectRatio && $0.cropRect == nil }.sorted(by: \.area)) { size in
                     let resolved = size.computedSize(from: sourceSize)
                     SizePresetRow(
@@ -871,13 +871,13 @@ struct CropView: View {
                     Defaults[.savedCropSizes] = DEFAULT_CROP_SIZES + Defaults[.savedCropSizes].without(DEFAULT_CROP_SIZES)
                 }
                 .buttonStyle(.link)
-                .font(.round(10))
+                .font(.round(TextSize.caption))
             }
         }
     }
 
     var saveField: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Space.xs) {
             TextField("", text: $saveName, prompt: Text("Save \(pixelWidth.s)×\(pixelHeight.s) as…"))
                 .textFieldStyle(.roundedBorder)
                 .controlSize(.small)
@@ -889,14 +889,14 @@ struct CropView: View {
                 saveName = ""
             }, label: {
                 SwiftUI.Image(systemName: "plus")
-                    .font(.heavy(10))
+                    .font(.heavy(TextSize.caption))
                     .foregroundColor(.mauvish)
             })
             .buttonStyle(.bordered)
             .controlSize(.small)
             .disabled(saveName.isEmpty || savedCropSizes.contains(where: { $0.width == pixelWidth && $0.height == pixelHeight }))
         }
-        .padding(.top, 2)
+        .padding(.top, Space.xxs)
     }
 
     var pdfPresets: some View {
@@ -912,17 +912,17 @@ struct CropView: View {
                 ForEach(DEFAULT_CROP_ASPECT_RATIOS.filter { $0.name != "A4" && $0.name != "B5" }, id: \.name) { size in
                     Text(size.name).tag(size as CropSize?)
                 }
-            }.font(.medium(10))
+            }.font(.medium(TextSize.caption))
                 .labelsHidden()
 
             orientationPicker
                 .fixedSize()
-                .padding(.top, 4)
+                .padding(.top, Space.xs)
 
             Toggle("Extend instead of clipping", isOn: $extendPage)
                 .toggleStyle(.checkbox)
-                .font(.round(10))
-                .padding(.top, 4)
+                .font(.round(TextSize.caption))
+                .padding(.top, Space.xs)
                 .help("Grows pages with empty paper instead of cutting content away. Useful for fitting a book page on a phone screen without losing text at the edges.")
                 .onChange(of: extendPage) { extend in
                     guard adaptiveAspect != nil else { return }
@@ -962,7 +962,7 @@ struct CropView: View {
                 reset()
                 Task { await loadPreview() }
             }
-            .font(.round(10))
+            .font(.round(TextSize.caption))
         }
     }
 
@@ -980,7 +980,7 @@ struct CropView: View {
                 .frame(width: 60, alignment: .center)
                 .multilineTextAlignment(.center)
             Text(unit)
-                .font(.round(10))
+                .font(.round(TextSize.caption))
                 .foregroundColor(.secondary)
             if !optimiser.type.isPDF {
                 Spacer()
@@ -992,7 +992,7 @@ struct CropView: View {
     @ViewBuilder var orientationFreeIndicator: some View {
         if lockedAspect != nil {
             Button(action: { unlockAspect() }) {
-                SwiftUI.Image(systemName: "lock.fill").font(.system(size: 10))
+                SwiftUI.Image(systemName: "lock.fill").font(.system(size: TextSize.caption))
             }
             .buttonStyle(.borderless)
             .help("Aspect ratio locked, click to unlock")
@@ -1030,7 +1030,7 @@ struct CropView: View {
         let scale = min(container.width / canvas.width, container.height / canvas.height)
         let canvasFit = CGSize(width: canvas.width * scale, height: canvas.height * scale)
         ZStack {
-            RoundedRectangle(cornerRadius: 4)
+            RoundedRectangle(cornerRadius: Radius.small)
                 .fill(.white)
             SwiftUI.Image(nsImage: image)
                 .resizable()
@@ -1060,16 +1060,16 @@ struct CropView: View {
 
     func sectionHeader(_ title: String) -> some View {
         Text(title.uppercased())
-            .font(.system(size: 9.5, weight: .bold))
+            .font(.system(size: TextSize.micro, weight: .bold))
             .kerning(0.7)
             .foregroundColor(.secondary)
     }
 
     func chip(_ title: String, aspect: Double? = nil, freeform: Bool = false, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 4) {
+            HStack(spacing: Space.xs) {
                 if freeform {
-                    RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.hairline, style: .continuous)
                         .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [2, 1.5]))
                         .foregroundColor(selected ? Color.accentColor : .secondary)
                         .frame(width: 10, height: 10)
@@ -1078,22 +1078,22 @@ struct CropView: View {
                     AspectIcon(aspect: aspect, selected: selected)
                 }
                 Text(title)
-                    .font(.round(10.5, weight: .medium))
+                    .font(.round(TextSize.caption, weight: .medium))
                     .monospacedDigit()
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 4)
-            .padding(.horizontal, 4)
+            .padding(.vertical, Space.xs)
+            .padding(.horizontal, Space.xs)
             .background(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                     .fill(selected ? Color.accentColor.opacity(0.25) : Color.primary.opacity(0.06))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                     .strokeBorder(selected ? Color.accentColor.opacity(0.8) : Color.primary.opacity(0.08), lineWidth: 1)
             )
-            .contentShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
         }
         .buttonStyle(.plain)
     }

@@ -180,10 +180,10 @@ enum ClopFileType: String, CaseIterable, CustomStringConvertible, Codable {
 
     var color: Color {
         switch self {
-        case .image: .blue
-        case .video: .red
-        case .audio: .purple
-        case .pdf: .orange
+        case .image: Palette.image
+        case .video: Palette.video
+        case .audio: Palette.audio
+        case .pdf: Palette.pdf
         }
     }
 }

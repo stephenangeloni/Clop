@@ -265,7 +265,7 @@ struct PathFieldMenu: View {
             color: .bg.warm.opacity(hovering ? 0.9 : 0.5),
             textColor: hovering ? .primary : .secondary
         ))
-        .font(.mono(10)).lineLimit(1)
+        .font(.mono(TextSize.caption)).lineLimit(1)
         .truncationMode(.middle)
         .frame(maxWidth: COMPARISON_VIEW_SIZE)
         .onHover { hover in
@@ -417,13 +417,7 @@ struct CompareView: View {
     @ObservedObject var optimiser: Optimiser
     @ObservedObject var km = KM
 
-    @Environment(\.colorScheme) var colorScheme
-
     @Default(.compareMode) var compareMode
-
-    var improvementColor: Color {
-        colorScheme == .dark ? FloatingResult.lightBlue : FloatingResult.darkBlue
-    }
 
     var previewStack: some View {
         GeometryReader { _ in
@@ -466,7 +460,7 @@ struct CompareView: View {
     }
 
     var audioStack: some View {
-        HStack(alignment: .top, spacing: 16) {
+        HStack(alignment: .top, spacing: Space.xl) {
             if let url = optimiser.url, let originalURL = optimiser.comparisonOriginalURL {
                 audioSide(.original, url: originalURL, title: "Original", bytes: optimiser.oldBytes, bitrate: optimiser.oldBitrate)
                 audioSide(
@@ -486,10 +480,10 @@ struct CompareView: View {
             let percent = ((optimiser.oldBytes - optimiser.newBytes) * 100) / optimiser.oldBytes
             if percent != 0 {
                 Text(percent > 0 ? "-\(percent)%" : "+\(-percent)%")
-                    .mono(12, weight: .bold)
-                    .foregroundColor(percent > 0 ? improvementColor : FloatingResult.red)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
+                    .mono(TextSize.callout, weight: .bold)
+                    .foregroundColor(percent > 0 ? Palette.saving : Palette.growth)
+                    .padding(.horizontal, Space.m)
+                    .padding(.vertical, Space.xxs)
                     .background(
                         Capsule()
                             .fill(.ultraThickMaterial)
@@ -502,31 +496,31 @@ struct CompareView: View {
     @ViewBuilder var splitFooter: some View {
         let improvement = optimiser.newBytes > 0 && optimiser.newBytes < optimiser.oldBytes
 
-        HStack(spacing: 6) {
+        HStack(spacing: Space.s) {
             if optimiser.oldBytes > 0 {
-                Text(optimiser.oldBytes.humanSize).mono(10, weight: .semibold)
+                Text(optimiser.oldBytes.humanSize).mono(TextSize.caption, weight: .semibold)
                     .foregroundColor(.secondary)
                 if optimiser.newBytes > 0, optimiser.newBytes != optimiser.oldBytes {
                     SwiftUI.Image(systemName: "arrow.right")
-                        .font(.system(size: 8))
+                        .font(.system(size: TextSize.micro))
                         .foregroundColor(.secondary)
-                    Text(optimiser.newBytes.humanSize).mono(10, weight: .semibold)
-                        .foregroundColor(improvement ? improvementColor : FloatingResult.red)
+                    Text(optimiser.newBytes.humanSize).mono(TextSize.caption, weight: .semibold)
+                        .foregroundColor(improvement ? Palette.saving : Palette.growth)
                 }
             }
             savingsBadge
             if let oldSize = optimiser.oldSize {
                 Text("•").foregroundColor(.tertiaryLabel)
-                Text(oldSize.s).mono(10).foregroundColor(.secondary)
+                Text(oldSize.s).mono(TextSize.caption).foregroundColor(.secondary)
                 if let newSize = optimiser.newSize, newSize != oldSize {
                     SwiftUI.Image(systemName: "arrow.right")
-                        .font(.system(size: 8))
+                        .font(.system(size: TextSize.micro))
                         .foregroundColor(.secondary)
-                    Text(newSize.s).mono(10).foregroundColor(.secondary)
+                    Text(newSize.s).mono(TextSize.caption).foregroundColor(.secondary)
                 }
             }
         }
-        .padding(.top, 4)
+        .padding(.top, Space.xs)
     }
 
     var body: some View {
@@ -535,8 +529,8 @@ struct CompareView: View {
                 audioStack
 
                 Text("Only one side plays at a time, scrub either side to set where both start")
-                    .round(10).foregroundColor(.tertiaryLabel)
-                    .padding(.top, 10)
+                    .round(TextSize.caption).foregroundColor(.tertiaryLabel)
+                    .padding(.top, Space.m)
             } else {
                 if compareMode == .split {
                     splitStack
@@ -552,11 +546,11 @@ struct CompareView: View {
 
                 if compareMode == .split {
                     Text("Drag across the preview to move the split divider")
-                        .round(10).foregroundColor(.tertiaryLabel)
-                        .padding(.top, 6)
+                        .round(TextSize.caption).foregroundColor(.tertiaryLabel)
+                        .padding(.top, Space.s)
                 }
                 Text("Hold **⌘ Command** to zoom in, add **⌥ Option** to zoom further")
-                    .round(10).foregroundColor(.tertiaryLabel)
+                    .round(TextSize.caption).foregroundColor(.tertiaryLabel)
                     .padding(.top, compareMode == .split ? 2 : 6)
             }
         }
@@ -580,7 +574,7 @@ struct CompareView: View {
     }
 
     var controls: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Space.l) {
             Picker("Comparison", selection: $compareMode) {
                 SwiftUI.Image(systemName: "rectangle.split.2x1")
                     .help("Side by side comparison")
@@ -598,7 +592,7 @@ struct CompareView: View {
                     videoPlaying.toggle()
                 } label: {
                     SwiftUI.Image(systemName: videoPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 14))
+                        .font(.system(size: TextSize.body))
                 }
                 .buttonStyle(FlatButton())
                 .keyboardShortcut(.space, modifiers: [])
@@ -613,7 +607,7 @@ struct CompareView: View {
                     }
                 } label: {
                     SwiftUI.Image(systemName: fitOrFill == .fit ? "arrow.up.left.and.arrow.down.right" : "arrow.down.right.and.arrow.up.left")
-                        .font(.system(size: 14))
+                        .font(.system(size: TextSize.body))
                 }
                 .buttonStyle(FlatButton())
                 .keyboardShortcut(.space, modifiers: [])
@@ -621,26 +615,26 @@ struct CompareView: View {
                 .accessibilityLabel(fitOrFill == .fit ? "Fill the preview area" : "Fit the whole image")
             }
         }
-        .padding(.top, 10)
+        .padding(.top, Space.m)
     }
 
     func audioSide(_ side: AudioSide, url: URL, title: String, bytes: Int, bitrate: Int?) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Space.l) {
             paneHeader(title: title, url: url)
 
             ZStack {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
                     .fill(.regularMaterial)
 
                 if let art = audioController.coverArt[side] {
                     SwiftUI.Image(nsImage: art)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: Radius.panel, style: .continuous))
                         .opacity(0.45)
                 } else {
                     SwiftUI.Image(systemName: "waveform")
-                        .font(.system(size: 72, weight: .regular))
+                        .font(.system(size: IconSize.hero, weight: .regular))
                         .foregroundColor(.secondary.opacity(0.35))
                 }
 
@@ -648,7 +642,7 @@ struct CompareView: View {
                     audioController.toggle(side)
                 } label: {
                     SwiftUI.Image(systemName: audioController.isPlaying(side) ? "pause.circle.fill" : "play.circle.fill")
-                        .font(.system(size: 64))
+                        .font(.system(size: IconSize.hero))
                         .symbolRenderingMode(.hierarchical)
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.4), radius: 6, y: 2)
@@ -665,16 +659,16 @@ struct CompareView: View {
 
             audioScrubber(side)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Size: \(bytes.humanSize)").mono(10)
+            VStack(alignment: .leading, spacing: Space.xxs) {
+                Text("Size: \(bytes.humanSize)").mono(TextSize.caption)
                     .hfill(.leading)
                 if let bitrate {
-                    Text("Bitrate: \(bitrate) kbps").mono(10)
+                    Text("Bitrate: \(bitrate) kbps").mono(TextSize.caption)
                         .hfill(.leading)
                 }
             }
             .foregroundColor(.secondary)
-            .padding(.top, 2)
+            .padding(.top, Space.xxs)
         }
         .frame(minWidth: COMPARISON_VIEW_SIZE / 2, idealWidth: COMPARISON_VIEW_SIZE)
         .onAppear { audioController.register(side, url: url) }
@@ -682,7 +676,7 @@ struct CompareView: View {
 
     func audioScrubber(_ side: AudioSide) -> some View {
         let duration = audioController.duration(side)
-        return VStack(spacing: 2) {
+        return VStack(spacing: Space.xxs) {
             Slider(
                 value: Binding(
                     get: { audioController.displayTime(for: side) },
@@ -693,9 +687,9 @@ struct CompareView: View {
             .disabled(duration <= 0)
 
             HStack {
-                Text(audioTimeString(audioController.displayTime(for: side))).mono(9)
+                Text(audioTimeString(audioController.displayTime(for: side))).mono(TextSize.micro)
                 Spacer()
-                Text(audioTimeString(duration)).mono(9)
+                Text(audioTimeString(duration)).mono(TextSize.micro)
             }
             .foregroundColor(.secondary)
         }
@@ -738,7 +732,7 @@ struct CompareView: View {
             minHeight: COMPARISON_VIEW_SIZE / 2, idealHeight: COMPARISON_VIEW_SIZE, maxHeight: .infinity
         )
         .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.panel, style: .continuous))
         .background(paneFrameReader(.split))
     }
 
@@ -753,7 +747,7 @@ struct CompareView: View {
                         .fill(.regularMaterial)
                         .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
                     SwiftUI.Image(systemName: "arrow.left.and.right")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.system(size: TextSize.micro, weight: .bold))
                         .foregroundColor(.primary)
                 }
                 .frame(width: 26, height: 26)
@@ -763,13 +757,13 @@ struct CompareView: View {
 
     func pdfControls(pdf: PDFDocument) -> some View {
         VStack {
-            HStack(spacing: 10) {
+            HStack(spacing: Space.m) {
                 if pdf.pageCount > 1 {
                     Button {
                         pdfPage -= 1
                     } label: {
                         SwiftUI.Image(systemName: "chevron.left")
-                            .font(.system(size: 14))
+                            .font(.system(size: TextSize.body))
                     }
                     .accessibilityLabel("Previous page")
                     .buttonStyle(FlatButton())
@@ -778,14 +772,14 @@ struct CompareView: View {
                 }
 
                 Text("Page \(pdfPage.i)/\(pdf.pageCount)")
-                    .font(.round(11))
+                    .font(.round(TextSize.subheadline))
 
                 if pdf.pageCount > 1 {
                     Button {
                         pdfPage += 1
                     } label: {
                         SwiftUI.Image(systemName: "chevron.right")
-                            .font(.system(size: 14))
+                            .font(.system(size: TextSize.body))
                     }
                     .accessibilityLabel("Next page")
                     .buttonStyle(FlatButton())
@@ -800,7 +794,7 @@ struct CompareView: View {
                     .frame(width: 400)
             }
         }
-        .padding(.top, 8)
+        .padding(.top, Space.m)
         .onChange(of: pdfPage) { page in
             if let url = optimiser.comparisonOriginalURL, let pdfView = PDFKitView.pdfViewCache[url], let page = pdfView.document?.page(at: page.i - 1) {
                 pdfView.go(to: page)
@@ -846,7 +840,7 @@ struct CompareView: View {
 
     func paneHeader(title: String, url: URL) -> some View {
         VStack {
-            Text(title).bold(12)
+            Text(title).bold(TextSize.callout)
             PathFieldMenu(url: url)
         }
     }
@@ -863,7 +857,7 @@ struct CompareView: View {
                         minHeight: COMPARISON_VIEW_SIZE / 2, idealHeight: COMPARISON_VIEW_SIZE, maxHeight: .infinity
                     )
                     .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.panel, style: .continuous))
                     .clipped()
                     .contextMenu { fileActions(for: url) }
                     .background(paneFrameReader(pane))
@@ -871,17 +865,17 @@ struct CompareView: View {
 
             VStack(alignment: .leading) {
                 if let bytes {
-                    Text("Size: \(bytes.humanSize)").mono(10)
+                    Text("Size: \(bytes.humanSize)").mono(TextSize.caption)
                         .hfill(.leading)
                 }
                 if let size {
-                    Text("Dimensions: \(size.s)").mono(10)
+                    Text("Dimensions: \(size.s)").mono(TextSize.caption)
                         .hfill(.leading)
                 }
             }
             .frame(minWidth: COMPARISON_VIEW_SIZE / 2, idealWidth: COMPARISON_VIEW_SIZE)
             .foregroundColor(.secondary)
-            .padding(.top, 4)
+            .padding(.top, Space.xs)
         }
     }
 

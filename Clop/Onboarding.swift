@@ -14,7 +14,7 @@ struct DropZoneDemoAnimationView: View {
     @Binding var dropped: Bool
 
     var image: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: Space.m) {
             SwiftUI.Image(nsImage: NSImage(resource: .sonomaShot))
                 .resizable()
                 .background(
@@ -26,10 +26,10 @@ struct DropZoneDemoAnimationView: View {
                 .scaledToFill()
                 .frame(width: 70, height: 50)
             Text("screenshot.png")
-                .font(.round(12))
+                .font(.round(TextSize.callout))
                 .foregroundColor(clicked ? .white : .primary)
                 .background(
-                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                         .fill(Color.blue.opacity(clicked ? 1.0 : 0.0))
                         .scaleEffect(1.1)
                 )
@@ -47,7 +47,7 @@ struct DropZoneDemoAnimationView: View {
     }
     var body: some View {
         VStack {
-            HStack(spacing: 100) {
+            HStack(spacing: Self.demoGap) {
                 ZStack {
                     image.offset(Self.INITIAL_OFFSET)
                     imageFileWithCursor.offset(draggedFileOffset)
@@ -89,6 +89,7 @@ struct DropZoneDemoAnimationView: View {
     }
 
     private static var INITIAL_OFFSET = CGSize(width: 0, height: -30)
+    private static let demoGap: CGFloat = 100
 
     @State private var draggedFileOffset = INITIAL_OFFSET
     @State private var clicked = false
@@ -105,7 +106,7 @@ struct OnboardingView: View {
     var clopLogo: some View {
         ZStack(alignment: .topLeading) {
             Text("Clop")
-                .font(.round(64, weight: .black))
+                .font(.round(TextSize.wordmark, weight: .black))
             SwiftUI.Image("clop")
                 .resizable()
                 .scaledToFit()
@@ -117,13 +118,13 @@ struct OnboardingView: View {
 
     var menubar: some View {
         ZStack(alignment: .trailing) {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.large, style: .continuous)
                 .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                 .frame(height: 24)
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
+            RoundedRectangle(cornerRadius: Radius.large, style: .continuous)
                 .fill(Color.primary.opacity(0.1))
                 .frame(height: 24)
-            HStack(spacing: 12) {
+            HStack(spacing: Space.l) {
                 SwiftUI.Image("MenubarIcon")
                     .resizable()
                     .scaledToFit()
@@ -131,8 +132,8 @@ struct OnboardingView: View {
                 SwiftUI.Image(systemName: "wifi")
                 Text("10:09")
             }
-            .font(.regular(15))
-            .padding(.trailing, 8)
+            .font(.regular(TextSize.title3))
+            .padding(.trailing, Space.m)
         }
         .mask(LinearGradient(gradient: Gradient(colors: [.clear, .white]), startPoint: .leading, endPoint: .trailing))
     }
@@ -148,9 +149,9 @@ struct OnboardingView: View {
                         Clop lives in your **menubar** and waits for you
                         to copy an image or **screenshot to clipboard**.
                         """)
-                        .font(.round(14, weight: .regular))
+                        .font(.round(TextSize.body, weight: .regular))
                         Toggle(" Enable clipboard optimiser", isOn: $enableClipboardOptimiser)
-                            .font(.round(11, weight: .regular))
+                            .font(.round(TextSize.subheadline, weight: .regular))
                             .controlSize(.mini)
                     }
                 }
@@ -182,26 +183,26 @@ struct OnboardingView: View {
                             .frame(width: 530, height: 200)
                     }
                 }
-                .padding(.bottom, 20)
+                .padding(.bottom, Space.window)
 
                 Text("""
                 Clop can also watch folders for new **images** and **videos**
                 and **automatically** optimise them.
                 """)
-                .font(.round(14, weight: .regular))
+                .font(.round(TextSize.body, weight: .regular))
                 .padding()
                 .multilineTextAlignment(.center)
                 HStack {
                     VStack {
-                        Text("Images").round(12)
+                        Text("Images").round(TextSize.callout)
                         DirListView(fileType: .image, dirs: $imageDirs, enabled: $enableAutomaticImageOptimisations, hideIgnoreRules: true)
                     }
                     VStack {
-                        Text("Videos").round(12)
+                        Text("Videos").round(TextSize.callout)
                         DirListView(fileType: .video, dirs: $videoDirs, enabled: $enableAutomaticVideoOptimisations, hideIgnoreRules: true)
                     }
                 }
-                .padding(.bottom, 20)
+                .padding(.bottom, Space.window)
 
                 if bm.decompressingBinaries {
                     ProgressView("Preparing optimisers...")
@@ -211,7 +212,7 @@ struct OnboardingView: View {
                     Button("Start using Clop") {
                         (AppDelegate.instance as? AppDelegate)?.onboardingWindowController?.close()
                     }
-                    .font(.round(14, weight: .semibold))
+                    .font(.round(TextSize.body, weight: .semibold))
                     .foregroundColor(.primary.opacity(0.9))
                 }
             }

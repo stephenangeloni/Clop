@@ -298,7 +298,7 @@ extension View {
     /// rounded rect. `.primary` text so it adapts to the list's color scheme; firms up on hover. Apply
     /// after the chip's own (tight) padding.
     func listChip(hovering: Bool) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 4, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
         return foregroundColor(.primary)
             .background(shape.fill(Color.primary.opacity(hovering ? 0.1 : 0.05)))
             .overlay(shape.strokeBorder(Color.primary.opacity(hovering ? 0.2 : 0.1), lineWidth: 0.5))
@@ -312,7 +312,7 @@ struct FloatingCornerButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.heavy(10)).foregroundStyle(.primary)
+            .font(.heavy(TextSize.caption)).foregroundStyle(.primary)
             .frame(width: size, height: size)
             .warmControlBackground(in: Circle())
             .contentShape(Circle())
@@ -329,9 +329,9 @@ struct FloatingGridButtonStyle: ButtonStyle {
     var size: CGFloat = 34
 
     func makeBody(configuration: Configuration) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 15, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
         configuration.label
-            .font(.heavy(11)).foregroundStyle(.primary)
+            .font(.heavy(TextSize.subheadline)).foregroundStyle(.primary)
             .frame(width: size, height: size)
             .warmControlBackground(in: shape)
             .contentShape(shape)
@@ -379,7 +379,7 @@ struct RestoreOptimiseButton: View {
                         optimiser.optimise(allowLarger: false); optimiser.collapseHoverOverlay = true
                     }
                 },
-                label: { SwiftUI.Image(systemName: "goforward.plus").font(.heavy(9)) }
+                label: { SwiftUI.Image(systemName: "goforward.plus").font(.heavy(TextSize.micro)) }
             )
             .contentShape(Rectangle())
         } else {
@@ -389,7 +389,7 @@ struct RestoreOptimiseButton: View {
                         optimiser.restoreOriginal(); optimiser.overlayMessage = "Restored original"; optimiser.collapseHoverOverlay = true
                     }
                 },
-                label: { SwiftUI.Image(systemName: "arrow.uturn.left").font(.semibold(9)) }
+                label: { SwiftUI.Image(systemName: "arrow.uturn.left").font(.semibold(TextSize.micro)) }
             )
             .contentShape(Rectangle())
         }
@@ -408,7 +408,7 @@ struct ChangePlaybackSpeedButton: View {
         }
         .menuButtonStyle(BorderlessButtonMenuButtonStyle())
         .buttonStyle(FlatButton(color: .clear, textColor: .white, circle: optimiser.changePlaybackSpeedFactor >= 2))
-        .font(.round(11, weight: .bold))
+        .font(.round(TextSize.subheadline, weight: .bold))
     }
 }
 
@@ -417,7 +417,7 @@ struct DownscaleButton: View {
     @Environment(\.preview) var preview
 
     var body: some View {
-        Button(action: {}, label: { SwiftUI.Image(systemName: "minus").font(.heavy(9)) })
+        Button(action: {}, label: { SwiftUI.Image(systemName: "minus").font(.heavy(TextSize.micro)) })
             .contentShape(Rectangle())
             .onMouseDown {
                 guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
@@ -452,7 +452,7 @@ struct HorizontalDownscaleSlider: View {
 
             ZStack {
                 // Track
-                RoundedRectangle(cornerRadius: 1.5)
+                RoundedRectangle(cornerRadius: Radius.hairline)
                     .fill(.primary.opacity(0.15))
                     .frame(width: trackWidth, height: 3)
                     .position(x: geo.size.width / 2, y: centerY)
@@ -462,7 +462,7 @@ struct HorizontalDownscaleSlider: View {
                     let x = xPosition(for: threshold, trackLeft: trackLeft, trackWidth: trackWidth)
                     let isActive = abs(displayFactor - threshold) < 0.01
 
-                    RoundedRectangle(cornerRadius: 0.5)
+                    RoundedRectangle(cornerRadius: Radius.hairline)
                         .fill(.primary.opacity(isActive ? 0.7 : 0.3))
                         .frame(width: isActive ? 2 : 1.5, height: size * 0.55)
                         .position(x: x, y: centerY)
@@ -477,16 +477,16 @@ struct HorizontalDownscaleSlider: View {
                     .overlay(alignment: .top) {
                         VStack(spacing: 0) {
                             Text(downscaleFactorLabel(displayFactor))
-                                .font(.system(size: 10, weight: .heavy, design: .rounded))
+                                .font(.system(size: TextSize.caption, weight: .heavy, design: .rounded))
                             if let res = downscaleResolutionString(for: optimiser, factor: displayFactor) {
-                                Text(res).font(.system(size: 7, weight: .semibold, design: .rounded)).foregroundColor(.secondary)
+                                Text(res).font(.system(size: TextSize.micro, weight: .semibold, design: .rounded)).foregroundColor(.secondary)
                             }
                         }
                         .foregroundColor(.primary)
                         .fixedSize()
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 2)
-                        .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: 4))
+                        .padding(.horizontal, Space.xs)
+                        .padding(.vertical, Space.xxs)
+                        .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
                         .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
                         .offset(y: -knobSize - 10)
                     }
@@ -555,7 +555,7 @@ struct HorizontalCoverArtSlider: View {
             let centerY = geo.size.height / 2
 
             ZStack {
-                RoundedRectangle(cornerRadius: 1.5)
+                RoundedRectangle(cornerRadius: Radius.hairline)
                     .fill(.primary.opacity(0.15))
                     .frame(width: trackWidth, height: 3)
                     .position(x: geo.size.width / 2, y: centerY)
@@ -563,7 +563,7 @@ struct HorizontalCoverArtSlider: View {
                 ForEach(Self.thresholds, id: \.self) { threshold in
                     let x = xPosition(for: threshold, trackLeft: trackLeft, trackWidth: trackWidth)
                     let isActive = abs(displayFactor - threshold) < 0.01
-                    RoundedRectangle(cornerRadius: 0.5)
+                    RoundedRectangle(cornerRadius: Radius.hairline)
                         .fill(.primary.opacity(isActive ? 0.7 : 0.3))
                         .frame(width: isActive ? 2 : 1.5, height: size * 0.55)
                         .position(x: x, y: centerY)
@@ -577,17 +577,17 @@ struct HorizontalCoverArtSlider: View {
                     .overlay(alignment: .top) {
                         VStack(spacing: 0) {
                             Text(downscaleFactorLabel(displayFactor))
-                                .font(.system(size: 10, weight: .heavy, design: .rounded))
+                                .font(.system(size: TextSize.caption, weight: .heavy, design: .rounded))
                             if let base = optimiser.coverArtSize, base.width > 0, base.height > 0 {
                                 Text("\(Int((base.width * displayFactor).rounded()))×\(Int((base.height * displayFactor).rounded()))")
-                                    .font(.system(size: 7, weight: .semibold, design: .rounded)).foregroundColor(.secondary)
+                                    .font(.system(size: TextSize.micro, weight: .semibold, design: .rounded)).foregroundColor(.secondary)
                             }
                         }
                         .foregroundColor(.primary)
                         .fixedSize()
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 2)
-                        .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: 4))
+                        .padding(.horizontal, Space.xs)
+                        .padding(.vertical, Space.xxs)
+                        .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
                         .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
                         .offset(y: -knobSize - 10)
                     }
@@ -895,7 +895,7 @@ struct FormatChangeLine: View {
                         + Text(display.result).foregroundColor(primary)
                 }
             }
-            .font(.system(size: 8.5, weight: .bold, design: .rounded))
+            .font(.system(size: TextSize.micro, weight: .bold, design: .rounded))
             .fixedSize()
         }
     }
@@ -906,7 +906,7 @@ struct CompressionButton: View {
     @Environment(\.preview) var preview
 
     var body: some View {
-        Button(action: {}, label: { SwiftUI.Image(systemName: "slider.horizontal.3").font(.heavy(9)) })
+        Button(action: {}, label: { SwiftUI.Image(systemName: "slider.horizontal.3").font(.heavy(TextSize.micro)) })
             .contentShape(Rectangle())
             .onMouseDown {
                 guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
@@ -945,14 +945,14 @@ struct HorizontalCompressionSlider: View {
             let centerY = geo.size.height / 2
 
             ZStack {
-                RoundedRectangle(cornerRadius: 1.5)
+                RoundedRectangle(cornerRadius: Radius.hairline)
                     .fill(.primary.opacity(0.15))
                     .frame(width: trackWidth, height: 3)
                     .position(x: geo.size.width / 2, y: centerY)
 
                 ForEach(CompressionScale.anchors(for: optimiser.compressionSliderType), id: \.self) { anchor in
                     let x = xPosition(for: anchor, trackLeft: trackLeft, trackWidth: trackWidth)
-                    RoundedRectangle(cornerRadius: 0.5)
+                    RoundedRectangle(cornerRadius: Radius.hairline)
                         .fill(.primary.opacity(0.3))
                         .frame(width: 1.5, height: size * 0.55)
                         .position(x: x, y: centerY)
@@ -966,14 +966,14 @@ struct HorizontalCompressionSlider: View {
                     .overlay {
                         VStack(spacing: 1) {
                             Text(displayLabel)
-                                .font(.system(size: 10, weight: .heavy, design: .rounded))
+                                .font(.system(size: TextSize.caption, weight: .heavy, design: .rounded))
                                 .foregroundColor(.primary)
                             FormatChangeLine(optimiser: optimiser, selectedQuality: displayQuality)
                         }
                         .fixedSize()
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 2)
-                        .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: 4))
+                        .padding(.horizontal, Space.xs)
+                        .padding(.vertical, Space.xxs)
+                        .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
                         .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
                         .offset(y: -knobSize / 2 - 16)
                     }
@@ -1044,18 +1044,18 @@ struct CardSlider: View {
     let onCancel: () -> Void
 
     var body: some View {
-        VStack(spacing: 5) {
+        VStack(spacing: Space.xs) {
             // White text on a dark blurred pill. Everything is clipped to the capsule so the blur
             // doesn't show as a rectangle behind a smaller rounded background.
             VStack(spacing: 1) {
                 Text(hint)
-                    .font(.system(size: 10, weight: .heavy, design: .rounded))
+                    .font(.system(size: TextSize.caption, weight: .heavy, design: .rounded))
                     .foregroundColor(.white)
                 if let optimiser = formatChangeOptimiser {
                     FormatChangeLine(optimiser: optimiser, selectedQuality: formatChangeQuality, onDark: true)
                 }
             }
-            .padding(.horizontal, 8).padding(.vertical, 3)
+            .padding(.horizontal, Space.m).padding(.vertical, Space.xxs)
             .background(
                 ZStack {
                     VisualEffectBlur(material: .hudWindow, blendingMode: .withinWindow, state: .active, appearance: .vibrantDark)
@@ -1297,7 +1297,7 @@ struct HorizontalPDFDPISlider: View {
             let centerY = geo.size.height / 2
 
             ZStack {
-                RoundedRectangle(cornerRadius: 1.5)
+                RoundedRectangle(cornerRadius: Radius.hairline)
                     .fill(.primary.opacity(0.15))
                     .frame(width: trackWidth, height: 3)
                     .position(x: geo.size.width / 2, y: centerY)
@@ -1306,7 +1306,7 @@ struct HorizontalPDFDPISlider: View {
                     let x = xPosition(for: index, trackLeft: trackLeft, trackWidth: trackWidth)
                     let isActive = dpi == currentDPI
 
-                    RoundedRectangle(cornerRadius: 0.5)
+                    RoundedRectangle(cornerRadius: Radius.hairline)
                         .fill(.primary.opacity(isActive ? 0.7 : 0.3))
                         .frame(width: isActive ? 2 : 1.5, height: size * 0.55)
                         .position(x: x, y: centerY)
@@ -1320,12 +1320,12 @@ struct HorizontalPDFDPISlider: View {
                         .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
                         .overlay(alignment: .top) {
                             Text("\(currentDPI) DPI")
-                                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                                .font(.system(size: TextSize.subheadline, weight: .heavy, design: .rounded))
                                 .foregroundColor(.primary)
                                 .fixedSize()
-                                .padding(.horizontal, 5)
-                                .padding(.vertical, 2)
-                                .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: 4))
+                                .padding(.horizontal, Space.xs)
+                                .padding(.vertical, Space.xxs)
+                                .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
                                 .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
                                 .offset(y: -knobSize - 4)
                         }
@@ -1855,7 +1855,7 @@ struct CoverArtDownscaleButton: View {
     @Environment(\.preview) var preview
 
     var body: some View {
-        Button(action: {}, label: { SwiftUI.Image(systemName: "minus").font(.heavy(9)) })
+        Button(action: {}, label: { SwiftUI.Image(systemName: "minus").font(.heavy(TextSize.micro)) })
             .contentShape(Rectangle())
             .onMouseDown {
                 guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
@@ -1873,7 +1873,7 @@ struct LowerPDFDPIButton: View {
     @Environment(\.preview) var preview
 
     var body: some View {
-        Button(action: {}, label: { SwiftUI.Image(systemName: "slider.horizontal.3").font(.heavy(9)) })
+        Button(action: {}, label: { SwiftUI.Image(systemName: "slider.horizontal.3").font(.heavy(TextSize.micro)) })
             .contentShape(Rectangle())
             .onMouseDown {
                 guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
@@ -1897,7 +1897,7 @@ struct QuickLookButton: View {
                     optimiser.quicklook()
                 }
             },
-            label: { SwiftUI.Image(systemName: "eye").font(.heavy(9)) }
+            label: { SwiftUI.Image(systemName: "eye").font(.heavy(TextSize.micro)) }
         )
         .contentShape(Rectangle())
     }
@@ -1914,7 +1914,7 @@ struct ShowInFinderButton: View {
                     optimiser.showInFinder()
                 }
             },
-            label: { SwiftUI.Image(systemName: "folder").font(.heavy(9)) }
+            label: { SwiftUI.Image(systemName: "folder").font(.heavy(TextSize.micro)) }
         )
         .contentShape(Rectangle())
     }
@@ -1932,7 +1932,7 @@ struct ShareButton: View {
                 guard !preview else { return }
                 optimiser.sharing = true
             },
-            label: { SwiftUI.Image(systemName: "square.and.arrow.up").font(.heavy(9)) }
+            label: { SwiftUI.Image(systemName: "square.and.arrow.up").font(.heavy(TextSize.micro)) }
         )
         .contentShape(Rectangle())
         .background(SharingsPicker(isPresented: $optimiser.sharing, sharingItems: [optimiser.url as Any]))
@@ -1965,8 +1965,8 @@ struct AggressiveOptimisationButton: View {
             },
             label: {
                 SwiftUI.Image(systemName: optimiser.aggressive ? "bolt.fill" : "bolt")
-                    .font(.heavy(9))
-                    .foregroundColor(optimiser.aggressive ? FloatingResult.yellow : nil)
+                    .font(.heavy(TextSize.micro))
+                    .foregroundColor(optimiser.aggressive ? Palette.savingOnThumbnail : nil)
                     // The pale "glow" yellow washes out on light thumbnails/backgrounds; a dark drop
                     // shadow keeps it legible on any background without losing the yellow identity.
                     .shadow(color: optimiser.aggressive ? .black.opacity(0.6) : .clear, radius: 1, y: 0.5)
@@ -1986,7 +1986,7 @@ struct VideoEncoderButton: View {
                 guard !preview else { return }
                 optimiser.reoptimiseWithEncoder(.slowHighQuality)
             },
-            label: { SwiftUI.Image(systemName: "bolt").font(.heavy(9)) }
+            label: { SwiftUI.Image(systemName: "bolt").font(.heavy(TextSize.micro)) }
         )
         .contentShape(Rectangle())
     }
@@ -2067,7 +2067,7 @@ struct TargetSizeButton: View {
 
     var body: some View {
         if inFloatingCard {
-            Button(action: {}, label: { SwiftUI.Image(systemName: "target").font(.heavy(9)) })
+            Button(action: {}, label: { SwiftUI.Image(systemName: "target").font(.heavy(TextSize.micro)) })
                 .contentShape(Rectangle())
                 .onMouseDown {
                     guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
@@ -2081,7 +2081,7 @@ struct TargetSizeButton: View {
             Menu {
                 TargetSizeMenuItems(optimiser: optimiser)
             } label: {
-                SwiftUI.Image(systemName: "target").font(.heavy(9))
+                SwiftUI.Image(systemName: "target").font(.heavy(TextSize.micro))
             }
             .accessibilityLabel("Target size")
             .menuButtonStyle(BorderlessButtonMenuButtonStyle())
@@ -2170,7 +2170,7 @@ struct ActionButton: View {
                     optimiser.showCropWindow()
                 }
             }) {
-                SwiftUI.Image(systemName: "crop").font(.heavy(9))
+                SwiftUI.Image(systemName: "crop").font(.heavy(TextSize.micro))
             }
             .contentShape(Rectangle())
         case .share:
@@ -2190,7 +2190,7 @@ struct ActionButton: View {
                     optimiser.copyToClipboard(); optimiser.overlayMessage = "Copied"
                 }
             }) {
-                SwiftUI.Image(systemName: "doc.on.doc").font(.heavy(9))
+                SwiftUI.Image(systemName: "doc.on.doc").font(.heavy(TextSize.micro))
             }
             .contentShape(Rectangle())
         case .showInFinder:
@@ -2203,7 +2203,7 @@ struct ActionButton: View {
                     optimiser.save()
                 }
             }) {
-                SwiftUI.Image(systemName: "square.and.arrow.down").font(.heavy(9))
+                SwiftUI.Image(systemName: "square.and.arrow.down").font(.heavy(TextSize.micro))
             }
             .contentShape(Rectangle())
         case .addToShelf:
@@ -2212,7 +2212,7 @@ struct ActionButton: View {
                     app.open(optimiser: optimiser)
                 }
             }) {
-                SwiftUI.Image(systemName: "tray.and.arrow.down").font(.heavy(9))
+                SwiftUI.Image(systemName: "tray.and.arrow.down").font(.heavy(TextSize.micro))
             }
             .contentShape(Rectangle())
         case .targetSize:
@@ -2224,7 +2224,7 @@ struct ActionButton: View {
                     optimiser.collapseHoverOverlay = true
                 }
             }) {
-                SwiftUI.Image(systemName: action.icon(for: optimiser.fileType)).font(.heavy(9))
+                SwiftUI.Image(systemName: action.icon(for: optimiser.fileType)).font(.heavy(TextSize.micro))
             }
             .contentShape(Rectangle())
             .disabled(optimiser.url == nil || optimiser.running)
@@ -2285,9 +2285,9 @@ struct FloatingAddActionSlot: View {
     let add: (FloatingAction) -> Void
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: 15, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
         Button(action: popUpMenu) {
-            SwiftUI.Image(systemName: "plus").font(.heavy(10)).foregroundStyle(.primary.opacity(0.45))
+            SwiftUI.Image(systemName: "plus").font(.heavy(TextSize.caption)).foregroundStyle(.primary.opacity(0.45))
                 .frame(width: 34, height: 34)
                 .background(Color.primary.opacity(0.05), in: shape)
                 .overlay { shape.stroke(Color.primary.opacity(0.25), style: StrokeStyle(lineWidth: 1, dash: [3, 2])) }
@@ -2469,7 +2469,7 @@ struct ActionPickerButton: View {
             }
         }) {
             SwiftUI.Image(systemName: action.icon)
-                .font(.heavy(9))
+                .font(.heavy(TextSize.micro))
         }
         .buttonStyle(FlatButton(color: .clear, textColor: .black.opacity(0.7), width: size, height: size, circle: true))
         .background(MenuAnchor(holder: anchor))
@@ -2489,14 +2489,14 @@ struct FloatingActionGridPicker: View {
     @Binding var actions: [FloatingAction]
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: Space.s) {
             VStack(spacing: 1) {
-                Text("Action buttons").medium(12).foregroundColor(.secondary)
+                Text("Action buttons").medium(TextSize.callout).foregroundColor(.secondary)
                     .searchAnchor("floating.main.floatingResultActions")
-                Text("Tap a button to change it").regular(8).foregroundColor(.secondary.opacity(0.5))
+                Text("Tap a button to change it").regular(TextSize.micro).foregroundColor(.secondary.opacity(0.5))
             }
-            let cols = Array(repeating: GridItem(.fixed(side), spacing: 8), count: 3)
-            LazyVGrid(columns: cols, spacing: 8) {
+            let cols = Array(repeating: GridItem(.fixed(side), spacing: Space.m), count: 3)
+            LazyVGrid(columns: cols, spacing: Space.m) {
                 ForEach(Array(slots.enumerated()), id: \.offset) { _, slot in
                     if let action = slot {
                         GridPickerButton(action: action, side: side) { replace(action, with: $0) }
@@ -2510,9 +2510,9 @@ struct FloatingActionGridPicker: View {
             if actions != FloatingAction.defaultFloating {
                 Button("Reset to default") { actions = FloatingAction.defaultFloating }
                     .buttonStyle(.plain)
-                    .font(.medium(10))
+                    .font(.medium(TextSize.caption))
                     .foregroundColor(.secondary)
-                    .padding(.top, 2)
+                    .padding(.top, Space.xxs)
             }
         }
     }
@@ -2541,7 +2541,7 @@ struct FloatingActionGridPicker: View {
     }
 
     private var addPlaceholder: some View {
-        let shape = RoundedRectangle(cornerRadius: 15, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
         return Menu {
             Section("Assign to a button") {
                 ForEach(addable) { a in
@@ -2552,7 +2552,7 @@ struct FloatingActionGridPicker: View {
             }
             pipelineActionsMenu(addablePipelines) { actions.append($0) }
         } label: {
-            SwiftUI.Image(systemName: "plus").font(.heavy(10)).foregroundStyle(.primary.opacity(0.45))
+            SwiftUI.Image(systemName: "plus").font(.heavy(TextSize.caption)).foregroundStyle(.primary.opacity(0.45))
                 .frame(width: side, height: side)
                 .background(Color.primary.opacity(0.05), in: shape)
                 .overlay { shape.stroke(Color.primary.opacity(0.25), style: StrokeStyle(lineWidth: 1, dash: [3, 2])) }
@@ -2671,7 +2671,7 @@ private struct GridPickerButton: View {
     let onChange: (FloatingAction?) -> Void
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: 15, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
         // A plain Button renders the label's background; a borderless Menu label did not, which is
         // why earlier fill changes were invisible. Tap removes the action (re-add via the + slot).
         return Button(action: {
@@ -2682,7 +2682,7 @@ private struct GridPickerButton: View {
             }
         }) {
             SwiftUI.Image(systemName: action.icon)
-                .font(.heavy(11))
+                .font(.heavy(TextSize.subheadline))
                 .foregroundStyle(Color.fg.primary)
                 .frame(width: side, height: side)
                 .background(Color.bg.warm, in: shape)
@@ -2733,7 +2733,7 @@ struct ActionListPicker: View {
             pipelineActionsMenu(availablePipelines) { actions.append($0) }
         } label: {
             SwiftUI.Image(systemName: "plus.circle.fill")
-                .font(.regular(14))
+                .font(.regular(TextSize.body))
                 .foregroundColor(.secondary.opacity(0.5))
         }
         .accessibilityLabel("Add action")
@@ -2745,16 +2745,16 @@ struct ActionListPicker: View {
     }
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: Space.s) {
             VStack(spacing: 1) {
-                Text(label).medium(12)
+                Text(label).medium(TextSize.callout)
                     .foregroundColor(.secondary)
-                Text("To remove an icon, click on it").regular(8)
+                Text("To remove an icon, click on it").regular(TextSize.micro)
                     .foregroundColor(.secondary.opacity(0.5))
             }
 
-            HStack(spacing: 6) {
-                let layout = vertical ? AnyLayout(VStackLayout(spacing: 2)) : AnyLayout(HStackLayout(spacing: 2))
+            HStack(spacing: Space.s) {
+                let layout = vertical ? AnyLayout(VStackLayout(spacing: Space.xxs)) : AnyLayout(HStackLayout(spacing: Space.xxs))
                 layout {
                     ForEach(shownActions) { action in
                         ActionPickerButton(action: action, size: buttonSize) { new in

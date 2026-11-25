@@ -37,7 +37,7 @@ struct SettingsSearchAnchor: ViewModifier {
             // never with padding on the content. Padding the content moves it, so an anchored row sat
             // indented next to an unanchored one and the pane looked ragged for no visible reason.
             .background(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                     .fill(Color.peach.opacity(isHighlighted ? 0.28 : 0))
                     .padding(.horizontal, -6)
                     .padding(.vertical, -4)
