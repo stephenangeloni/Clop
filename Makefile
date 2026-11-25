@@ -10,6 +10,7 @@ lint:
 build: lint
 	xcodebuild build -project Polc.xcodeproj -scheme Polc -configuration Release \
 		-derivedDataPath $(BUILD_DIR) -skipPackagePluginValidation -skipMacroValidation
+	Scripts/unregister-stray-builds.sh
 
 install: build
 	@if [ -d /Applications/Clop.app ] && [ "$$(defaults read /Applications/Clop.app/Contents/Info CFBundleIdentifier 2>/dev/null)" = "com.stephenangeloni.Clop" ]; then \
@@ -20,6 +21,7 @@ install: build
 	fi
 	rm -rf /Applications/Polc.app
 	cp -R $(APP) /Applications/Polc.app
+	Scripts/unregister-stray-builds.sh
 
 clean:
 	rm -rf $(BUILD_DIR)
