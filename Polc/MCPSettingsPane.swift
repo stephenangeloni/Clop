@@ -15,15 +15,13 @@ struct MCPSettingsView: View {
         Form {
             Section(header: SectionHeader(title: "MCP")) {
                 Toggle(isOn: $mcpEnabled) {
-                    Text("Enable MCP").regular(TextSize.body)
-                        + Text("\nAllow agents to control Polc, run file optimisations, change settings, write pipelines").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                    settingLabel("Enable MCP", "Allow agents to control Polc, run file optimisations, change settings, write pipelines")
                 }
                 .onChange(of: mcpEnabled) { _ in MCPInstaller.writeServerCard() }
                 .searchAnchor("mcp.main.mcpEnabled", namesControl: true)
 
                 Toggle(isOn: $mcpAllowScriptSteps) {
-                    Text("Allow agents to write arbitrary scripts in pipelines").regular(TextSize.body)
-                        + Text("\nUsing scripts in pipelines allows for flexible operations but can be dangerous if not properly verified").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                    settingLabel("Allow agents to write arbitrary scripts in pipelines", "Using scripts in pipelines allows for flexible operations but can be dangerous if not properly verified")
                 }
                 .disabled(!mcpEnabled)
                 .onChange(of: mcpAllowScriptSteps) { on in

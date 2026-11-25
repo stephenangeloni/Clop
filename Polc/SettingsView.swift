@@ -1196,8 +1196,7 @@ struct FileHandlingSettingsView: View {
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Optimised file placement").regular(TextSize.body)
-                            + Text("\nWhere the smaller file is saved, and whether it replaces the original").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Optimised file placement", "Where the smaller file is saved, and whether it replaces the original")
                     }
                     .searchAnchor("files.images.optimisedImageBehaviour", namesControl: true)
                     if optimisedImageBehaviour == .sameFolder {
@@ -1217,8 +1216,7 @@ struct FileHandlingSettingsView: View {
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Auto-conversion behaviour for compatible formats").regular(TextSize.body)
-                            + Text("\nFormats that many apps cannot open well are converted to a widely supported one automatically before optimising.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Auto-conversion behaviour for compatible formats", "Formats that many apps cannot open well are converted to a widely supported one automatically before optimising.")
                     }
                     .searchAnchor("files.images.convertedImageBehaviour", namesControl: true)
                     AutoConvertPills(groups: imageAutoConvertGroups, compatibilityTab: .images)
@@ -1239,8 +1237,7 @@ struct FileHandlingSettingsView: View {
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Manual conversion behaviour").regular(TextSize.body)
-                            + Text("\nWhen you pick a new format by clicking the file extension on a floating result, or via the submenu **Convert to...** in the right-click menu.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Manual conversion behaviour", "When you pick a new format by clicking the file extension on a floating result, or via the submenu **Convert to...** in the right-click menu.")
                     }
                     .searchAnchor("files.images.manualConvertedImageBehaviour", namesControl: true)
                     if manualConvertedImageBehaviour == .sameFolder {
@@ -1265,8 +1262,7 @@ struct FileHandlingSettingsView: View {
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Optimised file placement").regular(TextSize.body)
-                            + Text("\nWhere the smaller file is saved, and whether it replaces the original").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Optimised file placement", "Where the smaller file is saved, and whether it replaces the original")
                     }
                     .searchAnchor("files.videos.optimisedVideoBehaviour", namesControl: true)
                     if optimisedVideoBehaviour == .sameFolder {
@@ -1285,8 +1281,7 @@ struct FileHandlingSettingsView: View {
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Auto-conversion behaviour for compatible formats").regular(TextSize.body)
-                            + Text("\nFormats that many apps cannot open well are converted to a widely supported one automatically before optimising.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Auto-conversion behaviour for compatible formats", "Formats that many apps cannot open well are converted to a widely supported one automatically before optimising.")
                     }
                     .searchAnchor("files.videos.convertedVideoBehaviour", namesControl: true)
                     AutoConvertPills(groups: videoAutoConvertGroups, compatibilityTab: .video)
@@ -1306,8 +1301,7 @@ struct FileHandlingSettingsView: View {
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Manual conversion behaviour").regular(TextSize.body)
-                            + Text("\nWhen you pick a new format by clicking the file extension on a floating result, or via the submenu **Convert to...** in the right-click menu.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Manual conversion behaviour", "When you pick a new format by clicking the file extension on a floating result, or via the submenu **Convert to...** in the right-click menu.")
                     }
                     .searchAnchor("files.videos.manualConvertedVideoBehaviour", namesControl: true)
                     if manualConvertedVideoBehaviour == .sameFolder {
@@ -1332,8 +1326,7 @@ struct FileHandlingSettingsView: View {
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Optimised file placement").regular(TextSize.body)
-                            + Text("\nWhere the smaller file is saved, and whether it replaces the original").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Optimised file placement", "Where the smaller file is saved, and whether it replaces the original")
                     }
                     .searchAnchor("files.audio.optimisedAudioBehaviour", namesControl: true)
                     if optimisedAudioBehaviour == .sameFolder {
@@ -1352,8 +1345,7 @@ struct FileHandlingSettingsView: View {
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Auto-conversion behaviour for compatible formats").regular(TextSize.body)
-                            + Text("\nFormats that many apps cannot open well are converted to a widely supported one automatically before optimising.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Auto-conversion behaviour for compatible formats", "Formats that many apps cannot open well are converted to a widely supported one automatically before optimising.")
                     }
                     .searchAnchor("files.audio.convertedAudioBehaviour", namesControl: true)
                     AutoConvertPills(groups: audioAutoConvertGroups, compatibilityTab: .audio)
@@ -1373,8 +1365,7 @@ struct FileHandlingSettingsView: View {
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Manual conversion behaviour").regular(TextSize.body)
-                            + Text("\nWhen you pick a new format by clicking the file extension on a floating result, or via the submenu **Convert to...** in the right-click menu.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Manual conversion behaviour", "When you pick a new format by clicking the file extension on a floating result, or via the submenu **Convert to...** in the right-click menu.")
                     }
                     .searchAnchor("files.audio.manualConvertedAudioBehaviour", namesControl: true)
                     if manualConvertedAudioBehaviour == .sameFolder {
@@ -1399,8 +1390,7 @@ struct FileHandlingSettingsView: View {
                         Text("Same folder as original").tag(FileBehaviour.sameFolder)
                         Text("Specific folder").tag(FileBehaviour.specificFolder)
                     } label: {
-                        Text("Optimised file placement").regular(TextSize.body)
-                            + Text("\nWhere the smaller file is saved, and whether it replaces the original").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Optimised file placement", "Where the smaller file is saved, and whether it replaces the original")
                     }
                     .searchAnchor("files.pdf.optimisedPDFBehaviour", namesControl: true)
                     if optimisedPDFBehaviour == .sameFolder {
@@ -1748,8 +1738,7 @@ struct ImagesSettingsView: View {
 
     var customNameTemplate: some View {
         VStack(alignment: .leading, spacing: Space.s) {
-            Text("Custom name template").regular(TextSize.body)
-                + Text("\nRename the file using this template before copying the path to the clipboard").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+            settingLabel("Custom name template", "Rename the file using this template before copying the path to the clipboard")
 
             VStack(alignment: .leading) {
                 TextField("", text: $customNameTemplateForClipboardImages, prompt: Text(DEFAULT_NAME_TEMPLATE))
@@ -1818,8 +1807,7 @@ struct ImagesSettingsView: View {
             .searchAnchor("images.watchpaths.imageDirs")
             Section(header: SectionHeader(title: "File name handling")) {
                 Toggle(isOn: $copyImageFilePath) {
-                    Text("Copy image paths").regular(TextSize.body)
-                        + Text("\nWhen copying optimised image data, also copy the path of the image file").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                    settingLabel("Copy image paths", "When copying optimised image data, also copy the path of the image file")
                 }
                 .searchAnchor("images.filenamehandling.copyImageFilePath", namesControl: true)
                 Toggle(isOn: $useCustomNameTemplateForClipboardImages.animation(.default)) {
@@ -2118,6 +2106,12 @@ struct KeysSettingsView: View {
 }
 
 
+func settingLabel(_ title: LocalizedStringKey, _ detail: LocalizedStringKey) -> Text {
+    Text(title).regular(TextSize.body)
+        + Text("\n")
+        + Text(detail).round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+}
+
 struct LegalNotice: View {
     var body: some View {
         Text("Based on Clop by The low-tech guys. Licensed under GPLv3, without any warranty.")
@@ -2190,20 +2184,17 @@ struct DropZoneSettingsView: View {
             SectionHeader(title: "Drop zone", subtitle: "Drag files, paths and URLs onto a global zone to optimise them")
             VStack(alignment: .leading, spacing: Space.m) {
                 Toggle(isOn: $enableDragAndDrop) {
-                    Text("Enable drop zone").regular(TextSize.body)
-                        + Text("\nAllows dragging files, paths and URLs to a global drop zone for optimisation").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                    settingLabel("Enable drop zone", "Allows dragging files, paths and URLs to a global drop zone for optimisation")
                 }
                 .searchAnchor("dropzone.dropzone.enableDragAndDrop")
                 Toggle(isOn: $onlyShowDropZoneOnOption) {
-                    Text("Require pressing ⌥ Option to show drop zone").regular(TextSize.body)
-                        + Text("\nHide drop zone by default to avoid distractions while dragging files, show it by manually pressing ⌥ Option once").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                    settingLabel("Require pressing ⌥ Option to show drop zone", "Hide drop zone by default to avoid distractions while dragging files, show it by manually pressing ⌥ Option once")
                 }
                 .padding(.leading, Space.window)
                 .disabled(!enableDragAndDrop)
                 .searchAnchor("dropzone.dropzone.onlyShowDropZoneOnOption")
                 Toggle(isOn: $autoCopyToClipboard) {
-                    Text("Auto Copy optimised files to clipboard").regular(TextSize.body)
-                        + Text("\nCopy files resulting from drop zone or file watch optimisation\nso they can be pasted right after optimisation ends").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                    settingLabel("Auto Copy optimised files to clipboard", "Copy files resulting from drop zone or file watch optimisation\nso they can be pasted right after optimisation ends")
                 }
                 .searchAnchor("dropzone.dropzone.autoCopyToClipboard")
             }
@@ -2268,8 +2259,7 @@ struct DropZoneSettingsView: View {
                     SectionHeader(title: "Batch mode", subtitle: "Process a large drop in a fast native window instead of one floating result per file")
                     VStack(alignment: .leading, spacing: Space.m) {
                         Toggle(isOn: $useBatchModeForFolders) {
-                            Text("Use batch mode for large drops").regular(TextSize.body)
-                                + Text("\nDropping many files at once (or a folder with many files) opens a single batch window that optimises them all efficiently. Originals are backed up first and can be restored.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                            settingLabel("Use batch mode for large drops", "Dropping many files at once (or a folder with many files) opens a single batch window that optimises them all efficiently. Originals are backed up first and can be restored.")
                         }
                         .searchAnchor("dropzone.batchmode.useBatchModeForFolders")
                         HStack {
@@ -2698,19 +2688,16 @@ struct ClipboardSettingsView: View {
         Form {
             Section(header: SectionHeader(title: "Clipboard", subtitle: "Watch for copied data and optimise it automatically")) {
                 Toggle(isOn: $enableClipboardOptimiser) {
-                    Text("Enable clipboard optimiser").regular(TextSize.body)
-                        + Text("\nWatch for copied data and optimise it automatically").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                    settingLabel("Enable clipboard optimiser", "Watch for copied data and optimise it automatically")
                 }
                 .searchAnchor("clipboard.clipboard.enableClipboardOptimiser", namesControl: true)
                 Group {
                     Toggle(isOn: .constant(true)) {
-                        Text("Image data").regular(TextSize.body)
-                            + Text("\nCopied image data (e.g. screenshots)").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Image data", "Copied image data (e.g. screenshots)")
                     }.disabled(true)
                         .accessibilityLabel("Image data")
                     Toggle(isOn: $optimiseTIFF) {
-                        Text("TIFF data").regular(TextSize.body)
-                            + Text("\nUsually from graphical design apps, sometimes better left alone").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("TIFF data", "Usually from graphical design apps, sometimes better left alone")
                     }
                     .searchAnchor("clipboard.clipboard.optimiseTIFF", namesControl: true)
                     Toggle(isOn: $optimiseHEICAVIFClipboard) {
@@ -2718,23 +2705,19 @@ struct ClipboardSettingsView: View {
                     }
                     .searchAnchor("clipboard.clipboard.optimiseHEICAVIFClipboard", namesControl: true)
                     Toggle(isOn: $optimiseImagePathClipboard) {
-                        Text("Image files").regular(TextSize.body)
-                            + Text("\nCopying images from Finder results in file paths instead of image data").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Image files", "Copying images from Finder results in file paths instead of image data")
                     }
                     .searchAnchor("clipboard.clipboard.optimiseImagePathClipboard", namesControl: true)
                     Toggle(isOn: $optimiseVideoClipboard) {
-                        Text("Video files").regular(TextSize.body)
-                            + Text("\nOptimise copied video file paths").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Video files", "Optimise copied video file paths")
                     }
                     .searchAnchor("clipboard.clipboard.optimiseVideoClipboard", namesControl: true)
                     Toggle(isOn: $optimiseAudioClipboard) {
-                        Text("Audio files").regular(TextSize.body)
-                            + Text("\nOptimise copied audio file paths").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("Audio files", "Optimise copied audio file paths")
                     }
                     .searchAnchor("clipboard.clipboard.optimiseAudioClipboard", namesControl: true)
                     Toggle(isOn: $optimisePDFClipboard) {
-                        Text("PDF files").regular(TextSize.body)
-                            + Text("\nOptimise copied PDF file paths").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                        settingLabel("PDF files", "Optimise copied PDF file paths")
                     }
                     .searchAnchor("clipboard.clipboard.optimisePDFClipboard", namesControl: true)
                 }
@@ -2742,8 +2725,7 @@ struct ClipboardSettingsView: View {
                 .padding(.leading, Space.window)
 
                 Toggle(isOn: $appendClipboardResults) {
-                    Text("Keep all clipboard results").regular(TextSize.body)
-                        + Text("\nShow each clipboard optimisation as a separate result instead of replacing the previous one").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                    settingLabel("Keep all clipboard results", "Show each clipboard optimisation as a separate result instead of replacing the previous one")
                 }.disabled(!enableClipboardOptimiser)
                     .searchAnchor("clipboard.clipboard.appendClipboardResults", namesControl: true)
                 if appendClipboardResults {
@@ -2906,21 +2888,18 @@ struct GeneralSettingsView: View {
 
             Section(header: SectionHeader(title: "Optimisation")) {
                 Toggle(isOn: $stripMetadata) {
-                    Text("Strip EXIF Metadata").regular(TextSize.body)
-                        + Text("\nDeleted identifiable metadata from files (e.g. camera that took the photo, location, date and time etc.)").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                    settingLabel("Strip EXIF Metadata", "Deleted identifiable metadata from files (e.g. camera that took the photo, location, date and time etc.)")
                 }
                 .searchAnchor("general.optimisation.stripMetadata", namesControl: true)
                 Toggle(isOn: $preserveColorMetadata) {
-                    Text("Preserve color profile metadata").regular(TextSize.body)
-                        + Text("\nKeep color profile metadata tags untouched when stripping EXIF metadata").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                    settingLabel("Preserve color profile metadata", "Keep color profile metadata tags untouched when stripping EXIF metadata")
                 }
                 .padding(.leading, Space.window)
                 .disabled(!stripMetadata)
                 .searchAnchor("general.optimisation.preserveColorMetadata", namesControl: true)
 
                 Toggle(isOn: $preserveDates) {
-                    Text("Preserve file creation and modification dates").regular(TextSize.body)
-                        + Text("\nThe optimised file will have the same creation and modification dates as the original file").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                    settingLabel("Preserve file creation and modification dates", "The optimised file will have the same creation and modification dates as the original file")
                 }
                 .searchAnchor("general.optimisation.preserveDates", namesControl: true)
 
@@ -2930,8 +2909,7 @@ struct GeneralSettingsView: View {
                     Text("30 seconds").tag(30000)
                     Text("60 seconds").tag(60000)
                 } label: {
-                    Text("Re-optimisation loop detection window").regular(TextSize.body)
-                        + Text("\nIncrease if files on iCloud Drive get optimised twice").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
+                    settingLabel("Re-optimisation loop detection window", "Increase if files on iCloud Drive get optimised twice")
                 }
                 .searchAnchor("general.optimisation.optimisedFileProtectionMs", namesControl: true)
             }
