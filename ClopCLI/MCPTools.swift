@@ -76,7 +76,7 @@ extension MCPServer {
         }
 
         // A file command reports per-file outcomes in done[] and failed[] and still exits 0, so a
-        // licence refusal or a gate refusal used to arrive as a SUCCESSFUL tool result carrying a bare
+        // gate refusal used to arrive as a SUCCESSFUL tool result carrying a bare
         // internal string. The agent was told nothing it could act on and had no reason to think
         // anything went wrong. Every failure message gets the same next step a top-level error would,
         // and a call where nothing succeeded is an error.
@@ -320,8 +320,6 @@ extension MCPServer {
             }
             Thread.sleep(forTimeInterval: 0.4)
         }
-        // The card is rewritten when Clop handles the URL, so re-reading it after the wait tells a
-        // licence refusal apart from an unanswered dialog.
         throw ClopMCPError("Clop asked and the answer did not come (or it was no). Nothing changed. "
             + "Ask the user to allow it in Clop Settings, MCP.")
     }

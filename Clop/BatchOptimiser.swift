@@ -1275,7 +1275,7 @@ private func batchPDFDPIArgs(_ mode: PDFDPIMode, aggressive: Bool?) -> (dpi: Int
 // MARK: - CLI bridge
 
 /// Whether a CLI/IPC request should be handled by the batch engine + window instead of the per-file
-/// path: a Pro-only, non-pipeline request with more files than the configured threshold.
+/// path: a non-pipeline request with more files than the configured threshold.
 @MainActor func shouldRouteToBatch(_ req: OptimisationRequest) -> Bool {
     // Only route requests the batch engine can fully express. Batch placement knows "in place"
     // or "to folder" but not per-file output templates, so those keep the per-file path:

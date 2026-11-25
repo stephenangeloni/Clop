@@ -555,13 +555,13 @@ extension MCPSettingsBridge {
     /// Answers a `SettingsRequest` from the CLI, and enforces the MCP gate.
     ///
     /// The gate lives here rather than in the CLI because the CLI is a binary the caller controls. A
-    /// request that says it came from MCP is refused unless the user has a Pro licence and, for a
-    /// write, has allowed agent changes. A request that does not claim MCP origin is somebody using
+    /// request that says it came from MCP is refused, for a write, unless the user
+    /// has allowed agent changes. A request that does not claim MCP origin is somebody using
     /// their own CLI, which needs no permission from anyone.
     @MainActor static func handle(_ req: SettingsRequest) -> SettingsResponse {
         // `strip-exif`, `crop-pdf`, `uncrop-pdf` and the pipeline library commands do their work inside
         // the CLI and never build an `OptimisationRequest`, so the app never saw their origin and an
-        // agent could run them with Pro off and MCP off. They ask here first instead.
+        // agent could run them with MCP off. They ask here first instead.
         if req.action == .gate {
             if let refusal = mcpRefusal(origin: req.origin, pipeline: req.pipeline) {
                 return SettingsResponse(ok: false, error: refusal)
@@ -608,7 +608,7 @@ extension MCPSettingsBridge {
 /// Whether a request arriving from the MCP server is allowed to run, and why not when it is not.
 ///
 /// This exists because the gate was once wired only into the settings path. An agent proved the hole
-/// by running `runScript(code: touch /tmp/...)` through a pipeline with Pro off, MCP off and script
+/// by running `runScript(code: touch /tmp/...)` through a pipeline with MCP off and script
 /// steps off, and the file appeared. Anything the CLI can be asked to DO has to come through here.
 ///
 /// Returns nil when the request may proceed.

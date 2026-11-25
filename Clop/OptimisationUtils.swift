@@ -3758,7 +3758,7 @@ func processOptimisationRequest(_ req: OptimisationRequest) async throws -> [Opt
         return []
     }
 
-    // Large requests go through the batch engine + window (Pro-only); small ones use the per-file path.
+    // Large requests go through the batch engine + window; small ones use the per-file path.
     if await shouldRouteToBatch(req) {
         return await runBatchForCLIInTurn(req)
     }

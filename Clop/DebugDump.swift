@@ -138,7 +138,6 @@ enum DebugDump {
 
             await setPhase("Copying crash reports…")
             copyCrashReports(to: workDir.appendingPathComponent("crashes", isDirectory: true))
-            copySyncLog(to: workDir)
 
             // 30s capture window: stream this app's log live via `log stream
             // --level debug`. Debug (and unfetched info) entries are never
@@ -420,16 +419,6 @@ enum DebugDump {
                 try? handle.close()
             }
         }
-    }
-
-    /// The licensing sync log from the app's caches folder, if one was written.
-    private static func copySyncLog(to dest: URL) {
-        guard let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else { return }
-        let syncLog = caches
-            .appendingPathComponent(Bundle.main.bundleIdentifier ?? "com.stephenangeloni.Clop")
-            .appendingPathComponent("sync.log")
-        guard FileManager.default.fileExists(atPath: syncLog.path) else { return }
-        try? FileManager.default.copyItem(at: syncLog, to: dest.appendingPathComponent("sync.log"))
     }
 
     private static func copyCrashReports(to dest: URL) {

@@ -342,7 +342,7 @@ extension MCPServer {
 // Writing the steps from the server would go around the gate entirely: they would land while the
 // switch reads "off", and Clop's own watcher would pick them up and run agent-authored steps anyway.
 // Clop validates the name and the source path too, since `../../.zshrc` is a name an agent can ask
-// for, and it is the app that enforces Pro, mcpEnabled and mcpAllowScriptSteps.
+// for, and it is the app that enforces mcpEnabled and mcpAllowScriptSteps.
 
 extension MCPServer {
     /// Whether a pipeline for `type` can reach a video. No type means every type.

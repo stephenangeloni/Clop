@@ -87,9 +87,8 @@ func ensureAppIsRunning() {
 /// the app, so the app's own gate never sees them. Without this an agent could save a pipeline with a
 /// script step and attach it to a watched folder, and every file dropped there would run it.
 ///
-/// The app decides, the same as for files: Pro, the MCP switch and script steps. Reading the switch
-/// from the defaults suite here once missed Pro, so a lapsed licence left the switch on and kept these
-/// working, and `pipeline preset` never checked at all.
+/// The app decides, the same as for files: the MCP switch and script steps. `pipeline preset` once
+/// never checked at all.
 ///
 /// This is a check inside the caller's own binary, so it is not a sandbox: an agent that never sets
 /// no origin is simply a person using the CLI, which needs no permission from anyone. What it does
@@ -102,7 +101,7 @@ func refuseUnallowedMCPPipelineWrite(_ dsl: String?) throws {
 ///
 /// `strip-exif`, `crop-pdf`, `uncrop-pdf` and the pipeline library commands do their work in this
 /// process and never build an `OptimisationRequest`, so nothing carried their origin to the app and
-/// the gate never saw them. An agent could strip the GPS out of a photo with Pro off and MCP off.
+/// the gate never saw them. An agent could strip the GPS out of a photo with MCP off.
 /// They ask first now, with the steps they are about to save when there are any.
 ///
 /// Only for calls that claim MCP origin. Somebody running the CLI themselves needs no permission.
