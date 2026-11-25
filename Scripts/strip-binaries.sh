@@ -2,8 +2,7 @@
 # Strip the symbol tables of the bundled binaries before they get signed.
 # Executables lose every symbol, dylibs keep the exported ones so their
 # dependents still link. Files that are already stripped come out
-# byte-identical, so their signature stays valid and `make bin` doesn't
-# send them through notarization again.
+# byte-identical, so their signature stays valid.
 set -euo pipefail
 
 dir="${1:-Clop/bin}"

@@ -5,7 +5,21 @@
     <h6 align="center" style="padding: 0; margin: 0; font-family: ui-monospace, monospace; font-weight: 400;">Copy large, paste small, send fast</h6>
 </p>
 
-This is a personal build of [Clop](https://github.com/FuzzyIdeas/Clop) by The low-tech guys, with the licence checks, updater, crash reporting and peer-to-peer sharing removed. Build it with `make build`.
+This is a personal build of [Clop](https://github.com/FuzzyIdeas/Clop) by The low-tech guys, with the licence checks, updater, crash reporting and peer-to-peer sharing removed. It is for personal use: it links a copy of the Lowtech library that is not licensed for redistribution.
+
+## Building
+
+You need Xcode 26 or later and [Git LFS](https://git-lfs.com). `Clop/bin.tar.lrz` holds the optimisation tools and is stored in LFS. If it is still an LFS pointer, the build still succeeds, but the app shows an unarchiving error and quits at launch, unless an earlier build already extracted the same tools.
+
+```sh
+git lfs pull
+Scripts/make-lowtech-local.sh
+make build
+```
+
+`Scripts/make-lowtech-local.sh` creates `../Lowtech-local` next to this repo: the `Sources/Lowtech` folder of [Lowtech](https://github.com/FuzzyIdeas/Lowtech) at commit `89812896`, with its own `Package.swift`. Don't commit or publish that folder.
+
+`make install` copies the app to `/Applications`. It refuses to replace a different Clop build there, so remove the original Clop first.
 
 ## Optimise images as soon as you copy them
 

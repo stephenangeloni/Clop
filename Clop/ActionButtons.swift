@@ -2789,8 +2789,7 @@ struct CardTargetSizeSlider: View {
 struct ActionButton: View {
     let action: FloatingAction
     @ObservedObject var optimiser: Optimiser
-    /// In the floating card the send button opens the in-card expiration overlay; elsewhere (compact)
-    /// it opens a popover instead.
+    /// Passed on to `TargetSizeButton`, which opens its slider in the floating card and a menu elsewhere.
     var inFloatingCard = false
 
     @Environment(\.preview) var preview

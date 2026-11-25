@@ -37,7 +37,7 @@ let IMAGE_PASTEBOARD_TYPES = IMAGE_FORMATS.compactMap { NSPasteboard.PasteboardT
 let AUDIO_PASTEBOARD_TYPES = AUDIO_FORMATS.compactMap { NSPasteboard.PasteboardType(rawValue: $0.identifier) }
 let IMAGE_VIDEO_PASTEBOARD_TYPES: Set<NSPasteboard.PasteboardType> = (IMAGE_PASTEBOARD_TYPES + VIDEO_PASTEBOARD_TYPES + AUDIO_PASTEBOARD_TYPES + [.fileContents]).set
 
-let DEFAULT_HOVER_KEYS: [SauceKey] = [.minus, .delete, .z, .c, .a, .s, .x, .r, .f, .o, .comma, .u, .d, .w, .k, .e]
+let DEFAULT_HOVER_KEYS: [SauceKey] = [.minus, .delete, .z, .c, .a, .s, .x, .r, .f, .o, .comma, .u, .d, .k, .e]
 let DEFAULT_GLOBAL_KEYS: [SauceKey] = [.minus, .equal, .delete, .space, .z, .p, .c, .a, .x, .r, .k, .escape]
 
 enum CleanupInterval: TimeInterval, Codable, Defaults.Serializable {
@@ -240,7 +240,7 @@ extension Defaults.Keys {
     static let floatingResultActions = Key<[FloatingAction]>("floatingResultActions", default: FloatingAction.defaultFloating)
     static let compactResultActions = Key<[FloatingAction]>("compactResultActions", default: FloatingAction.defaultCompact)
     static let formatPickerStyle = Key<FormatPickerStyle>("formatPickerStyle", default: .bar)
-    /// Whether agents may change things through the MCP server. Reading is allowed with a Pro licence
+    /// Whether agents may change things through the MCP server. Reading is allowed
     /// either way; this is the switch for everything that writes. Sticks across launches, see
     /// `MCPInstaller`.
     static let mcpEnabled = Key<Bool>("mcpEnabled", default: false)
@@ -347,4 +347,3 @@ enum GIFFrameDropBehaviour: String, Codable, Defaults.Serializable {
     /// Dropped frames' delays are folded into the previous kept frame: same duration, choppier motion.
     case keepDuration
 }
-

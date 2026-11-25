@@ -106,10 +106,6 @@ enum MCPInstaller {
     /// the proposed `.well-known/mcp` card and drops it in two places an agent is likely to look. It
     /// carries no credentials: Clop's transport is a Mach port that any process of this user can
     /// already open.
-    ///
-    /// Nothing here may suggest relaunching Clop. MCP is Pro so restarting buys an agent nothing on
-    /// this path, but the same words would teach the trick for the CLI and Shortcuts paths, whose free
-    /// counters do reset on relaunch by design.
     @MainActor static func writeServerCard() {
         let card: [String: Any] = [
             "name": serverName,

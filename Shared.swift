@@ -744,7 +744,7 @@ struct OptimisationRequest: Codable, Identifiable {
     /// for where optimised and converted files are placed. nil = use the app settings.
     var placement: PlacementOverride? = nil
     /// `mcp` when the request arrived through the bundled MCP server. The app refuses these unless the
-    /// user has Pro and has allowed agent changes, and refuses a pipeline carrying a script step
+    /// user has allowed agent changes, and refuses a pipeline carrying a script step
     /// unless they have allowed those separately.
     ///
     /// An agent proved it could run `runScript(code: touch /tmp/...)` with every switch off, because
