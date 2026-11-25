@@ -915,6 +915,7 @@ struct FormatPickerBar: View {
     /// The conversion target clicked last, pulsing while the conversion runs.
     @State private var pendingFormat: UTType? = nil
     @State private var pulseOn = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Namespace private var chipNS
 
     @Environment(\.preview) private var preview
@@ -982,7 +983,11 @@ struct FormatPickerBar: View {
         guard !preview, !optimiser.running, let format, optimiser.type.utType != format, optimiser.videoCodecType != format else { return }
         pendingFormat = format
         pulseOn = false
-        withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) { pulseOn = true }
+        if reduceMotion {
+            pulseOn = true
+        } else {
+            withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) { pulseOn = true }
+        }
         optimiser.convert(to: format, optimise: true, additive: additiveConvert)
     }
 }
@@ -1487,6 +1492,7 @@ struct FloatingResult: View {
                         }
                     }, label: { SwiftUI.Image(systemName: "crop") })
                         .buttonStyle(FloatingCornerButtonStyle())
+                        .accessibilityLabel("Crop")
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
             }

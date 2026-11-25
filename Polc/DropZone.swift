@@ -446,7 +446,7 @@ struct DropZoneView: View {
     @ObservedObject var dragManager = DM
     @ObservedObject var keysManager = KM
     @Environment(\.preview) var preview
-    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
 
     @State var rotation: Angle = .degrees(0)
     @State var hovering = false
@@ -473,11 +473,11 @@ struct DropZoneView: View {
 
                 SwiftUI.Image(systemName: "livephoto")
                     .font(.bold(IconSize.xlarge))
-                    .foregroundStyle(colorScheme == .dark ? Color.orange : Color.hotRed)
+                    .foregroundStyle(Palette.saving)
                     .padding(1)
                     .rotationEffect(rotation)
                     .onChange(of: hoverState) { hovering in
-                        if hovering {
+                        if hovering, !reduceMotion {
                             withAnimation(.linear(duration: 4).repeatForever(autoreverses: false)) {
                                 rotation = .degrees(359)
                             }
@@ -520,7 +520,7 @@ struct DropZoneView: View {
         .overlay {
             if !dragManager.showPresetZones {
                 DROPZONE_SHAPE.stroke(Color.bg.primary.opacity(0.1), lineWidth: 4)
-                    .shadow(color: colorScheme == .dark ? Color.orange : Color.hotRed, radius: 3)
+                    .shadow(color: Palette.saving, radius: 3)
                     .allowsHitTesting(false)
             }
         }

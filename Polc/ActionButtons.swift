@@ -364,6 +364,7 @@ struct CloseStopButton: View {
             label: { SwiftUI.Image(systemName: optimiser.running ? "stop.fill" : "xmark") }
         )
         .buttonStyle(FloatingCornerButtonStyle())
+        .accessibilityLabel(optimiser.running ? "Stop" : "Dismiss")
     }
 }
 
@@ -2260,6 +2261,7 @@ struct FloatingGridActionButton: View {
         let button = ActionButton(action: action, optimiser: optimiser, inFloatingCard: true)
         button
             .buttonStyle(FloatingGridButtonStyle())
+            .accessibilityLabel(action.label(for: optimiser.type))
             .disabled(!button.isAvailable())
             .opacity(button.isAvailable() ? 1 : 0.4)
             .onHover { hovering = $0 }
