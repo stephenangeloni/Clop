@@ -2097,7 +2097,7 @@ struct AboutSettingsView: View {
                 .frame(width: 128, height: 128)
             Text("Polc")
                 .round(TextSize.display, weight: .black)
-                .padding(.top, -4)
+                .padding(.top, -Space.xs)
                 .searchAnchor("about.about.version")
             Text("v\(Bundle.main.version)")
                 .mono(TextSize.body, weight: .regular)
