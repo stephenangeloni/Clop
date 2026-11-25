@@ -69,7 +69,14 @@ test_link_from_another_tab_scrolls_to_its_section() {
     check "link from another tab scrolls to Automation" "shows_within 5 'Automatically run actions'"
 }
 
+test_resize_keys_show_percentages_by_position() {
+    open_link "polc://settings/keys/keys.resizekeys.quickResizeKeys"
+    check "resize keys show 10%" "shows_within 5 '10%'"
+    check "resize keys show 90%" "shows_within 5 '90%'"
+}
+
 test_sidebar_shows_full_names
 test_link_from_another_tab_scrolls_to_its_section
+test_resize_keys_show_percentages_by_position
 
 [ $failures -eq 0 ] && echo "all passed" || { echo "$failures failed"; exit 1; }

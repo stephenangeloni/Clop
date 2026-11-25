@@ -1992,7 +1992,7 @@ struct KeysSettingsView: View {
                 .buttonStyle(
                     ToggleButton(isOn: .oneway { quickResizeKeys.contains(key) })
                 )
-                Text("\(number)0%")
+                Text("\(key.QWERTYCharacter)0%")
                     .mono(TextSize.caption)
                     .foregroundColor(.secondary)
             }
