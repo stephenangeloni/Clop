@@ -106,8 +106,10 @@ extension View {
     @ViewBuilder func glassOrMaterial(in shape: some Shape) -> some View {
         if #available(macOS 26.0, *) {
             glassEffect(.regular, in: shape)
+                .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
         } else {
             background(.ultraThinMaterial, in: shape)
+                .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
         }
     }
 }

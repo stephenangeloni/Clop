@@ -40,9 +40,11 @@ extension View {
                 .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
         } else if #available(macOS 26.0, *) {
             glassEffect(.regular, in: shape)
+                .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
                 .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
         } else {
             background(.ultraThickMaterial, in: shape)
+                .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
                 .overlay(shape.strokeBorder(Color.primary.opacity(0.15), lineWidth: 0.5))
                 .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
         }
@@ -54,9 +56,11 @@ extension View {
             if #available(macOS 26.0, *) {
                 background(.red.opacity(0.5), in: shape)
                     .glassEffect(.regular, in: shape)
+                    .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
             } else {
                 background(.red.opacity(0.5), in: shape)
                     .background(.thinMaterial, in: shape)
+                    .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
             }
         } else {
             // Semi-opaque backing so the panel reads against the desktop instead of being see-through
@@ -64,9 +68,11 @@ extension View {
             if #available(macOS 26.0, *) {
                 background(Color.bg.primary.opacity(0.75), in: shape)
                     .glassEffect(.regular, in: shape)
+                    .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
             } else {
                 background(Color.bg.primary.opacity(0.75), in: shape)
                     .background(.thinMaterial, in: shape)
+                    .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
             }
         }
     }
@@ -133,10 +139,12 @@ private struct GlassChipFill: ViewModifier {
             content
                 .background(Color.inverted.opacity(tintOpacity), in: shape)
                 .glassEffect(.regular, in: shape)
+                .opaqueWhenReducingTransparency(Color.bg.warm, in: shape)
         } else {
             content
                 .background(Color.inverted.opacity(tintOpacity), in: shape)
                 .background(.thinMaterial, in: shape)
+                .opaqueWhenReducingTransparency(Color.bg.warm, in: shape)
         }
     }
 }
@@ -647,7 +655,7 @@ struct NameFormatPill: View {
         // thumbnail; at rest the two faint-accent chips carry their own fill, with no warm pill behind.
         .background {
             if optimiser.editingFilename {
-                Capsule().fill(.regularMaterial)
+                Capsule().fill(.regularMaterial).opaqueWhenReducingTransparency(Color.bg.warm, in: Capsule())
                 Capsule().fill(Color.bg.warm.opacity(0.92))
                 Capsule().stroke(Color.primary.opacity(0.12), lineWidth: 0.5)
             }

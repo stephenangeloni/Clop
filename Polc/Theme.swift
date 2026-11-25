@@ -98,6 +98,26 @@ enum PipelineTheme {
     }
 }
 
+private struct OpaqueWhenReducingTransparency<S: Shape>: ViewModifier {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    let fill: Color
+    let shape: S
+
+    func body(content: Content) -> some View {
+        content.background {
+            if reduceTransparency {
+                shape.fill(fill)
+            }
+        }
+    }
+}
+
+extension View {
+    func opaqueWhenReducingTransparency(_ fill: Color, in shape: some Shape) -> some View {
+        modifier(OpaqueWhenReducingTransparency(fill: fill, shape: shape))
+    }
+}
+
 enum TextSize {
     static let micro: CGFloat = 9
     static let caption: CGFloat = 10

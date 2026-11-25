@@ -132,8 +132,10 @@ private struct GlassBackground<S: Shape>: ViewModifier {
     func body(content: Content) -> some View {
         if #available(macOS 26.0, *) {
             content.glassEffect(.regular, in: shape)
+                .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
         } else {
             content.background(.thinMaterial, in: shape)
+                .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
         }
     }
 }
