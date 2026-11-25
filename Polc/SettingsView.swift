@@ -3386,7 +3386,7 @@ struct SkipSliderKnob: View {
         Circle()
             .fill(Color.white)
             .overlay(Circle().strokeBorder(Color.black.opacity(0.18), lineWidth: 0.5))
-            .shadow(color: .black.opacity(0.25), radius: 1, y: 0.5)
+            .themeShadow(.subtle)
     }
 }
 

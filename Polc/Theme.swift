@@ -118,6 +118,48 @@ extension View {
     }
 }
 
+enum Shadow {
+    case flat
+    case subtle
+    case raised
+    case legibility
+    case savingGlow
+
+    fileprivate var color: Color {
+        switch self {
+        case .flat: .clear
+        case .subtle: .black.opacity(0.2)
+        case .raised: .black.opacity(0.3)
+        case .legibility: .black.opacity(0.6)
+        case .savingGlow: Palette.saving
+        }
+    }
+
+    fileprivate var radius: CGFloat {
+        switch self {
+        case .flat: 0
+        case .subtle: 2
+        case .raised: 6
+        case .legibility: 1.5
+        case .savingGlow: 3
+        }
+    }
+
+    fileprivate var y: CGFloat {
+        switch self {
+        case .subtle: 1
+        case .raised: 3
+        case .flat, .legibility, .savingGlow: 0
+        }
+    }
+}
+
+extension View {
+    func themeShadow(_ shadow: Shadow) -> some View {
+        self.shadow(color: shadow.color, radius: shadow.radius, y: shadow.y)
+    }
+}
+
 enum TextSize {
     static let caption = NSFont.preferredFont(forTextStyle: .caption1).pointSize
     static let subheadline = NSFont.preferredFont(forTextStyle: .subheadline).pointSize

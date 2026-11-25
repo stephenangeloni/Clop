@@ -280,7 +280,7 @@ struct CompactResult: View {
                     }
                 }
                 .font(.system(size: TextSize.title2, weight: .medium))
-                .shadow(color: .black.opacity(0.15), radius: 1, y: 0.5)
+                .themeShadow(.subtle)
             }
             .accessibilityLabel("Select")
             .accessibilityToggle(isOn: selected)
@@ -733,7 +733,7 @@ struct DragPilePreview: View {
                         .frame(width: 54, height: 54)
                         .clipShape(RoundedRectangle(cornerRadius: Radius.small, style: .continuous))
                         .overlay(RoundedRectangle(cornerRadius: Radius.small, style: .continuous).stroke(.white.opacity(0.5), lineWidth: 1))
-                        .shadow(color: .black.opacity(0.3), radius: 3, y: 2)
+                        .themeShadow(.subtle)
                         .rotationEffect(.degrees(Double(i) * 5 - 7))
                         .offset(x: Double(i) * 6, y: Double(i) * -3)
                 }
@@ -742,7 +742,7 @@ struct DragPilePreview: View {
                 .font(.system(size: TextSize.subheadline, weight: .heavy, design: .rounded))
                 .foregroundColor(.white)
                 .frame(minWidth: 20, minHeight: 20)
-                .background(Circle().fill(Color.accentColor).shadow(color: .black.opacity(0.3), radius: 2))
+                .background(Circle().fill(Color.accentColor).themeShadow(.subtle))
                 .offset(x: 32, y: -30)
         }
         .frame(width: 96, height: 80)
@@ -1006,7 +1006,7 @@ struct CompactResultList: View {
             RoundedRectangle(cornerRadius: Radius.medium, style: .continuous)
                 .stroke(Color.primary.opacity(0.12), lineWidth: 1)
         )
-        .shadow(radius: preview ? 0 : 10)
+        .themeShadow(preview ? .flat : .raised)
         .opacity(showList ? 1 : 0)
         .allowsHitTesting(showList)
     }
@@ -1170,7 +1170,7 @@ struct DragPreview: View {
                     .frame(width: 64, height: 64)
                     .clipShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).stroke(.white.opacity(0.5), lineWidth: 1))
-                    .shadow(color: .black.opacity(0.3), radius: 3, y: 2)
+                    .themeShadow(.subtle)
             } else {
                 SwiftUI.Image(systemName: optimiser.type.systemImage)
                     .font(.system(size: IconSize.xlarge))

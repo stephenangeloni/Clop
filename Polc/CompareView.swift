@@ -487,7 +487,7 @@ struct CompareView: View {
                     .background(
                         Capsule()
                             .fill(.ultraThickMaterial)
-                            .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+                            .themeShadow(.subtle)
                     )
             }
         }
@@ -645,7 +645,7 @@ struct CompareView: View {
                         .font(.system(size: IconSize.hero))
                         .symbolRenderingMode(.hierarchical)
                         .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.4), radius: 6, y: 2)
+                        .themeShadow(.raised)
                 }
                 .accessibilityLabel(audioController.isPlaying(side) ? "Pause" : "Play")
                 .buttonStyle(.plain)
@@ -740,12 +740,12 @@ struct CompareView: View {
         Rectangle()
             .fill(Color.white.opacity(0.9))
             .frame(width: 2, height: height)
-            .shadow(color: .black.opacity(0.55), radius: 3)
+            .themeShadow(.legibility)
             .overlay(
                 ZStack {
                     Circle()
                         .fill(.regularMaterial)
-                        .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
+                        .themeShadow(.subtle)
                     SwiftUI.Image(systemName: "arrow.left.and.right")
                         .font(.system(size: TextSize.caption, weight: .bold))
                         .foregroundColor(.primary)

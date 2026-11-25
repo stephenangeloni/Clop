@@ -37,7 +37,7 @@ struct DropZoneDemoAnimationView: View {
                     Rectangle()
                         .fill(Color.white)
                         .scaleEffect(x: 1.15, y: 1.2)
-                        .shadow(radius: 8)
+                        .themeShadow(.raised)
                 )
                 .scaledToFill()
                 .frame(width: 70, height: 50)

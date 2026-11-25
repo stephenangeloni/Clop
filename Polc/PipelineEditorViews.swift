@@ -39,7 +39,7 @@ struct CompletionPanel: View {
         .background(
             RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                 .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.12), radius: 6, y: 2)
+                .themeShadow(.raised)
         )
         .overlay(
             RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
@@ -282,7 +282,7 @@ struct PipelineFlagSegmentedToggle: View {
                             .background {
                                 if isSelected {
                                     Capsule().fill(Color.bg.warm)
-                                        .shadow(color: .black.opacity(0.18), radius: 1.5, y: 0.5)
+                                        .themeShadow(.subtle)
                                 } else if isHovered {
                                     Capsule().fill(tint.opacity(0.18))
                                 }

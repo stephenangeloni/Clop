@@ -466,7 +466,7 @@ struct HorizontalDownscaleSlider: View {
                 Circle()
                     .fill(.white)
                     .frame(width: knobSize, height: knobSize)
-                    .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                    .themeShadow(.subtle)
                     .overlay(alignment: .top) {
                         VStack(spacing: 0) {
                             Text(downscaleFactorLabel(displayFactor))
@@ -480,13 +480,13 @@ struct HorizontalDownscaleSlider: View {
                         .padding(.horizontal, Space.xs)
                         .padding(.vertical, Space.xs)
                         .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
-                        .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+                        .themeShadow(.subtle)
                         .offset(y: -knobSize - 10)
                     }
                     .position(x: knobX, y: centerY)
             }
             .background(.ultraThickMaterial, in: Capsule())
-            .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+            .themeShadow(.subtle)
         }
         .overlay(
             SliderEventOverlay(
@@ -566,7 +566,7 @@ struct HorizontalCoverArtSlider: View {
                 Circle()
                     .fill(.white)
                     .frame(width: knobSize, height: knobSize)
-                    .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                    .themeShadow(.subtle)
                     .overlay(alignment: .top) {
                         VStack(spacing: 0) {
                             Text(downscaleFactorLabel(displayFactor))
@@ -581,13 +581,13 @@ struct HorizontalCoverArtSlider: View {
                         .padding(.horizontal, Space.xs)
                         .padding(.vertical, Space.xs)
                         .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
-                        .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+                        .themeShadow(.subtle)
                         .offset(y: -knobSize - 10)
                     }
                     .position(x: knobX, y: centerY)
             }
             .background(.ultraThickMaterial, in: Capsule())
-            .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+            .themeShadow(.subtle)
         }
         .overlay(
             SliderEventOverlay(
@@ -955,7 +955,7 @@ struct HorizontalCompressionSlider: View {
                 Circle()
                     .fill(.white)
                     .frame(width: knobSize, height: knobSize)
-                    .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                    .themeShadow(.subtle)
                     .overlay {
                         VStack(spacing: 1) {
                             Text(displayLabel)
@@ -967,13 +967,13 @@ struct HorizontalCompressionSlider: View {
                         .padding(.horizontal, Space.xs)
                         .padding(.vertical, Space.xs)
                         .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
-                        .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+                        .themeShadow(.subtle)
                         .offset(y: -knobSize / 2 - 16)
                     }
                     .position(x: knobX, y: centerY)
             }
             .background(.ultraThickMaterial, in: Capsule())
-            .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+            .themeShadow(.subtle)
         }
         .overlay(
             SliderEventOverlay(
@@ -1069,7 +1069,7 @@ struct CardSlider: View {
                         Capsule().fill(.primary.opacity(0.4)).frame(width: 1.5, height: 6).position(x: left + min(max(a, 0), 1) * w, y: cy)
                     }
                     Circle().fill(.white).frame(width: knob, height: knob)
-                        .shadow(color: .black.opacity(0.35), radius: 1.5, y: 0.5)
+                        .themeShadow(.subtle)
                         .position(x: left + p * w, y: cy)
                 }
             }
@@ -1310,7 +1310,7 @@ struct HorizontalPDFDPISlider: View {
                     Circle()
                         .fill(.white)
                         .frame(width: knobSize, height: knobSize)
-                        .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                        .themeShadow(.subtle)
                         .overlay(alignment: .top) {
                             Text("\(currentDPI) DPI")
                                 .font(.system(size: TextSize.subheadline, weight: .heavy, design: .rounded))
@@ -1319,14 +1319,14 @@ struct HorizontalPDFDPISlider: View {
                                 .padding(.horizontal, Space.xs)
                                 .padding(.vertical, Space.xs)
                                 .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
-                                .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+                                .themeShadow(.subtle)
                                 .offset(y: -knobSize - 4)
                         }
                         .position(x: knobX, y: centerY)
                 }
             }
             .background(.ultraThickMaterial, in: Capsule())
-            .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+            .themeShadow(.subtle)
         }
         .overlay(
             SliderEventOverlay(
@@ -1962,7 +1962,7 @@ struct AggressiveOptimisationButton: View {
                     .foregroundColor(optimiser.aggressive ? Palette.savingOnThumbnail : nil)
                     // The pale "glow" yellow washes out on light thumbnails/backgrounds; a dark drop
                     // shadow keeps it legible on any background without losing the yellow identity.
-                    .shadow(color: optimiser.aggressive ? .black.opacity(0.6) : .clear, radius: 1, y: 0.5)
+                    .themeShadow(optimiser.aggressive ? .legibility : .flat)
             }
         )
         .contentShape(Rectangle())
@@ -2830,7 +2830,7 @@ struct ActionButtons: View {
             Capsule()
                 .fill(Color(light: Color.white, dark: Color(white: 0.19)))
                 .overlay(Capsule().strokeBorder(Color(light: Color.black.opacity(0.1), dark: Color.white.opacity(0.12)), lineWidth: 1))
-                .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
+                .themeShadow(.subtle)
                 .opacity(showBg ? 1 : 0)
         }
         .animation(.easeOut(duration: 0.15), value: revealed)

@@ -522,7 +522,7 @@ struct DropZoneView: View {
         .overlay {
             if !dragManager.showPresetZones {
                 DROPZONE_SHAPE.stroke(Color.bg.primary.opacity(0.1), lineWidth: 4)
-                    .shadow(color: Palette.saving, radius: 3)
+                    .themeShadow(.savingGlow)
                     .allowsHitTesting(false)
             }
         }

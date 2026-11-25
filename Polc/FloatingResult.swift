@@ -37,16 +37,16 @@ extension View {
         if preview {
             background(Color.white, in: shape)
                 .overlay(shape.strokeBorder(Color.black.opacity(0.15), lineWidth: 0.5))
-                .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+                .themeShadow(.subtle)
         } else if #available(macOS 26.0, *) {
             glassEffect(.regular, in: shape)
                 .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
-                .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+                .themeShadow(.subtle)
         } else {
             background(.ultraThickMaterial, in: shape)
                 .opaqueWhenReducingTransparency(Color.bg.primary, in: shape)
                 .overlay(shape.strokeBorder(Color.primary.opacity(0.15), lineWidth: 0.5))
-                .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+                .themeShadow(.subtle)
         }
     }
 
@@ -113,7 +113,7 @@ struct FloatingActionChip: ViewModifier {
             .padding(.horizontal, Space.s)
             .modifier(GlassChipFill(shape: shape, tintOpacity: hovered ? (pressed ? 1 : 0.9) : 0))
             .overlay(shape.strokeBorder(Palette.ink.opacity(hovered ? 0 : 1), lineWidth: hovered ? 0 : 1.5))
-            .shadow(color: .black.opacity(hovered ? 0.16 : 0), radius: 3, y: 1)
+            .themeShadow(hovered ? .subtle : .flat)
             .scaleEffect(pressed ? 0.96 : 1)
             .contentShape(shape)
             // Border and text keep their full colour; the whole chip is dimmed at rest for a subdued look.
@@ -1031,7 +1031,7 @@ struct FormatBarSegmentStyle: ButtonStyle {
                     // Bright ring + shadow so the hovered chip reads lit-up, not washed-out/disabled.
                     chip.fill(Color.white.opacity(configuration.isPressed ? 0.45 : 0.28))
                         .overlay(chip.strokeBorder(Color.white.opacity(0.85), lineWidth: 1))
-                        .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                        .themeShadow(.subtle)
                         .padding(Space.xs)
                 }
             }
@@ -1258,7 +1258,7 @@ struct FloatingResult: View {
         .padding(.horizontal, Space.m)
         .padding(.vertical, Space.s)
         .noThumbBackground(isError: optimiser.error != nil)
-        .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
+        .themeShadow(.raised)
         .padding(.top, Space.xs)
         .padding(.bottom, Space.xs)
         .transition(.opacity.animation(.easeOut(duration: 0.2)))
@@ -1319,7 +1319,7 @@ struct FloatingResult: View {
                 .background(
                     VisualEffectBlur(material: .popover, blendingMode: .withinWindow, state: .active, appearance: .vibrantDark)
                         .clipShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
-                        .shadow(radius: 2)
+                        .themeShadow(.subtle)
                 )
 
         } else {
@@ -1562,7 +1562,7 @@ struct FloatingResult: View {
         // NOTE: no card-wide white foreground — controls sit on light warm material and must use
         // .primary (adaptive). White is applied only to content over the dark thumbnail below.
         .transition(.opacity.animation(.easeOut(duration: 0.2)))
-        .shadow(color: .black.opacity(0.4), radius: 12, x: 0, y: 8)
+        .themeShadow(.raised)
     }
 
     var body: some View {
@@ -1585,7 +1585,7 @@ struct FloatingResult: View {
                 .frame(width: 64, height: 64)
                 .clipShape(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: Radius.medium, style: .continuous).stroke(.white.opacity(0.5), lineWidth: 1))
-                .shadow(color: .black.opacity(0.3), radius: 3, y: 2)
+                .themeShadow(.subtle)
                 .padding(Space.s)
         } else {
             SwiftUI.Image(systemName: "doc.fill")

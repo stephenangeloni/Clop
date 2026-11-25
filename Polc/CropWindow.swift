@@ -221,7 +221,7 @@ struct CropSelectionOverlay: View {
                 RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                     .strokeBorder(.white.opacity(0.9), lineWidth: 1)
             )
-            .shadow(color: .black.opacity(0.55), radius: 6, y: 2)
+            .themeShadow(.raised)
             .position(x: disp.midX, y: disp.midY)
             .opacity(interacting ? 0 : 1)
             .animation(.easeOut(duration: 0.15).delay(interacting ? 0 : 0.3), value: interacting)
@@ -242,7 +242,7 @@ struct CropSelectionOverlay: View {
     private var selectionFrame: some View {
         RoundedRectangle(cornerRadius: cornerRadius)
             .stroke(.white, lineWidth: frameStyle == .device ? 3 : (frameStyle == .paper ? 2.5 : 1.5))
-            .shadow(color: .black.opacity(0.6), radius: 1)
+            .themeShadow(.legibility)
             .frame(width: disp.width, height: disp.height)
             .position(x: disp.midX, y: disp.midY)
             .allowsHitTesting(false)
@@ -317,7 +317,7 @@ struct CropSelectionOverlay: View {
                     )
             }
         }
-        .shadow(color: .black.opacity(0.7), radius: 1.5)
+        .themeShadow(.legibility)
         .frame(width: 26, height: 26)
         .contentShape(Rectangle())
     }
@@ -728,7 +728,7 @@ struct CropView: View {
                                     onReset: { reset() }
                                 )
                             )
-                            .shadow(color: .black.opacity(0.3), radius: 6, y: 3)
+                            .themeShadow(.raised)
                     }
                 } else {
                     ProgressView().controlSize(.large)
@@ -1055,7 +1055,7 @@ struct CropView: View {
         // flatten canvas + page into one layer, otherwise .shadow is applied to
         // each subview separately and the page gets its own shadow on the canvas
         .compositingGroup()
-        .shadow(color: .black.opacity(0.3), radius: 6, y: 3)
+        .themeShadow(.raised)
     }
 
     func sectionHeader(_ title: String) -> some View {
