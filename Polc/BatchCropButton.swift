@@ -96,7 +96,7 @@ struct BatchCropButton: View {
                     .kerning(0.7)
                     .foregroundColor(.secondary)
                     .padding(.bottom, 1)
-                Grid(alignment: .leading, horizontalSpacing: 4, verticalSpacing: 4) {
+                Grid(alignment: .leading, horizontalSpacing: Space.xs, verticalSpacing: Space.xs) {
                     GridRow {
                         ForEach(DEFAULT_CROP_ASPECT_RATIOS[0 ..< 5].map { $0.withOrientation(cropOrientation) }) { size in
                             aspectRatioButton(size)

@@ -62,13 +62,11 @@ class TextDebounce: ObservableObject {
 /// A muted, earthy sidebar colour with a light/dark pair: deeper on the light
 /// sidebar, lifted on the dark one so the glyph keeps its weight either way.
 /// Skin / stone / clay / sage / terracotta tones instead of saturated system
-/// colours, shared across the lowtechguys settings sidebars (keep rcmd, Lunar,
-/// Cling, Polc, Pipiri, Crank in step when the palette changes).
+/// colours. File-type tabs use the file-type colours from `Palette` instead.
 struct SidebarHue {
     static let sage = rgb(0.39, 0.49, 0.26, 0.60, 0.66, 0.50)
     static let dustyBlue = rgb(0.24, 0.43, 0.63, 0.53, 0.64, 0.75)
     static let periwinkle = rgb(0.41, 0.37, 0.68, 0.62, 0.60, 0.80)
-    static let terracotta = rgb(0.74, 0.35, 0.23, 0.82, 0.52, 0.40)
     static let skin = rgb(0.74, 0.47, 0.30, 0.80, 0.64, 0.52)
     static let plum = rgb(0.58, 0.30, 0.55, 0.68, 0.55, 0.67)
     static let mutedTeal = rgb(0.15, 0.50, 0.45, 0.47, 0.68, 0.63)
@@ -2139,6 +2137,7 @@ struct AboutSettingsView: View {
             Text("Polc")
                 .round(TextSize.display, weight: .black)
                 .padding(.top, -4)
+                .searchAnchor("about.about.version")
             Text("v\(Bundle.main.version)")
                 .mono(TextSize.body, weight: .regular)
                 .foregroundColor(.secondary)
@@ -2183,6 +2182,8 @@ struct DropZoneSettingsView: View {
     @Default(.floatingResultsCorner) var floatingResultsCorner
     @Default(.useBatchModeForFolders) var useBatchModeForFolders
     @Default(.batchModeFileCountThreshold) var batchModeFileCountThreshold
+
+    @ObservedObject var svm = settingsViewManager
 
     var toggles: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -2229,6 +2230,18 @@ struct DropZoneSettingsView: View {
     }
 
     var body: some View {
+        ScrollViewReader { proxy in
+            dropZonePage
+                .onChange(of: svm.editingPresetZoneID) { id in
+                    guard let id else { return }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation { proxy.scrollTo("editor-\(id)", anchor: .center) }
+                    }
+                }
+        }
+    }
+
+    var dropZonePage: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: Space.xl) {
                 HStack(alignment: .center, spacing: Space.xxl) {
@@ -2243,15 +2256,20 @@ struct DropZoneSettingsView: View {
 
                 Divider()
 
+                PresetZonesSection()
+                    .padding(.horizontal, Space.xl)
+                    .frame(maxWidth: 780)
+                    .frame(maxWidth: .infinity)
+                    .id("presetZones")
+
+                Divider()
+
                 VStack(alignment: .leading, spacing: 0) {
                     SectionHeader(title: "Batch mode", subtitle: "Process a large drop in a fast native window instead of one floating result per file")
                     VStack(alignment: .leading, spacing: Space.m) {
                         Toggle(isOn: $useBatchModeForFolders) {
                             Text("Use batch mode for large drops").regular(TextSize.body)
-                                + Text("\nDropping many files at once (or a folder with many files) opens a single batch window that optimises them all efficiently. Originals are backed up first and can be restored.").round(
-                                    11,
-                                    weight: .regular
-                                ).foregroundColor(.secondary)
+                                + Text("\nDropping many files at once (or a folder with many files) opens a single batch window that optimises them all efficiently. Originals are backed up first and can be restored.").round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
                         }
                         .searchAnchor("dropzone.batchmode.useBatchModeForFolders")
                         HStack {
@@ -2295,7 +2313,7 @@ struct DropZoneSettingsView: View {
     }
 }
 
-struct PresetZonesSettingsView: View {
+struct PresetZonesSection: View {
     @Default(.enableDragAndDrop) var enableDragAndDrop
     @Default(.onlyShowPresetZonesOnControlTapped) var onlyShowPresetZonesOnControlTapped
     @Default(.presetZones) var presetZones
@@ -2303,7 +2321,7 @@ struct PresetZonesSettingsView: View {
     @ObservedObject var svm = settingsViewManager
 
     var previews: some View {
-        Grid(horizontalSpacing: 16, verticalSpacing: 14) {
+        Grid(horizontalSpacing: Space.xl, verticalSpacing: Space.l) {
             GridRow {
                 zonePreview(.image)
                 zonePreview(.video)
@@ -2318,39 +2336,30 @@ struct PresetZonesSettingsView: View {
     }
 
     var body: some View {
-        ScrollViewReader { proxy in
-            Form {
-                Section(header: SectionHeader(title: "Showing preset zones", subtitle: "How the preset zones reveal themselves over the drop zone")) {
-                    Picker("Show preset zones by holding or tapping the **⌃ Control** key", selection: $onlyShowPresetZonesOnControlTapped) {
-                        Text("Hold").tag(false)
-                        Text("Tap").tag(true)
-                    }
-                    .pickerStyle(.segmented)
-                    .searchAnchor("presetZones.showingpresetzones.onlyShowPresetZonesOnControlTapped")
+        VStack(alignment: .leading, spacing: 0) {
+            SectionHeader(title: "Preset zones", subtitle: "Hold or tap ⌃ Control while dragging to show a zone per file type. Click a zone to assign or create a pipeline.")
+            VStack(alignment: .leading, spacing: Space.m) {
+                Picker("Show preset zones by holding or tapping the **⌃ Control** key", selection: $onlyShowPresetZonesOnControlTapped) {
+                    Text("Hold").tag(false)
+                    Text("Tap").tag(true)
                 }
+                .pickerStyle(.segmented)
+                .searchAnchor("presetZones.showingpresetzones.onlyShowPresetZonesOnControlTapped")
 
-                Section(header: SectionHeader(title: "Preset zones", subtitle: "Click a zone to assign or create a pipeline. Drag files onto a zone to run its actions.")) {
-                    previews
+                previews
+                    .searchAnchor("presetZones.presetzones.presetZones")
 
-                    if let id = svm.editingPresetZoneID, let zone = presetZones.first(where: { $0.id == id }) {
-                        PresetZoneRow(zone: zone) { svm.editingPresetZoneID = nil }
-                            .id("editor-\(id)")
-                            .padding(.top, Space.s)
-                    }
-                }
-                .searchAnchor("presetZones.presetzones.presetZones")
-            }
-            .padding(Space.xs)
-            .disabled(!enableDragAndDrop)
-            .saturation(enableDragAndDrop ? 1 : 0.5)
-            .onChange(of: svm.editingPresetZoneID) { id in
-                guard let id else { return }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    withAnimation { proxy.scrollTo("editor-\(id)", anchor: .center) }
+                if let id = svm.editingPresetZoneID, let zone = presetZones.first(where: { $0.id == id }) {
+                    PresetZoneRow(zone: zone) { svm.editingPresetZoneID = nil }
+                        .id("editor-\(id)")
+                        .padding(.top, Space.s)
                 }
             }
+            .padding(.horizontal, Space.xl)
+            .padding(.vertical, Space.m)
         }
-        .hfill()
+        .disabled(!enableDragAndDrop)
+        .saturation(enableDragAndDrop ? 1 : 0.5)
     }
 
     func zonePreview(_ type: PolcFileType) -> some View {
@@ -3040,7 +3049,7 @@ struct SettingsSidebarRow: View {
 
 struct SettingsView: View {
     enum Tabs: Int, Hashable, CaseIterable, Identifiable {
-        case general, clipboard, files, video, audio, images, pdf, dropzone, presetZones, floating, keys, pipelines, automation, mcp, about
+        case general, clipboard, files, video, audio, images, pdf, dropzone, floating, keys, pipelines, automation, mcp, about
 
         var id: Int {
             rawValue
@@ -3064,7 +3073,6 @@ struct SettingsView: View {
             case .images: "Images"
             case .pdf: "PDF"
             case .dropzone: "Drop Zone"
-            case .presetZones: "Preset Zones"
             case .floating: "Floating Results"
             case .keys: "Keyboard Shortcuts"
             case .pipelines: "Pipelines"
@@ -3084,7 +3092,6 @@ struct SettingsView: View {
             case .images: "photo"
             case .pdf: "doc"
             case .dropzone: "square.stack.3d.up"
-            case .presetZones: "square.grid.2x2"
             case .floating: "rectangle.stack"
             case .keys: "command.square"
             case .pipelines: "arrow.triangle.branch"
@@ -3099,25 +3106,24 @@ struct SettingsView: View {
             case .general: .stone
             case .clipboard: .dustyBlue
             case .files: .skin
-            case .video: .periwinkle
-            case .audio: .plum
-            case .images: .sage
-            case .pdf: .terracotta
-            case .dropzone: .mutedTeal
-            case .presetZones: .ochre
+            case .video: SidebarHue(light: Palette.video, dark: Palette.video)
+            case .audio: SidebarHue(light: Palette.audio, dark: Palette.audio)
+            case .images: SidebarHue(light: Palette.image, dark: Palette.image)
+            case .pdf: SidebarHue(light: Palette.pdf, dark: Palette.pdf)
+            case .dropzone: .ochre
             case .floating: .dustyRose
             case .keys: .clay
             case .pipelines: .periwinkle
             case .automation: .sage
             case .mcp: .mutedTeal
-            case .about: .dustyRose
+            case .about: .plum
             }
         }
     }
 
     static let topTabs: [Tabs] = [.general, .clipboard, .files]
     static let fileTypeTabs: [Tabs] = [.video, .audio, .images, .pdf]
-    static let dropTabs: [Tabs] = [.dropzone, .presetZones, .floating]
+    static let dropTabs: [Tabs] = [.dropzone, .floating]
     static let automationTabs: [Tabs] = [.keys, .pipelines, .automation, .mcp]
     static let supportTabs: [Tabs] = [.about]
 
@@ -3348,7 +3354,6 @@ struct SettingsView: View {
         case .images: ImagesSettingsView()
         case .pdf: PDFSettingsView()
         case .dropzone: DropZoneSettingsView()
-        case .presetZones: PresetZonesSettingsView()
         case .floating: FloatingSettingsView()
         case .keys: KeysSettingsView()
         case .pipelines: PipelinesSettingsView()

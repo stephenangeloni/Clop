@@ -195,7 +195,7 @@ struct PipelineEditorRow: View {
             }
 
             if case .dropZone = source {
-                Button(action: { settingsViewManager.tab = .presetZones }) {
+                Button(action: { settingsViewManager.tab = .dropzone }) {
                     HStack(spacing: Space.xxs) {
                         Text("Want different pipelines for specific drop targets?")
                         Text("Use Preset Zones")
@@ -1425,7 +1425,7 @@ struct SavedPipelineRow: View {
             svm.scrollToFileType = ft
             svm.highlightFolder = HighlightedFolderRequest(fileType: ft, folder: path)
         case let .presetZone(zoneID):
-            svm.tab = .presetZones
+            svm.tab = .dropzone
             svm.editingPresetZoneID = zoneID
         }
     }
@@ -1484,7 +1484,7 @@ struct PipelinesSettingsView: View {
                 Section(header: SectionHeader(
                     title: "Saved Pipelines",
                     subtitle: "Reusable pipelines available in automation, preset zones and right-click menus"
-                )) {
+                ).searchAnchor("pipelines.savedpipelines.library")) {
                     ForEach(Self.sections, id: \.0) { label, fileType in
                         let pipelines = savedPipelines.filter { $0.fileType == fileType }
                         let headerColor: Color = fileType?.color ?? .secondary
@@ -1593,7 +1593,7 @@ struct AutomationSettingsView: View {
                 Section(header: SectionHeader(
                     title: "Automation",
                     subtitle: "Automatically run actions on files after (or before) optimisation: convert, crop, copy, rename and more\nType an action name and press Tab to fill in, Enter to finish"
-                )) {
+                ).searchAnchor("automation.automation.pipelines")) {
                     PipelineTypeSectionView(fileType: .image, pipelines: $imagePipelines)
                         .id(PolcFileType.image)
                     Divider()

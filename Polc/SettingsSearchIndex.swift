@@ -316,7 +316,7 @@ enum SettingsSearchIndex {
             id: "presetZones.showingpresetzones.onlyShowPresetZonesOnControlTapped", keys: ["onlyShowPresetZonesOnControlTapped"],
             title: "Show preset zones by holding or tapping Control",
             subtitle: "Hold reveals them while the key is down; tap leaves them up",
-            keywords: [], tab: .presetZones, section: "Showing preset zones"
+            keywords: [], tab: .dropzone, section: "Showing preset zones"
         ),
 
         SettingEntry(
@@ -826,8 +826,26 @@ enum SettingsSearchIndex {
         SettingEntry(
             id: "presetZones.presetzones.presetZones", keys: [],
             title: "Preset zones",
-            subtitle: "Click a zone to assign or create a pipeline. Drag files onto a zone to run its actions.",
-            keywords: ["drop target", "quadrant", "corner", "control key", "image", "video", "audio", "pdf", "automation"], tab: .presetZones, section: "Preset zones"
+            subtitle: "Hold or tap ⌃ Control while dragging to show a zone per file type. Click a zone to assign or create a pipeline.",
+            keywords: ["drop target", "quadrant", "corner", "control key", "image", "video", "audio", "pdf", "automation"], tab: .dropzone, section: "Preset zones"
+        ),
+        SettingEntry(
+            id: "pipelines.savedpipelines.library", keys: [],
+            title: "Saved pipelines",
+            subtitle: "Reusable pipelines available in automation, preset zones and right-click menus",
+            keywords: ["library", "workflow", "steps", "create", "edit", "delete", "reuse", "actions"], tab: .pipelines, section: "Saved pipelines"
+        ),
+        SettingEntry(
+            id: "automation.automation.pipelines", keys: [],
+            title: "Automation",
+            subtitle: "Run actions on files after or before optimisation: convert, crop, copy, rename and more",
+            keywords: ["pipeline", "watch", "folder", "clipboard", "drop zone", "per type", "rules", "after optimisation", "before optimisation"], tab: .automation, section: "Automation"
+        ),
+        SettingEntry(
+            id: "about.about.version", keys: [],
+            title: "About Polc",
+            subtitle: "Version, source code and licence",
+            keywords: ["version", "source", "github", "licence", "license", "gpl", "credits", "clop"], tab: .about, section: "About"
         ),
 
     ]

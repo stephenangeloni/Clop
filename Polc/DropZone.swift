@@ -181,7 +181,7 @@ struct DropZonePresetsViewDelegate: DropDelegate {
 
         guard let preset else {
             if isNextPreset {
-                settingsViewManager.tab = .presetZones
+                settingsViewManager.tab = .dropzone
                 WM.open("settings")
                 focus()
             }
@@ -240,7 +240,7 @@ struct DropZonePresetsView: View {
     }
 
     var body: some View {
-        Grid(horizontalSpacing: 2, verticalSpacing: 2) {
+        Grid(horizontalSpacing: Space.xxs, verticalSpacing: Space.xxs) {
             GridRow {
                 zoneView(index: 0)
                 zoneView(index: 1)
@@ -398,7 +398,7 @@ struct DropZonePresetsView: View {
     /// Used by the real floating drop zone (not the settings preview): jump to the Preset Zones tab and,
     /// if a specific zone was clicked, open its editor row there.
     func zoneAction(zone: PresetZone?) {
-        settingsViewManager.tab = .presetZones
+        settingsViewManager.tab = .dropzone
         WM.open("settings")
         focus()
         if let zone {

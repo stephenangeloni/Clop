@@ -7,7 +7,7 @@ FONT_HELPERS = "regular|round|mono|heavy|medium|semibold|bold|light|black|thin|u
 FONT = re.compile(rf"(\.(?:{FONT_HELPERS})\(|\.system\(size: ?)(\d+(?:\.\d+)?)(?=[,)])")
 RADIUS = re.compile(r"(cornerRadius: ?)(\d+(?:\.\d+)?)(?=[,)])")
 PADDING = re.compile(r"(\.padding\((?:(?:\.[a-zA-Z]+|\[[^\]]*\]), ?)?)(\d+(?:\.\d+)?)(?=\))")
-SPACING = re.compile(r"(\bspacing: ?)(\d+(?:\.\d+)?)(?=[,)])")
+SPACING = re.compile(r"(\b(?:spacing|[a-z]+Spacing): ?)(\d+(?:\.\d+)?)(?=[,)])")
 
 TEXT = [(9, "micro"), (10, "caption"), (11, "subheadline"), (12, "callout"), (13, "body"), (15, "title3"), (17, "title2"), (22, "title1"), (26, "largeTitle"), (48, "display"), (64, "wordmark")]
 ICON = [(20, "medium"), (30, "large"), (40, "xlarge"), (64, "hero")]

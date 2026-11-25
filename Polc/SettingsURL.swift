@@ -44,6 +44,9 @@ enum SettingsURL {
     /// dashes ignored.
     @MainActor private static func tab(named raw: String) -> SettingsView.Tabs? {
         let wanted = normalized(raw)
+        if wanted == "presetzones" {
+            return .dropzone
+        }
         return SettingsView.Tabs.allCases.first { normalized("\($0)") == wanted || normalized($0.title) == wanted }
     }
 
