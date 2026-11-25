@@ -2097,7 +2097,7 @@ struct AboutSettingsView: View {
                 .frame(width: 128, height: 128)
             Text("Polc")
                 .round(TextSize.display, weight: .black)
-                .padding(.top, -4)
+                .padding(.top, -Space.xs)
                 .searchAnchor("about.about.version")
             Text("v\(Bundle.main.version)")
                 .mono(TextSize.body, weight: .regular)
@@ -3002,7 +3002,7 @@ struct SettingsSidebarRow: View {
 
 struct SettingsView: View {
     enum Tabs: Int, Hashable, CaseIterable, Identifiable {
-        case general, clipboard, files, video, audio, images, pdf, results, keys, pipelines, mcp, about
+        case general, clipboard, files, results, video, audio, images, pdf, keys, pipelines, mcp, about
 
         var id: Int {
             rawValue
@@ -3059,18 +3059,17 @@ struct SettingsView: View {
             case .audio: SidebarHue(light: Palette.audio, dark: Palette.audio)
             case .images: SidebarHue(light: Palette.image, dark: Palette.image)
             case .pdf: SidebarHue(light: Palette.pdf, dark: Palette.pdf)
-            case .results: .ochre
+            case .results: .mutedTeal
             case .keys: .violet
             case .pipelines: .orchid
-            case .mcp: .mutedTeal
+            case .mcp: .ochre
             case .about: .plum
             }
         }
     }
 
-    static let topTabs: [Tabs] = [.general, .clipboard, .files]
+    static let topTabs: [Tabs] = [.general, .clipboard, .files, .results]
     static let fileTypeTabs: [Tabs] = [.video, .audio, .images, .pdf]
-    static let dropTabs: [Tabs] = [.results]
     static let automationTabs: [Tabs] = [.keys, .pipelines, .mcp]
     static let supportTabs: [Tabs] = [.about]
 
@@ -3190,11 +3189,6 @@ struct SettingsView: View {
             }
             Section("File types") {
                 ForEach(Self.fileTypeTabs, id: \.self) { tab in
-                    SettingsSidebarRow(tab: tab)
-                }
-            }
-            Section("Drops & Results") {
-                ForEach(Self.dropTabs, id: \.self) { tab in
                     SettingsSidebarRow(tab: tab)
                 }
             }

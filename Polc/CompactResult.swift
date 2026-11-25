@@ -93,7 +93,7 @@ struct CompactResult: View {
     @ViewBuilder var sizeDiff: some View {
         if let oldSize = optimiser.oldSize, !selecting {
             ResolutionField(optimiser: optimiser, showCropIcon: true, size: oldSize)
-                .buttonStyle(FlatButton(color: .primary.opacity(0.06), textColor: .secondary, radius: 4, horizontalPadding: 4, verticalPadding: 1, shadowSize: 0))
+                .buttonStyle(.resolutionField(textColor: .secondary))
                 .font(Self.metricFont)
                 .foregroundColor(.secondary)
                 .fixedSize()
@@ -233,32 +233,13 @@ struct CompactResult: View {
     /// opacity only, so it never shifts the row's geometry. Replaces the old "Close"/"Stop" text pill
     /// that used to sit in the top-right.
     var closeButton: some View {
-        Button {
-            guard !preview else { return }
-            hoveredOptimiserID = nil
-            optimiser.stop(remove: !OM.compactResults || !optimiser.running, animateRemoval: true)
-            optimiser.uiStop()
-        } label: {
-            SwiftUI.Image(systemName: optimiser.running ? "stop.fill" : "xmark")
-                .font(.bold(TextSize.cardBadge))
-                .foregroundColor(.red)
-                .frame(width: 14, height: 14)
-                .background(Circle().fill(
-                    hoveringCloseStopButton
-                        ? Palette.dismissFillHovered
-                        : Palette.dismissFill
-                ))
-                .overlay(Circle().strokeBorder(Color.red, lineWidth: 1))
-        }
-        .accessibilityLabel(optimiser.running ? "Stop" : "Remove")
-        .buttonStyle(.plain)
-        .focusable(false)
-        // Only hit-testable while shown (on row hover); otherwise the invisible button would block drags
-        // from the thumbnail's top-left corner. `.offset` is render-only so the hit area sits at the corner.
-        .allowsHitTesting(hovering)
-        .opacity(hovering ? (hoveringCloseStopButton ? 1 : 0.85) : 0)
-        .onHover { hoveringCloseStopButton = $0 }
-        .help(optimiser.running ? "Stop" : "Close")
+        CloseStopButton(optimiser: optimiser, size: 16)
+            .focusable(false)
+            // Only hit-testable while shown (on row hover); otherwise the invisible button would block drags
+            // from the thumbnail's top-left corner. `.offset` is render-only so the hit area sits at the corner.
+            .allowsHitTesting(hovering)
+            .opacity(hovering ? 1 : 0)
+            .help(optimiser.running ? "Stop" : "Close")
     }
 
     /// Photos/Finder-style selection circle. Always present on selectable rows (translucent at rest,
@@ -431,7 +412,6 @@ struct CompactResult: View {
         }
     }
 
-    @State private var hoveringCloseStopButton = false
     @State private var hoveringThumb = false
 
 }
@@ -1296,7 +1276,7 @@ struct CompactPreview: View {
         noticeOpt.finish(notice: "**Paused**\nNext clipboard event will be ignored")
 
         // Record which bundled sample backs each finished card; the temp files are only written when
-        // the Floating Results settings tab appears (materializeSamples), to avoid I/O on launch.
+        // the Results settings tab appears (materializeSamples), to avoid I/O on launch.
         CompactPreview.sampleSpecs = [
             (clipEnd, "preview-sample-image", "downscale-images.webp"),
             (pdfEnd, "preview-sample-pdf", "Low-Tech Whistle.pdf"),
@@ -1369,7 +1349,7 @@ struct CompactPreview: View {
     }
 
     /// Write the bundled preview samples to the temp folder and point the cards at them. Called only
-    /// when the Floating Results settings tab appears, so we don't do this I/O on launch.
+    /// when the Results settings tab appears, so we don't do this I/O on launch.
     static func materializeSamples() {
         _ = om // ensure the (cheap, in-memory) setup ran and populated sampleSpecs
         guard !samplesMaterialized else { return }

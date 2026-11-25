@@ -68,7 +68,7 @@ struct DropZoneDemoAnimationView: View {
                     image.offset(Self.INITIAL_OFFSET)
                     imageFileWithCursor.offset(draggedFileOffset)
                 }
-                DropZoneView().padding(.horizontal, -20)
+                DropZoneView().padding(.horizontal, -Space.xl)
             }
             Text("Drag files into the **drop zone** at\nthe **\(dropZonePlace)** of your screen")
                 .multilineTextAlignment(.center)
@@ -163,14 +163,26 @@ struct OnboardingView: View {
                 HStack {
                     polcLogo.padding()
                     VStack(alignment: .trailing) {
-                        menubar
-                        Text("""
-                        Polc lives in your **menubar** and waits for you
-                        to copy an image or **screenshot to clipboard**.
-                        Copied **video**, **audio** and **PDF** files can be
-                        optimised too, in **Settings → Clipboard**.
-                        """)
-                        .font(.round(TextSize.body, weight: .regular))
+                        if showMenubarIcon {
+                            menubar
+                            Text("""
+                            Polc lives in your **menubar** and waits for you
+                            to copy an image or **screenshot to clipboard**.
+                            Copied **video**, **audio** and **PDF** files can be
+                            optimised too, in **Settings → Clipboard**.
+                            """)
+                            .font(.round(TextSize.body, weight: .regular))
+                        } else {
+                            Text("""
+                            Polc runs in the **background** and waits for you
+                            to copy an image or **screenshot to clipboard**.
+                            Its menubar icon is hidden: **open Polc again** from
+                            Finder or Spotlight to get to **Settings**.
+                            Copied **video**, **audio** and **PDF** files can be
+                            optimised too, in **Settings → Clipboard**.
+                            """)
+                            .font(.round(TextSize.body, weight: .regular))
+                        }
                         Toggle(" Enable clipboard optimiser", isOn: $enableClipboardOptimiser)
                             .font(.round(TextSize.subheadline, weight: .regular))
                             .controlSize(.mini)
@@ -288,6 +300,7 @@ struct OnboardingView: View {
     @Default(.videoDirs) private var videoDirs
     @Default(.pdfDirs) private var pdfDirs
     @Default(.audioDirs) private var audioDirs
+    @Default(.showMenubarIcon) private var showMenubarIcon
     @Default(.useClassicMenubarIcon) private var useClassicMenubarIcon
     @Default(.useGeometricMenubarIcon) private var useGeometricMenubarIcon
 }

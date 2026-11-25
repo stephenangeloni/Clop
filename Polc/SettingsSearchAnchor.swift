@@ -39,8 +39,8 @@ struct SettingsSearchAnchor: ViewModifier {
             .background(
                 RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                     .fill(Color.peach.opacity(isHighlighted ? 0.28 : 0))
-                    .padding(.horizontal, -6)
-                    .padding(.vertical, -4)
+                    .padding(.horizontal, -Space.s)
+                    .padding(.vertical, -Space.xs)
             )
             .animation(.easeOut(duration: 0.25), value: isHighlighted)
     }

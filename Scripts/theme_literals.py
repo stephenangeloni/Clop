@@ -6,7 +6,7 @@ ALLOWED = {0.0, 1.0}
 FONT_HELPERS = "regular|round|mono|heavy|medium|semibold|bold|light|black|thin|ultraLight"
 FONT = re.compile(rf"(\.(?:{FONT_HELPERS})\(|\.system\(size: ?)(\d+(?:\.\d+)?)(?=[,)])")
 RADIUS = re.compile(r"(cornerRadius: ?)(\d+(?:\.\d+)?)(?=[,)])")
-PADDING = re.compile(r"(\.padding\((?:(?:\.[a-zA-Z]+|\[[^\]]*\]), ?)?)(\d+(?:\.\d+)?)(?=\))")
+PADDING = re.compile(r"(\.padding\((?:(?:\.[a-zA-Z]+|\[[^\]]*\]), ?)?)(-?\d+(?:\.\d+)?)(?=\))")
 SPACING = re.compile(r"(\b(?:spacing|[a-z]+Spacing): ?)(\d+(?:\.\d+)?)(?=[,)])")
 SHADOW = re.compile(r"\.shadow\(")
 
