@@ -13,6 +13,22 @@ import SwiftUI
 struct DropZoneDemoAnimationView: View {
     @Binding var dropped: Bool
 
+    @Default(.floatingResultsCorner) var floatingResultsCorner
+
+    var dropZonePlace: String {
+        switch floatingResultsCorner {
+        case .bottomLeft: "bottom left corner"
+        case .bottomRight: "bottom right corner"
+        case .topLeft: "top left corner"
+        case .topRight: "top right corner"
+        case .top: "top edge"
+        case .bottom: "bottom edge"
+        case .left: "left edge"
+        case .right: "right edge"
+        case .center: "centre"
+        }
+    }
+
     var image: some View {
         VStack(spacing: Space.m) {
             SwiftUI.Image(nsImage: NSImage(resource: .sonomaShot))
@@ -54,7 +70,7 @@ struct DropZoneDemoAnimationView: View {
                 }
                 DropZoneView().padding(.horizontal, -20)
             }
-            Text("Drag files into the **drop zone** at\nthe **bottom right** corner of your screen")
+            Text("Drag files into the **drop zone** at\nthe **\(dropZonePlace)** of your screen")
                 .multilineTextAlignment(.center)
         }
         .onAppear {
