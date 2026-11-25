@@ -20,10 +20,32 @@ enum Palette {
 
     static let dismissFill = Color(light: rgb(1.0, 0.89, 0.89), dark: rgb(0.32, 0.14, 0.14))
     static let dismissFillHovered = Color(light: rgb(1.0, 0.82, 0.82), dark: rgb(0.42, 0.17, 0.17))
+}
 
-    private static func rgb(_ r: Double, _ g: Double, _ b: Double) -> Color {
-        Color(.sRGB, red: r, green: g, blue: b)
+/// A muted, earthy sidebar colour with a light/dark pair: deeper on the light
+/// sidebar, lifted on the dark one so the glyph keeps its weight either way.
+/// Skin / stone / ochre / plum tones instead of saturated system
+/// colours. File-type tabs use the file-type colours from `Palette` instead.
+struct SidebarHue {
+    static let dustyBlue = SidebarHue(light: rgb(0.24, 0.43, 0.63), dark: rgb(0.53, 0.64, 0.75))
+    static let violet = SidebarHue(light: rgb(0.52, 0.32, 0.75), dark: rgb(0.70, 0.58, 0.88))
+    static let orchid = SidebarHue(light: rgb(0.70, 0.25, 0.70), dark: rgb(0.85, 0.55, 0.85))
+    static let skin = SidebarHue(light: rgb(0.74, 0.47, 0.30), dark: rgb(0.80, 0.64, 0.52))
+    static let plum = SidebarHue(light: rgb(0.58, 0.30, 0.55), dark: rgb(0.68, 0.55, 0.67))
+    static let mutedTeal = SidebarHue(light: rgb(0.15, 0.50, 0.45), dark: rgb(0.47, 0.68, 0.63))
+    static let stone = SidebarHue(light: rgb(0.45, 0.43, 0.37), dark: rgb(0.66, 0.64, 0.57))
+    static let ochre = SidebarHue(light: rgb(0.78, 0.56, 0.16), dark: rgb(0.83, 0.68, 0.40))
+
+    let light: Color
+    let dark: Color
+
+    func color(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? dark : light
     }
+}
+
+private func rgb(_ r: Double, _ g: Double, _ b: Double) -> Color {
+    Color(.sRGB, red: r, green: g, blue: b)
 }
 
 /// Warm, cosy colour theme for the pipeline editors: Rosé Pine Dawn in light mode and a Terracotta

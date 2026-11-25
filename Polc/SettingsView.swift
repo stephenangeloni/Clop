@@ -57,38 +57,6 @@ class TextDebounce: ObservableObject {
     private var subscriptions = Set<AnyCancellable>()
 }
 
-// MARK: - SidebarHue
-
-/// A muted, earthy sidebar colour with a light/dark pair: deeper on the light
-/// sidebar, lifted on the dark one so the glyph keeps its weight either way.
-/// Skin / stone / ochre / plum tones instead of saturated system
-/// colours. File-type tabs use the file-type colours from `Palette` instead.
-struct SidebarHue {
-    static let dustyBlue = rgb(0.24, 0.43, 0.63, 0.53, 0.64, 0.75)
-    static let violet = rgb(0.52, 0.32, 0.75, 0.70, 0.58, 0.88)
-    static let orchid = rgb(0.70, 0.25, 0.70, 0.85, 0.55, 0.85)
-    static let skin = rgb(0.74, 0.47, 0.30, 0.80, 0.64, 0.52)
-    static let plum = rgb(0.58, 0.30, 0.55, 0.68, 0.55, 0.67)
-    static let mutedTeal = rgb(0.15, 0.50, 0.45, 0.47, 0.68, 0.63)
-    static let stone = rgb(0.45, 0.43, 0.37, 0.66, 0.64, 0.57)
-    static let ochre = rgb(0.78, 0.56, 0.16, 0.83, 0.68, 0.40)
-
-    let light: Color
-    let dark: Color
-
-    func color(for scheme: ColorScheme) -> Color {
-        scheme == .dark ? dark : light
-    }
-
-    private static func rgb(_ lr: Double, _ lg: Double, _ lb: Double, _ dr: Double, _ dg: Double, _ db: Double) -> SidebarHue {
-        SidebarHue(
-            light: Color(.sRGB, red: lr, green: lg, blue: lb),
-            dark: Color(.sRGB, red: dr, green: dg, blue: db)
-        )
-    }
-
-}
-
 // MARK: - SidebarIcon
 
 /// The category glyph as a soft tinted tile: the earthy hue drives both the
