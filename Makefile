@@ -9,6 +9,7 @@ lint:
 
 test:
 	Scripts/test-unregister-stray-builds.sh
+	Scripts/test-folder-merge.sh
 
 test-ui:
 	Scripts/test-settings-ui.sh

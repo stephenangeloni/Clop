@@ -25,12 +25,18 @@ enum RenameMigration {
             defaults.removeObject(forKey: "workdir")
         }
 
-        moveIfVacant(from: formerCaches, to: library.appendingPathComponent("Caches/Polc"))
-        moveIfVacant(from: library.appendingPathComponent("Application Support/Clop"), to: library.appendingPathComponent("Application Support/Polc"))
+        do {
+            try FolderMerge.move(formerCaches, into: library.appendingPathComponent("Caches/Polc"))
+            try FolderMerge.move(library.appendingPathComponent("Application Support/Clop"), into: library.appendingPathComponent("Application Support/Polc"))
+        } catch {
+            log.error("Could not move Clop's files to Polc, will retry on next launch: \(error, privacy: .public)")
+            return
+        }
         defaults.set(true, forKey: settingsCopiedKey)
     }
 
     static func afterLaunch() {
+        guard !formerAppIsRunning else { return }
         renameIgnoreFiles()
         repointFormerCommand()
         moveMCPEntries()
@@ -49,16 +55,6 @@ enum RenameMigration {
 
     private static func standardised(_ path: String) -> String {
         URL(fileURLWithPath: (path as NSString).expandingTildeInPath).standardizedFileURL.path
-    }
-
-    private static func moveIfVacant(from source: URL, to destination: URL) {
-        let fm = FileManager.default
-        guard fm.fileExists(atPath: source.path), !fm.fileExists(atPath: destination.path) else { return }
-        do {
-            try fm.moveItem(at: source, to: destination)
-        } catch {
-            log.error("Could not move \(source.path, privacy: .public) to \(destination.path, privacy: .public): \(error, privacy: .public)")
-        }
     }
 
     private static func renameIgnoreFiles() {
@@ -99,11 +95,13 @@ enum RenameMigration {
                   pointsAtFormerApp(former.command)
             else { continue }
 
-            if MCPInstaller.installedCommand(client) == nil, case .failure = MCPInstaller.install(client) {
-                continue
+            let installed: Result<Void, Error> = MCPInstaller.installedCommand(client) == nil ? MCPInstaller.install(client) : .success(())
+            switch installed.flatMap({ MCPInstaller.remove(client, named: formerServerName) }) {
+            case .success:
+                log.info("Moved the clop MCP entry in \(client.name, privacy: .public) to polc")
+            case let .failure(error):
+                log.error("Could not move the clop MCP entry in \(client.name, privacy: .public) to polc, will retry on next launch: \(error, privacy: .public)")
             }
-            MCPInstaller.remove(client, named: formerServerName)
-            log.info("Moved the clop MCP entry in \(client.name, privacy: .public) to polc")
         }
     }
 

@@ -462,6 +462,7 @@
 				FileOptimisationWatcher.swift,
 				FilePlacement.swift,
 				FloatingResult.swift,
+				FolderMerge.swift,
 				IgnoredAppsPicker.swift,
 				ImagePipeline.swift,
 				Images.swift,
