@@ -38,8 +38,8 @@ enum DebugDump {
     static let confirmationDescription = """
     Collects diagnostic data and bundles it into a single zip:
 
-      • App, license tier and system info
-      • Settings (license codes and emails are redacted)
+      • App and system info
+      • Settings (emails and secrets are redacted)
       • Current and recent optimisation results with errors
       • Saved pipelines, automations and watched folders
       • Bundled binaries health check (ffmpeg, ghostscript etc.)
@@ -50,8 +50,8 @@ enum DebugDump {
         changes (reproduce the issue while it runs)
       • Logs from the last 24 hours
 
-    The zip is written to /tmp/clop-debug and revealed in Finder so you can \
-    attach it when contacting the developer. Nothing leaves your machine on its own.
+    The zip is written to /tmp/clop-debug and revealed in Finder. \
+    Nothing leaves your machine on its own.
 
     Collection takes about a minute.
     """
@@ -189,7 +189,6 @@ enum DebugDump {
             "macOS: \(ProcessInfo.processInfo.operatingSystemVersionString)",
             "architecture: \(ARCH)",
             "locale: \(Locale.current.identifier)",
-            "license: \(proactive ? "Pro" : "Free")",
             "dump created: \(Date())",
             "",
             "workdir: \(FilePath.workdir.string)",
@@ -207,7 +206,7 @@ enum DebugDump {
     /// identity-shaped redacted. Keys still at their default value don't
     /// appear; `settings.json` shows what the user changed.
     private static func settingsSnapshot() throws -> Data {
-        let domain = UserDefaults.standard.persistentDomain(forName: Bundle.main.bundleIdentifier ?? "com.lowtechguys.Clop") ?? [:]
+        let domain = UserDefaults.standard.persistentDomain(forName: Bundle.main.bundleIdentifier ?? "com.stephenangeloni.Clop") ?? [:]
         let sensitive = ["license", "licence", "serial", "email", "activation", "paddle", "token", "secret", "password"]
         var out: [String: Any] = [:]
         for (key, value) in domain {
@@ -260,11 +259,6 @@ enum DebugDump {
         lines.append("# Removed optimisers, most recent last (\(OM.removedOptimisers.count))")
         for o in OM.removedOptimisers.suffix(20) {
             describe(o)
-        }
-        lines.append("")
-        lines.append("# Skipped because of free version limits (\(OM.skippedBecauseNotPro.count))")
-        for url in OM.skippedBecauseNotPro {
-            lines.append("  - \(url.path)")
         }
         return lines.joined(separator: "\n") + "\n"
     }
@@ -432,7 +426,7 @@ enum DebugDump {
     private static func copySyncLog(to dest: URL) {
         guard let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else { return }
         let syncLog = caches
-            .appendingPathComponent(Bundle.main.bundleIdentifier ?? "com.lowtechguys.Clop")
+            .appendingPathComponent(Bundle.main.bundleIdentifier ?? "com.stephenangeloni.Clop")
             .appendingPathComponent("sync.log")
         guard FileManager.default.fileExists(atPath: syncLog.path) else { return }
         try? FileManager.default.copyItem(at: syncLog, to: dest.appendingPathComponent("sync.log"))

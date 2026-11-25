@@ -1,10 +1,9 @@
 import AppKit
 import Defaults
 import Foundation
-import LowtechPro
 import os
 
-private let mcpLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.lowtechguys.Clop", category: "MCP")
+private let mcpLog = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.stephenangeloni.Clop", category: "MCP")
 
 // MARK: - MCPInstaller
 
@@ -73,13 +72,6 @@ enum MCPInstaller {
     // MARK: - The switch
 
     @MainActor static func setEnabled(_ enabled: Bool) {
-        // Pro only, and unlike the optimisation counters this is a wall rather than a nag: there is no
-        // free MCP mode. Turning it off never needs a licence, so a lapsed licence can still be
-        // switched off rather than being stuck on.
-        guard !enabled || proactive else {
-            mcpLog.info("MCP enable refused, no Pro licence")
-            return
-        }
         Defaults[.mcpEnabled] = enabled
         writeServerCard()
         mcpLog.info("MCP \(enabled ? "enabled" : "disabled", privacy: .public)")
@@ -97,10 +89,6 @@ enum MCPInstaller {
         switch url.lastPathComponent {
         case "start":
             guard !Defaults[.mcpEnabled] else { return true }
-            guard proactive else {
-                showProRequired()
-                return true
-            }
             if askToEnable() {
                 setEnabled(true)
             }
@@ -128,10 +116,8 @@ enum MCPInstaller {
             "displayName": "Clop",
             "description": "Image, video, PDF and audio optimisation. Run pipelines over files, downscale, convert, crop, author new pipelines, and read or change any Clop setting.",
             "version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?",
-            "app": ["bundleID": "com.lowtechguys.Clop", "path": Bundle.main.bundlePath],
+            "app": ["bundleID": "com.stephenangeloni.Clop", "path": Bundle.main.bundlePath],
             "enabled": Defaults[.mcpEnabled],
-            "requiresPro": true,
-            "pro": proactive,
             "transport": [
                 "type": "stdio",
                 "command": cliPath,
@@ -140,7 +126,7 @@ enum MCPInstaller {
             "control": [
                 "start": "open clop://mcp/start",
                 "stop": "open clop://mcp/stop",
-                "note": "Clop's MCP server needs Clop Pro. With a licence, reading works whether or not it is started; changes are refused until it is. Starting sticks across launches until it is stopped.",
+                "note": "Reading works whether or not it is started; changes are refused until it is. Starting sticks across launches until it is stopped.",
             ],
         ]
         guard let data = try? JSONSerialization.data(withJSONObject: card, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]) else { return }
@@ -197,18 +183,5 @@ enum MCPInstaller {
         alert.addButton(withTitle: "Not now")
         NSApp.activate(ignoringOtherApps: true)
         return alert.runModal() == .alertFirstButtonReturn
-    }
-
-    @MainActor private static func showProRequired() {
-        let alert = NSAlert()
-        alert.messageText = "MCP needs Clop Pro"
-        alert.informativeText = "An agent asked for access to controlling Clop through MCP. That is a Pro feature."
-        alert.alertStyle = .informational
-        alert.addButton(withTitle: "Manage Licence")
-        alert.addButton(withTitle: "Not now")
-        NSApp.activate(ignoringOtherApps: true)
-        if alert.runModal() == .alertFirstButtonReturn {
-            manageLicenceInSettings()
-        }
     }
 }

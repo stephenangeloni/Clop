@@ -81,9 +81,6 @@ extension Defaults.Keys {
     /// true = the geometric all-black menubar icon variant. Takes precedence over
     /// `useClassicMenubarIcon` when deriving the New / Classic / Geometric / Hidden picker.
     static let useGeometricMenubarIcon = Key<Bool>("useGeometricMenubarIcon", default: false)
-    // Seconds after which a "Send securely" link auto-stops (0 = never). Starting value for the
-    // expiration picker and the fallback for the copyLinkForSending step. Default 1 hour.
-    static let defaultLinkExpiration = Key<TimeInterval>("defaultLinkExpiration", default: 3600)
     static let enableFloatingResults = Key<Bool>("enableFloatingResults", default: true)
     static let alwaysShowCompactResults = Key<Bool>("alwaysShowCompactResults", default: false)
     static let hideFloatingResultTooltips = Key<Bool>("hideFloatingResultTooltips", default: false)
@@ -263,7 +260,6 @@ extension Defaults.Keys {
     static let autoClearAllCompactResultsAfter = Key<Int>("autoClearAllCompactResultsAfter", default: 120)
     static let floatingResultsCorner = Key<ScreenCorner>("floatingResultsCorner", default: .bottomRight)
     static let followCursorScreen = Key<Bool>("followCursorScreen", default: true)
-    static let neverShowProError = Key<Bool>("neverShowProError", default: false)
 
     static let dismissFloatingResultOnDrop = Key<Bool>("dismissFloatingResultOnDrop", default: true)
     static let dismissFloatingResultOnUpload = Key<Bool>("dismissFloatingResultOnUpload", default: true)
@@ -281,7 +277,6 @@ extension Defaults.Keys {
     static let pauseAutomaticOptimisations = Key<Bool>("pauseAutomaticOptimisations", default: false)
     static let presetZones = Key<[PresetZone]>("presetZones", default: [])
 
-    static let syncSettingsCloud = Key<Bool>("syncSettingsCloud", default: true)
     static let allowClopToAppearInScreenshots = Key<Bool>("allowClopToAppearInScreenshots", default: false)
 }
 
@@ -353,133 +348,3 @@ enum GIFFrameDropBehaviour: String, Codable, Defaults.Serializable {
     case keepDuration
 }
 
-let SETTINGS_TO_SYNC: [Defaults._AnyKey] = [
-    Defaults.Keys.showMenubarIcon,
-    .useClassicMenubarIcon,
-    .useGeometricMenubarIcon,
-    .defaultLinkExpiration,
-    .adaptiveImageSize,
-    .imageCompression,
-    .audioCompression,
-    .videoCompression,
-    .adaptiveVideoSize,
-    .alwaysShowCompactResults,
-    .autoClearAllCompactResultsAfter,
-    .autoCopyToClipboard,
-    .autoHideClipboardResultAfter,
-    .autoHideFloatingResults,
-    .autoHideFloatingResultsAfter,
-    .capVideoFPS,
-    .convertedImageBehaviour,
-    .convertedVideoBehaviour,
-    .copyImageFilePath,
-    .customNameTemplateForClipboardImages,
-    .dismissCompactResultOnDrop,
-    .dismissFloatingResultOnDrop,
-    // .downscaleRetinaImages,
-    .enableClipboardOptimiser,
-    .clipboardIgnoredAppBundleIds,
-    .enabledKeys,
-    .enableDragAndDrop,
-    .onlyShowDropZoneOnOption,
-    .onlyShowPresetZonesOnControlTapped,
-    .enableFloatingResults,
-    .floatingResultsCorner,
-    .hideFloatingResultTooltips,
-    .formatsToConvertToJPEG,
-    .formatsToConvertToMP4,
-    .formatsToConvertToPNG,
-    .formatsToConvertToAAC,
-    .formatsToConvertToMP3,
-    .imageDirs,
-    .imageFormatsToSkip,
-    .appendClipboardResults,
-    .audioBitrate,
-    .audioCoverArt,
-    .audioDirs,
-    .audioFormatsToSkip,
-    .enableAutomaticAudioOptimisations,
-    .maxAudioFileCount,
-    .maxAudioSizeMB,
-    .optimisedAudioBehaviour,
-    .convertedAudioBehaviour,
-    .manualConvertedImageBehaviour,
-    .manualConvertedVideoBehaviour,
-    .manualConvertedAudioBehaviour,
-    .convertedSameFolderNameTemplateImage,
-    .convertedSameFolderNameTemplateVideo,
-    .convertedSameFolderNameTemplateAudio,
-    .convertedSpecificFolderNameTemplateImage,
-    .convertedSpecificFolderNameTemplateVideo,
-    .convertedSpecificFolderNameTemplateAudio,
-    .keyComboModifiers,
-    .enablePhotosIntegration,
-    .maxImageFileCount,
-    .maxImageSizeMB,
-    .maxCopiedPhotosCount,
-    .maxPhotosLength,
-    .maxPDFFileCount,
-    .maxPDFSizeMB,
-    .maxVideoFileCount,
-    .maxVideoSizeMB,
-    .minVideoSizeKB,
-    .minImageSizeKB,
-    .minPDFSizeKB,
-    .minAudioSizeKB,
-    .minImageResolution,
-    .minVideoResolution,
-    .maxImageResolution,
-    .maxVideoResolution,
-    .minVideoFPS,
-    .playbackSpeedFrameBehaviour,
-    .removeAudioFromVideos,
-    .convertAudioToAAC,
-    .optimisedImageBehaviour,
-    .optimisedVideoBehaviour,
-    .optimisedPDFBehaviour,
-    .sameFolderNameTemplateImage,
-    .sameFolderNameTemplateVideo,
-    .sameFolderNameTemplatePDF,
-    .specificFolderNameTemplateImage,
-    .specificFolderNameTemplateVideo,
-    .specificFolderNameTemplatePDF,
-    .optimiseImagePathClipboard,
-    .optimiseTIFF,
-    .optimiseHEICAVIFClipboard,
-    .optimiseVideoClipboard,
-    .optimiseAudioClipboard,
-    .optimisePDFClipboard,
-    .optimisedFileProtectionMs,
-    .pdfDirs,
-    .dirsHideFloatingResult,
-    .preserveDates,
-    .preserveColorMetadata,
-    .presetZones,
-    .quickResizeKeys,
-    .savedCropSizes,
-    .pipelinesToRunOnImage,
-    .pipelinesToRunOnVideo,
-    .pipelinesToRunOnPdf,
-    .pipelinesToRunOnAudio,
-    .savedPipelines,
-    .showCompactImages,
-    .stripMetadata,
-    .targetVideoFPS,
-    .useAggressiveOptimisationGIF,
-    .gifFrameDropBehaviour,
-    .convertHDRToSDR,
-    .useAggressiveOptimisationJPEG,
-    .useAggressiveOptimisationMP4,
-    .pdfDPI,
-    .useAggressiveOptimisationPNG,
-    .videoEncoder,
-    .useCustomNameTemplateForClipboardImages,
-    .videoDirs,
-    .videoFormatsToSkip,
-] + ARM64_SPECIFIC_SETTINGS
-
-#if arch(arm64)
-    let ARM64_SPECIFIC_SETTINGS: [Defaults._AnyKey] = [Defaults.Keys.useCPUIntensiveEncoder]
-#else
-    let ARM64_SPECIFIC_SETTINGS: [Defaults._AnyKey] = []
-#endif

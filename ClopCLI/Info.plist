@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>com.lowtechguys.Clop.CLI</string>
+	<string>com.stephenangeloni.Clop.CLI</string>
 	<key>OSLogPreferences</key>
 	<dict>
-		<key>com.lowtechguys.Clop.CLI</key>
+		<key>com.stephenangeloni.Clop.CLI</key>
 		<dict>
 			<key>DEFAULT-OPTIONS</key>
 			<dict>
@@ -14,7 +14,7 @@
 				<true/>
 			</dict>
 		</dict>
-		<key>com.lowtechguys.Clop</key>
+		<key>com.stephenangeloni.Clop</key>
 		<dict>
 			<key>DEFAULT-OPTIONS</key>
 			<dict>

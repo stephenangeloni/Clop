@@ -7,8 +7,6 @@
 
 import Defaults
 import Lowtech
-import LowtechIndie
-import LowtechPro
 import os
 import SwiftUI
 import System
@@ -275,27 +273,6 @@ struct FloatingResultList: View {
 
 }
 
-struct UpdateButton: View {
-    var short = false
-
-    @ObservedObject var um: UpdateManager = UM
-    @State var hovering = false
-
-    var body: some View {
-        if let updateVersion = um.newVersion {
-            Button(short ? "v\(updateVersion) available" : "v\(updateVersion) update available") {
-                checkForUpdates()
-                focus()
-            }
-            .buttonStyle(FlatButton(color: .inverted.opacity(0.9), textColor: .mauvish, radius: 7, verticalPadding: 2))
-            .font(.medium(11))
-            .opacity(hovering ? 1 : 0.5)
-            .focusable(false)
-            .onHover { hovering = $0 }
-        }
-    }
-}
-
 struct FloatingResultContainer: View {
     @ObservedObject var om = OM
     @ObservedObject var sm = SM
@@ -346,7 +323,6 @@ struct FloatingResultContainer: View {
                     }
                 } else {
                     FloatingResultList(optimisers: optimisers).preview(isPreview)
-                    UpdateButton().padding(floatingResultsCorner.isTrailing ? .trailing : .leading, 54)
                 }
 
             }
@@ -383,7 +359,7 @@ var audioPreviewThumbnail: NSImage {
 /// "Show in Finder" and deletes them, nothing breaks. Preview optimisers are also gated against
 /// every file-mutating action, so these stay strictly read-only demo files.
 var previewSamplesDir: FilePath {
-    FilePath.dir(FilePath(NSTemporaryDirectory()) / "com.lowtechguys.Clop" / "preview-samples", permissions: 0o755)
+    FilePath.dir(FilePath(NSTemporaryDirectory()) / "com.stephenangeloni.Clop" / "preview-samples", permissions: 0o755)
 }
 
 /// Materialise a bundled preview sample (a `.dataset` in the asset catalog) to a temp file, so the
@@ -1083,7 +1059,6 @@ struct FloatingResult: View {
     @State var editingFilename = false
 
     @Default(.floatingResultsCorner) var floatingResultsCorner
-    @Default(.neverShowProError) var neverShowProError
     @Default(.floatingResultActions) var floatingResultActions
     @Default(.formatPickerStyle) var formatPickerStyle
 
@@ -1326,66 +1301,32 @@ struct FloatingResult: View {
         .transition(.opacity.animation(.easeOut(duration: 0.2)))
     }
     @ViewBuilder var errorView: some View {
-        let proError = optimiser.id == Optimiser.IDs.pro
         if let error = optimiser.error {
-            if proError {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(error)
-                        .medium(13)
-                        .foregroundColor(.white)
-                    if let notice = optimiser.notice {
-                        Text(notice)
-                            .round(10)
-                            .foregroundColor(.white.opacity(0.7))
-                            .lineLimit(3)
-                    }
-                    HStack(spacing: 8) {
-                        Button("Get Clop Pro") {
-                            manageLicenceInSettings()
-                        }
-                        .buttonStyle(FlatButton(color: .inverted, textColor: .mauvish, radius: 6, verticalPadding: 3))
-                        .font(.round(11, weight: .semibold))
-
-                        Button("Never show this again") {
-                            neverShowProError = true
-                            hoveredOptimiserID = nil
-                            optimiser.remove(after: 200, withAnimation: true)
-                        }
-                        .buttonStyle(FlatButton(color: .white.opacity(0.15), textColor: .white.opacity(0.7), radius: 6, verticalPadding: 3))
-                        .font(.round(11, weight: .regular))
-                    }
+            VStack(alignment: .leading, spacing: 4) {
+                if let url = optimiser.url, url.isFileURL {
+                    Text("~/" + url.path.replacingOccurrences(of: HOME.string + "/", with: ""))
+                        .round(10)
+                        .foregroundColor(.white.opacity(0.6))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
                 }
-                .padding(.leading, 8)
-                .padding(.vertical, 4)
-                .allowsTightening(true)
-                .frame(maxWidth: 250, alignment: .leading)
-            } else {
-                VStack(alignment: .leading, spacing: 4) {
-                    if let url = optimiser.url, url.isFileURL {
-                        Text("~/" + url.path.replacingOccurrences(of: HOME.string + "/", with: ""))
-                            .round(10)
-                            .foregroundColor(.white.opacity(0.6))
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
-                    Text(error)
-                        .medium(13)
-                        .foregroundColor(.white)
-                        .lineLimit(3)
+                Text(error)
+                    .medium(13)
+                    .foregroundColor(.white)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.75)
+                if let notice = optimiser.notice {
+                    Text(notice)
+                        .round(10)
+                        .foregroundColor(.white.opacity(0.7))
+                        .lineLimit(2)
                         .minimumScaleFactor(0.75)
-                    if let notice = optimiser.notice {
-                        Text(notice)
-                            .round(10)
-                            .foregroundColor(.white.opacity(0.7))
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.75)
-                    }
                 }
-                .padding(.leading, 8)
-                .padding(.vertical, 4)
-                .allowsTightening(true)
-                .frame(maxWidth: 250, alignment: .leading)
             }
+            .padding(.leading, 8)
+            .padding(.vertical, 4)
+            .allowsTightening(true)
+            .frame(maxWidth: 250, alignment: .leading)
         }
     }
     @ViewBuilder var noticeView: some View {
@@ -1483,8 +1424,6 @@ struct FloatingResult: View {
             sliderBand { CardCompressionSlider(optimiser: optimiser) }
         } else if optimiser.showTargetSizeSlider {
             sliderBand { CardTargetSizeSlider(optimiser: optimiser) }
-        } else if optimiser.showSendExpiration {
-            sliderBand { CardSendExpirationSlider(optimiser: optimiser) }
         } else if isExpanded, !optimiser.running, optimiser.error == nil, optimiser.notice == nil, !optimiser.showingFormats {
             actionGrid
                 .opacity(optimiser.editingFilename ? 0.3 : 1)
@@ -1493,9 +1432,7 @@ struct FloatingResult: View {
     }
 
     @ViewBuilder var cardBottomContent: some View {
-        if optimiser.showSendExpiration {
-            SendExpirationConfirmButton(optimiser: optimiser)
-        } else if optimiser.showDownscaleSlider || optimiser.showCompressionSlider || optimiser.showTargetSizeSlider {
+        if optimiser.showDownscaleSlider || optimiser.showCompressionSlider || optimiser.showTargetSizeSlider {
             EmptyView()
         } else if optimiser.running {
             progressView.controlSize(.small).lineLimit(1).foregroundColor(.white)
@@ -1531,7 +1468,7 @@ struct FloatingResult: View {
     }
 
     @ViewBuilder var cornerControls: some View {
-        let sliding = optimiser.showDownscaleSlider || optimiser.showCompressionSlider || optimiser.showSendExpiration
+        let sliding = optimiser.showDownscaleSlider || optimiser.showCompressionSlider
         if isExpanded || optimiser.running, !sliding, !optimiser.showingFormats {
             fileDraggable(CloseStopButton(optimiser: optimiser))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -1625,7 +1562,7 @@ struct FloatingResult: View {
                 // press-drag instantly. No drag while a slider is active either. The other card
                 // buttons opt back in individually via `fileDraggable`.
                 .ifLet(optimiser.url, transform: { img, url in
-                    img.if(!optimiser.showDownscaleSlider && !optimiser.showCompressionSlider && !optimiser.showSendExpiration) { v in
+                    img.if(!optimiser.showDownscaleSlider && !optimiser.showCompressionSlider) { v in
                         v.onDrag {
                             guard !preview else {
                                 return NSItemProvider()
@@ -1733,10 +1670,6 @@ struct FloatingResult: View {
             // A fresh hover (mouse re-entering) brings the overlay back after it was collapsed by an action.
             if hovering {
                 optimiser.collapseHoverOverlay = false
-            }
-            // Leaving the card abandons an in-progress send-expiration overlay.
-            if !hovering {
-                optimiser.showSendExpiration = false
             }
             withAnimation(.easeOut(duration: 0.15)) {
                 self.hovering = hovering
@@ -1940,11 +1873,7 @@ struct FloatingPreviewAllStates: View {
         errorOpt.isPreview = true
         errorOpt.finish(error: "A server with the specified hostname could not be found.")
 
-        let proError = Optimiser(id: Optimiser.IDs.pro, type: .image(.png))
-        proError.isPreview = true
-        proError.finish(error: "You've optimised 5 files this session", notice: "Get Clop Pro to remove the limit and unlock all features. Relaunch the app to reset the counter.")
-
-        o.optimisers = [clipEnd, videoOpt, cropped, errorOpt, proError]
+        o.optimisers = [clipEnd, videoOpt, cropped, errorOpt]
         for opt in o.optimisers {
             opt.isPreview = true
         }

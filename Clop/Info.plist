@@ -180,7 +180,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>CFBundleURLName</key>
-			<string>com.lowtechguys.Clop</string>
+			<string>com.stephenangeloni.Clop</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>clop</string>
@@ -227,7 +227,7 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Clop needs access to your Photos library to retrieve full-resolution images copied from Photos.app</string>
 	<key>NSPrincipalClass</key>
-	<string>SentryCrashExceptionApplication</string>
+	<string>NSApplication</string>
 	<key>NSServices</key>
 	<array>
 		<dict>
@@ -352,15 +352,7 @@
 	</array>
 	<key>OSLogPreferences</key>
 	<dict>
-		<key>com.lowtechguys.Clop</key>
-		<dict>
-			<key>DEFAULT-OPTIONS</key>
-			<dict>
-				<key>Enable-Private-Data</key>
-				<true/>
-			</dict>
-		</dict>
-		<key>com.lowtechguys.Clop-setapp</key>
+		<key>com.stephenangeloni.Clop</key>
 		<dict>
 			<key>DEFAULT-OPTIONS</key>
 			<dict>
@@ -369,9 +361,5 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>SUFeedURL</key>
-	<string>https://files.lowtechguys.com/clop/appcast.xml</string>
-	<key>SUPublicEDKey</key>
-	<string>lqnO6tg2A9evTIFo2SC9ArZ6NS84gtBshcAWdwh12xQ=</string>
 </dict>
 </plist>

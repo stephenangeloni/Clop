@@ -109,20 +109,9 @@ extension MCPServer {
 
     /// Clop's own refusals are the words the agent should read, so they come back verbatim. Only the
     /// next step is added, and it is always "ask the user", never anything about quitting or
-    /// reopening Clop: MCP is Pro so relaunching buys an agent nothing on this path, but the same
-    /// words would teach the trick for the CLI and Shortcuts paths, whose free counters do reset on
-    /// relaunch by design.
+    /// reopening Clop.
     static func annotate(_ message: String) -> String {
         let low = message.lowercased()
-        if low.contains("clop pro") {
-            // Clop already said which licence it wants, so only the next step is added.
-            return message + " The user can buy a licence at \(buyURL)."
-        }
-        // A whole word, not a substring: "process", "provide" and "property" all contain "pro", and
-        // each of them used to get a licence pitch bolted onto an unrelated error.
-        if low.range(of: "\\bpro\\b", options: .regularExpression) != nil {
-            return message + " Clop's MCP server needs Clop Pro. The user can buy a licence at \(buyURL)."
-        }
         if low.contains("script"), low.contains("allow") {
             return message + " Script steps are behind their own switch. Ask the user to allow them in "
                 + "Clop Settings, MCP. Prefer a built-in step: it is faster, the editor understands it, "
@@ -333,10 +322,6 @@ extension MCPServer {
         }
         // The card is rewritten when Clop handles the URL, so re-reading it after the wait tells a
         // licence refusal apart from an unanswered dialog.
-        if card()["pro"] as? Bool == false {
-            throw ClopMCPError("Clop's MCP server needs Clop Pro. Nothing changed. "
-                + "The user can buy a licence at \(buyURL).")
-        }
         throw ClopMCPError("Clop asked and the answer did not come (or it was no). Nothing changed. "
             + "Ask the user to allow it in Clop Settings, MCP.")
     }
@@ -366,7 +351,7 @@ extension MCPServer {
     /// Raises if a file operation is going to be refused anyway.
     ///
     /// Elicitation costs the USER something: a dialog, or a question in the chat. Asking which way
-    /// they want a file made smaller and then answering "needs Clop Pro" spends their attention on a
+    /// they want a file made smaller and then refusing the change spends their attention on a
     /// decision that was never going to be acted on. Checked only before a question, since the
     /// ordinary path already surfaces Clop's own refusal.
     ///
@@ -385,9 +370,6 @@ extension MCPServer {
               let mcp = (payload as? [String: Any])?["mcp"] as? [String: Any]
         else {
             return // If status cannot be read, let the real call produce the real error.
-        }
-        guard mcp["pro"] as? Bool == true else {
-            throw ClopMCPError(annotate("Clop's MCP server needs Clop Pro."))
         }
         guard mcp["enabled"] as? Bool == true else {
             throw ClopMCPError(annotate(

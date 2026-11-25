@@ -32,7 +32,7 @@ extension URL {
 }
 
 extension UserDefaults {
-    static let app: UserDefaults? = .init(suiteName: "com.lowtechguys.Clop")
+    static let app: UserDefaults? = .init(suiteName: "com.stephenangeloni.Clop")
 }
 
 extension FileBehaviour: ExpressibleByArgument {
@@ -737,14 +737,13 @@ func convertPipelineDSL(to format: String, output: String?) -> String {
 }
 
 /// Resolve a bundled binary installed by the Clop app. The standalone CLI resolves
-/// `applicationScriptsDirectory` to its own bundle id (com.lowtechguys.Clop.CLI), which
+/// `applicationScriptsDirectory` to its own bundle id (com.stephenangeloni.Clop.CLI), which
 /// may not have the bin symlink yet (e.g. before the app has run), so fall back to the
 /// app's known Application Scripts locations.
 func resolveBundledBinary(_ name: String) -> String? {
     let candidates = [
         BIN_DIR.appendingPathComponent(name).path,
-        "\(NSHomeDirectory())/Library/Application Scripts/com.lowtechguys.Clop/bin/\(ARCH)/\(name)",
-        "\(NSHomeDirectory())/Library/Application Scripts/com.lowtechguys.Clop-setapp/bin/\(ARCH)/\(name)",
+        "\(NSHomeDirectory())/Library/Application Scripts/com.stephenangeloni.Clop/bin/\(ARCH)/\(name)",
     ]
     return candidates.first { FileManager.default.isExecutableFile(atPath: $0) }
 }
@@ -2085,7 +2084,7 @@ struct Clop: ParsableCommand {
 
                 Steps: optimise, downscale, lowerBitrate, convert, crop, extractPagesAsImages,
                 copy, move, rename, delete, if, ifNot, removeAudio, changeSpeed, runScript,
-                runShortcut, copyToClipboard, copyLinkForSending, shelveWith, uploadWith, openWith
+                runShortcut, copyToClipboard, shelveWith, uploadWith, openWith
                 """
             )
 
@@ -2791,8 +2790,6 @@ struct Clop: ParsableCommand {
                 var status: [String: Any] = [
                     "enabled": enabled,
                     "allowScriptSteps": scripts,
-                    "pro": card["pro"] as? Bool ?? false,
-                    "requiresPro": true,
                     "cardPath": cardPath,
                 ]
                 if let version = card["version"] as? String {
@@ -2810,7 +2807,6 @@ struct Clop: ParsableCommand {
                 guard json else {
                     print("MCP changes:     \(enabled ? "allowed" : "not allowed")")
                     print("Script steps:    \(scripts ? "allowed" : "not allowed")")
-                    print("Clop Pro:        \(status["pro"] as? Bool == true ? "yes" : "no")")
                     if let path = status["appPath"] as? String {
                         print("App:             \(path)")
                     }
@@ -2945,7 +2941,7 @@ func runInForeground(_ argv: [String]) throws -> Int32 {
 /// Spelled out rather than derived from `LOG_SUBSYSTEM`, which is only the running binary's own id:
 /// the CLI has to reach the app's subsystem and the Setapp build's too, and `log config` matches one
 /// exact subsystem, never a prefix.
-let CLOP_LOG_SUBSYSTEMS = ["com.lowtechguys.Clop", "com.lowtechguys.Clop-setapp", "com.lowtechguys.Clop.CLI"]
+let CLOP_LOG_SUBSYSTEMS = ["com.stephenangeloni.Clop", "com.stephenangeloni.Clop.CLI"]
 
 /// Shared by `clop logs persist` and the `clop_debug_logs` MCP tool, which differ only in how they
 /// get root: sudo in a terminal, an administrator dialog when there is no terminal.
@@ -2957,7 +2953,7 @@ enum LogPersistAction: String, CaseIterable, ExpressibleByArgument {
         switch self {
         case .on: """
             Debug logs for Clop are kept now. Read them with:
-                log show --debug --info --last 1h --predicate 'subsystem BEGINSWITH "com.lowtechguys.Clop"'
+                log show --debug --info --last 1h --predicate 'subsystem BEGINSWITH "com.stephenangeloni.Clop"'
             """
         case .off: "Debug logs for Clop are back to the macOS default"
         case .status: nil
@@ -2992,7 +2988,7 @@ let KNOWN_PIPELINE_STEPS = [
     "optimise", "downscale", "lowerBitrate", "convert", "crop", "extractPagesAsImages",
     "targetSize", "stripExif", "watermark", "capFps", "normalize",
     "copy", "move", "rename", "delete", "if", "ifNot", "removeAudio", "changeSpeed",
-    "runScript", "runShortcut", "copyToClipboard", "copyLinkForSending", "fork",
+    "runScript", "runShortcut", "copyToClipboard", "fork",
     "shelveWith", "uploadWith", "openWith",
 ]
 
@@ -3067,7 +3063,7 @@ func compactPipelinePromptContext(task: String?) -> String {
     - copy(to) / move(to) / rename(to) / delete(path)  (delete(path: "sourceFile") removes the input file).
     - runScript(path | code): inline `code` is one line, no `->`; file is $1 / $CLOP_INPUT_FILE; bundled ffmpeg, gs, gifski
       etc. are in $CLOP_BIN; a path it prints replaces the file. runShortcut(name) [image,video,pdf].
-    - copyToClipboard(format path|imageData|markdown, relativeTo). copyLinkForSending(expiration 1m|15m|1h|6h|1d|3d|never).
+    - copyToClipboard(format path|imageData|markdown, relativeTo).
       fork(location) surfaces a second card. shelveWith(app yoink|dockside|dropover|atoll). uploadWith(app dropshare). openWith(app).
 
     ## Filters (if / ifNot gate the rest of the pipeline; no else, no branch)
@@ -3176,7 +3172,7 @@ func pipelinePromptContext(task: String?, compact: Bool = false) -> String {
 
     - Steps are separated by `->`, evaluated left to right: `crop(width: 1600) -> convert(to: webp)`.
     - Each step is `name(key: value, key: value)`. No-parameter steps can be bare: `removeAudio`,
-      `stripExif`, `normalize`, `copyToClipboard`, `copyLinkForSending`.
+      `stripExif`, `normalize`, `copyToClipboard`.
     - Quote string, path and regex values: `move(to: "~/Pictures/%y/")`, `if(regex: "^IMG_")`.
       Bare values are fine for enums/numbers: `convert(to: webp)`, `downscale(factor: 0.5)`.
     - File types: `image`, `video`, `pdf`, `audio`. Each step lists the types it applies to;
@@ -3300,9 +3296,6 @@ func pipelinePromptContext(task: String?, compact: Bool = false) -> String {
     - `runShortcut(name)`: run a macOS Shortcut by its name. [image, video, pdf]
     - `copyToClipboard(format, relativeTo)`: `format`: path (default), imageData (images), markdown.
       `relativeTo`: a base path that makes the copied path/link relative (e.g. `~/Projects/blog`).
-    - `copyLinkForSending(expiration)`: send the file securely and copy the share link. `expiration`
-      auto-stops the link (and closes the room) after `1m`/`15m`/`1h`/`6h`/`1d`/`3d` or `never`; omit it to
-      use the default from Preferences. Transfer is peer-to-peer, so the Mac must stay awake until then.
     - `fork(location)`: surface the result-so-far as a SECOND card, then keep processing the main line
       into the first card. The forked card never changes the file the pipeline carries forward, so the
       result path is preserved for later steps (e.g. `optimise -> fork -> convert(to: webp)` yields both
