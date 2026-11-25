@@ -275,11 +275,7 @@ struct RightClickMenuView: View {
         }
         if optimiser.canReoptimise(), !optimiser.type.isVideo {
             Button("Aggressive optimisation") {
-                if optimiser.downscaleFactor < 1 {
-                    optimiser.downscale(toFactor: optimiser.downscaleFactor, aggressiveOptimisation: true)
-                } else {
-                    optimiser.optimise(allowLarger: false, aggressiveOptimisation: true, fromOriginal: true)
-                }
+                optimiser.reoptimiseAggressively()
             }
             .keyboardShortcut("a")
             .disabled(optimiser.aggressive)
@@ -434,23 +430,21 @@ struct ConvertMenu: View {
     }
 }
 
+extension Optimiser {
+    func reoptimiseAggressively() {
+        if downscaleFactor < 1 {
+            downscale(toFactor: downscaleFactor, aggressiveOptimisation: true)
+        } else {
+            optimise(allowLarger: false, aggressiveOptimisation: true, fromOriginal: true)
+        }
+    }
+}
+
 struct BatchRightClickMenuView: View {
     @ObservedObject var sm = SM
 
     var body: some View {
         let optimisers = sm.optimisers
-
-        Button("Save all to folder") {
-            sm.save()
-            sm.selection = []
-        }
-
-        Button("Copy to clipboard") {
-            sm.copyToClipboard()
-            sm.selection = []
-        }
-
-        Divider()
 
         Button("Restore original") {
             sm.restoreOriginal()
@@ -458,74 +452,85 @@ struct BatchRightClickMenuView: View {
         }
         .disabled(optimisers.allSatisfy(\.isOriginal))
 
-        Button("Quick Look") {
-            sm.quicklook()
-        }
-
-        Divider()
-        if optimisers.contains(where: { !$0.type.isAudio }) {
-            Menu("Downscale") {
-                BatchDownscaleMenu(optimisers: optimisers.filter { !$0.type.isAudio })
+        Section("File") {
+            Button("Copy to clipboard") {
+                sm.copyToClipboard()
+                sm.selection = []
             }
-            .disabled(optimisers.filter { !$0.type.isAudio }.allSatisfy { $0.downscaleFactor <= 0.1 })
-        }
-        if optimisers.contains(where: { $0.type.isAudio && $0.type.utType != .wav }) {
-            Menu("Change bitrate") {
-                BatchBitrateMenu(optimisers: optimisers.filter { $0.type.isAudio && $0.type.utType != .wav })
-            }
-        }
 
-        if optimisers.allSatisfy({ $0.canChangePlaybackSpeed() }) {
-            Menu("Change playback speed") {
-                BatchChangePlaybackSpeedMenu(optimisers: optimisers)
-            }
-            .disabled(optimisers.allSatisfy { $0.changePlaybackSpeedFactor >= 10 })
-        }
-
-        Button("Aggressive optimisation") {
-            for optimiser in optimisers {
-                if optimiser.downscaleFactor < 1 {
-                    optimiser.downscale(toFactor: optimiser.downscaleFactor, aggressiveOptimisation: true)
-                } else {
-                    optimiser.optimise(allowLarger: false, aggressiveOptimisation: true, fromOriginal: true)
-                }
-            }
-            sm.selection = []
-        }
-        .disabled(optimisers.allSatisfy(\.aggressive))
-
-        let hdrOptimisers = optimisers.filter { $0.canConvertHDRToSDR() }
-        if hdrOptimisers.isNotEmpty {
-            Button("Convert HDR to SDR") {
-                for optimiser in hdrOptimisers {
-                    optimiser.convertHDRToSDR()
-                }
+            Button("Save all to folder") {
+                sm.save()
                 sm.selection = []
             }
         }
 
-        Divider()
+        Section {
+            Button("Quick Look") {
+                sm.quicklook()
+            }
+        }
 
-        if DROPSHARE.appURL != nil {
-            Button("Upload with Dropshare") {
-                DROPSHARE.open(optimisers: sm.optimisers)
+        Section("Transform") {
+            Button("Aggressive optimisation") {
+                for optimiser in optimisers {
+                    optimiser.reoptimiseAggressively()
+                }
                 sm.selection = []
             }
-        }
-        ShelfMenu {
-            $0.open(optimisers: sm.optimisers)
-            sm.selection = []
-        }
+            .disabled(optimisers.allSatisfy(\.aggressive))
 
-        Divider()
-
-        Button("Strip EXIF metadata") {
-            for optimiser in optimisers {
-                optimiser.path?.stripExif()
+            if optimisers.contains(where: { !$0.type.isAudio }) {
+                Menu("Downscale") {
+                    BatchDownscaleMenu(optimisers: optimisers.filter { !$0.type.isAudio })
+                }
+                .disabled(optimisers.filter { !$0.type.isAudio }.allSatisfy { $0.downscaleFactor <= 0.1 })
             }
-            sm.selection = []
+            if optimisers.contains(where: { $0.type.isAudio && $0.type.utType != .wav }) {
+                Menu("Change bitrate") {
+                    BatchBitrateMenu(optimisers: optimisers.filter { $0.type.isAudio && $0.type.utType != .wav })
+                }
+            }
+
+            if optimisers.allSatisfy({ $0.canChangePlaybackSpeed() }) {
+                Menu("Change playback speed") {
+                    BatchChangePlaybackSpeedMenu(optimisers: optimisers)
+                }
+                .disabled(optimisers.allSatisfy { $0.changePlaybackSpeedFactor >= 10 })
+            }
         }
-        .disabled(optimisers.allSatisfy { $0.type.isPDF || $0.type.isAudio })
+
+        Menu("Advanced") {
+            let hdrOptimisers = optimisers.filter { $0.canConvertHDRToSDR() }
+            if hdrOptimisers.isNotEmpty {
+                Button("Convert HDR to SDR") {
+                    for optimiser in hdrOptimisers {
+                        optimiser.convertHDRToSDR()
+                    }
+                    sm.selection = []
+                }
+            }
+
+            Button("Strip EXIF metadata") {
+                for optimiser in optimisers {
+                    optimiser.path?.stripExif()
+                }
+                sm.selection = []
+            }
+            .disabled(optimisers.allSatisfy { $0.type.isPDF || $0.type.isAudio })
+
+            Section {
+                if DROPSHARE.appURL != nil {
+                    Button("Upload with Dropshare") {
+                        DROPSHARE.open(optimisers: optimisers)
+                        sm.selection = []
+                    }
+                }
+                ShelfMenu {
+                    $0.open(optimisers: optimisers)
+                    sm.selection = []
+                }
+            }
+        }
     }
 }
 

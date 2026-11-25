@@ -723,11 +723,7 @@ class AppDelegate: AppDelegateParent {
         case .e:
             _ = opt.editWithConfiguredApp()
         case .a where !opt.aggressive:
-            if opt.downscaleFactor < 1 {
-                opt.downscale(toFactor: opt.downscaleFactor, aggressiveOptimisation: true)
-            } else {
-                opt.optimise(allowLarger: false, aggressiveOptimisation: true, fromOriginal: true)
-            }
+            opt.reoptimiseAggressively()
         default:
             return
         }
@@ -823,11 +819,7 @@ class AppDelegate: AppDelegateParent {
         case .a:
             if let opt = OM.current, !opt.inRemoval {
                 guard !opt.aggressive else { return }
-                if opt.downscaleFactor < 1 {
-                    opt.downscale(toFactor: opt.downscaleFactor, aggressiveOptimisation: true)
-                } else {
-                    opt.optimise(allowLarger: false, aggressiveOptimisation: true, fromOriginal: true)
-                }
+                opt.reoptimiseAggressively()
             } else {
                 Task { try? await optimiseLastClipboardItem(aggressiveOptimisation: true) }
             }
