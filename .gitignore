@@ -1,6 +1,6 @@
-Clop/bin/*
-Clop/bin-*/*
-Clop/bin.zip
+Polc/bin/*
+Polc/bin-*/*
+Polc/bin.zip
 *.dmg
 *.delta
 *.bkp
@@ -9,7 +9,7 @@ build/
 test/
 
 # Tests, fixtures, corpuses and dev/AI specs — keep private, never publish
-ClopTests/
+PolcTests/
 docs/superpowers/
 docs/specs/
 *.corpus.json

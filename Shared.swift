@@ -1,6 +1,6 @@
 //
 //  Shared.swift
-//  Clop
+//  Polc
 //
 //  Created by Alin Panaitiu on 24.09.2023.
 //
@@ -57,7 +57,7 @@ func ~= (lhs: UTType?, rhs: UTType) -> Bool {
     return lhs.conforms(to: rhs)
 }
 
-enum ClopError: Error, CustomStringConvertible, Codable {
+enum PolcError: Error, CustomStringConvertible, Codable {
     case fileNotFound(FilePath)
     case fileNotImage(FilePath)
     case noClipboardImage(FilePath)
@@ -239,7 +239,7 @@ extension UTType {
 let VIDEO_FORMATS: [UTType] = [.quickTimeMovie, .mpeg4Movie, .webm, .mkv, .mpeg2Video, .avi, .m4v, .mpeg].compactMap { $0 }
 let IMAGE_FORMATS: [UTType] = [.webP, .avif, .heic, .jxl, .bmp, .tiff, .png, .jpeg, .gif].compactMap { $0 }
 let AUDIO_FORMATS: [UTType] = [.wav, .aiff, .mp3, .flac, .m4a, .oggAudio].compactMap { $0 }
-/// Image formats whose conversion encoder takes Clop's compression quality directly. Everything else
+/// Image formats whose conversion encoder takes Polc's compression quality directly. Everything else
 /// (JPEG, PNG, GIF, …) is written by `convert` at maximum quality through the system encoder, which
 /// has no quality knob, so reaching the configured quality needs a separate optimisation pass.
 let QUALITY_AWARE_CONVERT_FORMATS: [UTType] = [.avif, .webP, .heic, .jxl].compactMap { $0 }
@@ -260,11 +260,11 @@ func awaitSync(_ action: @escaping () async -> Void) {
     sem.wait()
 }
 
-let OPTIMISATION_PORT_ID = "com.stephenangeloni.Clop.optimisationService"
-let OPTIMISATION_STOP_PORT_ID = "com.stephenangeloni.Clop.optimisationServiceStop"
-let OPTIMISATION_RESPONSE_PORT_ID = "com.stephenangeloni.Clop.optimisationServiceResponse"
-let OPTIMISATION_CLI_RESPONSE_PORT_ID = "com.stephenangeloni.Clop.optimisationServiceResponseCLI"
-let SETTINGS_PORT_ID = "com.stephenangeloni.Clop.settingsService"
+let OPTIMISATION_PORT_ID = "com.stephenangeloni.Polc.optimisationService"
+let OPTIMISATION_STOP_PORT_ID = "com.stephenangeloni.Polc.optimisationServiceStop"
+let OPTIMISATION_RESPONSE_PORT_ID = "com.stephenangeloni.Polc.optimisationServiceResponse"
+let OPTIMISATION_CLI_RESPONSE_PORT_ID = "com.stephenangeloni.Polc.optimisationServiceResponseCLI"
+let SETTINGS_PORT_ID = "com.stephenangeloni.Polc.settingsService"
 
 // MARK: - Settings over the wire
 
@@ -758,17 +758,17 @@ struct OptimisationRequest: Codable, Identifiable {
     var changePlaybackSpeedFrames: String? = nil
 }
 
-func runningClopApp() -> NSRunningApplication? {
-    NSRunningApplication.runningApplications(withBundleIdentifier: "com.stephenangeloni.Clop").first
+func runningPolcApp() -> NSRunningApplication? {
+    NSRunningApplication.runningApplications(withBundleIdentifier: "com.stephenangeloni.Polc").first
 }
 
-func isClopRunning() -> Bool {
-    runningClopApp() != nil
+func isPolcRunning() -> Bool {
+    runningPolcApp() != nil
 }
 
 import os
 
-let LOG_SUBSYSTEM = Bundle.main.bundleIdentifier ?? "com.stephenangeloni.Clop"
+let LOG_SUBSYSTEM = Bundle.main.bundleIdentifier ?? "com.stephenangeloni.Polc"
 
 private let log = Logger(subsystem: LOG_SUBSYSTEM, category: "Shared")
 
@@ -1127,16 +1127,16 @@ let ARCH: String = {
     Darwin.sysctlbyname("hw.cputype", &ret, &size, nil, 0)
     return ret == NSBundleExecutableArchitectureARM64 ? "arm64" : "x86"
 }()
-let APP_SCRIPTS_DIR = FileManager.default.urls(for: .applicationScriptsDirectory, in: .userDomainMask).first ?? URL(fileURLWithPath: "\(NSHomeDirectory())/Library/Application Scripts/com.stephenangeloni.Clop")
+let APP_SCRIPTS_DIR = FileManager.default.urls(for: .applicationScriptsDirectory, in: .userDomainMask).first ?? URL(fileURLWithPath: "\(NSHomeDirectory())/Library/Application Scripts/com.stephenangeloni.Polc")
 
 /// exiftool tags that decide the colours an image shows, kept when stripping metadata. A camera JPEG in
 /// Adobe RGB often has no ICC profile and says so through the primaries in IFD0, which ImageIO reads;
 /// without them the colours come out as sRGB, less saturated.
 let COLOUR_TAGS = ["-ColorSpaceTags", "-icc_profile", "-WhitePoint", "-PrimaryChromaticities"]
 
-let GLOBAL_BIN_DIR_PARENT = APP_SCRIPTS_DIR // ~/Library/Application Scripts/com.stephenangeloni.Clop
-let GLOBAL_BIN_DIR = GLOBAL_BIN_DIR_PARENT.appendingPathComponent("bin") // ~/Library/Application Scripts/com.stephenangeloni.Clop/bin/
-let BIN_DIR = GLOBAL_BIN_DIR.appendingPathComponent(ARCH) // ~/Library/Application Scripts/com.stephenangeloni.Clop/bin/arm64
+let GLOBAL_BIN_DIR_PARENT = APP_SCRIPTS_DIR // ~/Library/Application Scripts/com.stephenangeloni.Polc
+let GLOBAL_BIN_DIR = GLOBAL_BIN_DIR_PARENT.appendingPathComponent("bin") // ~/Library/Application Scripts/com.stephenangeloni.Polc/bin/
+let BIN_DIR = GLOBAL_BIN_DIR.appendingPathComponent(ARCH) // ~/Library/Application Scripts/com.stephenangeloni.Polc/bin/arm64
 var EXIFTOOL = BIN_DIR.appendingPathComponent("exiftool").filePath!
 var HEIF_ENC = BIN_DIR.appendingPathComponent("heif-enc").filePath!
 var CWEBP = BIN_DIR.appendingPathComponent("cwebp").filePath!

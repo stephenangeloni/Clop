@@ -5,7 +5,7 @@
 # byte-identical, so their signature stays valid.
 set -euo pipefail
 
-dir="${1:-Clop/bin}"
+dir="${1:-Polc/bin}"
 before=0 after=0
 
 while IFS= read -r -d '' f; do

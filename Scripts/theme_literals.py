@@ -66,7 +66,7 @@ def migrate(path):
 
 
 def sources():
-    return [p for p in Path("Clop").glob("*.swift") if p.name != "Theme.swift"]
+    return [p for p in Path("Polc").glob("*.swift") if p.name != "Theme.swift"]
 
 
 if __name__ == "__main__":

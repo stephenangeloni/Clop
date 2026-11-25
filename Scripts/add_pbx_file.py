@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Add Swift source files (and resources) to Clop.xcodeproj/project.pbxproj.
+"""Add Swift source files (and resources) to Polc.xcodeproj/project.pbxproj.
 
-`Clop/` is a synchronized folder group and picks new files up on its own. `ClopCLI/` is not, so a
+`Polc/` is a synchronized folder group and picks new files up on its own. `PolcCLI/` is not, so a
 new file there is silently NOT compiled until it appears in four places in the pbxproj. A build
 still succeeds until something references the missing symbols, which makes this easy to miss.
 
@@ -9,7 +9,7 @@ still succeeds until something references the missing symbols, which makes this 
     Scripts/add_pbx_file.py --resource prompt.md         # bundled resource
 
 Each file gets two fresh 24-hex-uppercase UUIDs and four entries: a PBXBuildFile, a
-PBXFileReference, a child of the Clop group, and a member of the Sources (or Resources) build phase.
+PBXFileReference, a child of the Polc group, and a member of the Sources (or Resources) build phase.
 Anchors are validated to appear exactly once before anything is written, and the file is left
 untouched when a name is already present.
 """
@@ -19,7 +19,7 @@ import random
 import re
 import sys
 
-PROJ = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Clop.xcodeproj", "project.pbxproj")
+PROJ = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Polc.xcodeproj", "project.pbxproj")
 
 # An existing file whose four lines are unambiguous, used to locate each list.
 ANCHOR = "CropWindow.swift"
@@ -104,7 +104,7 @@ def main():
         f.write(text)
     for name in added:
         print(f"added {name}")
-    print("\nConfirm with: rg -c '<name>' Clop.xcodeproj/project.pbxproj  (expect 4)")
+    print("\nConfirm with: rg -c '<name>' Polc.xcodeproj/project.pbxproj  (expect 4)")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Keep the settings index honest about what Clop actually has.
+"""Keep the settings index honest about what Polc actually has.
 
 The index is hand-maintained, and nothing in the compiler notices when it drifts: a renamed key leaves
 an entry pointing at nothing, and a new setting gets no entry at all. Either way an agent confidently
@@ -46,11 +46,11 @@ def main():
     ap.add_argument("--coverage", action="store_true")
     args = ap.parse_args()
 
-    settings = strip_comments(read("Clop/Settings.swift"))
+    settings = strip_comments(read("Polc/Settings.swift"))
     # Non-greedy up to `>("`, or `Key<Set<UTType>>` loses its last angle bracket.
     defined = set(re.findall(r'static let (\w+) = Key<.+?>\("', settings))
 
-    index_src = read("Clop/SettingsSearchIndex.swift")
+    index_src = read("Polc/SettingsSearchIndex.swift")
     entries = re.findall(r'id: "([^"]+)", keys: \[([^\]]*)\]', index_src)
     ids = [e[0] for e in entries]
     indexed = set()
@@ -60,7 +60,7 @@ def main():
             indexed.add(k)
             entry_of.setdefault(k, eid)
 
-    registry_src = strip_comments(read("Clop/MCPSettings.swift"))
+    registry_src = strip_comments(read("Polc/MCPSettings.swift"))
     # bool("name", .name) / int(...) / behaviour(...) / enumCases("name", ...)
     registered = set(re.findall(r'\b(?:bool|int|double|string|rawValue|enumCases|behaviour)\(\s*"([^"]+)"', registry_src))
 
@@ -76,10 +76,10 @@ def main():
     # Anchors: a search result that cannot scroll to its row lands the user on the pane and leaves
     # them to hunt. An entry without an anchor is a silently worse search result, so it fails here.
     anchored = set()
-    for name in os.listdir(os.path.join(ROOT, "Clop")):
+    for name in os.listdir(os.path.join(ROOT, "Polc")):
         if not name.endswith(".swift"):
             continue
-        anchored |= set(re.findall(r'\.searchAnchor\("([^"]+)"[,)]', read(os.path.join("Clop", name))))
+        anchored |= set(re.findall(r'\.searchAnchor\("([^"]+)"[,)]', read(os.path.join("Polc", name))))
     entry_ids = set(ids)
     for a in sorted(anchored - entry_ids):
         errors.append(f"searchAnchor({a!r}) does not match any index entry")

@@ -1,0 +1,2866 @@
+import Defaults
+import Foundation
+import Lowtech
+import SwiftUI
+
+enum FloatingAction: RawRepresentable, CaseIterable, Codable, Hashable, Defaults.Serializable, Identifiable {
+    case downscale
+    case compression
+    case crop
+    case share
+    case restoreOptimise
+    case aggressiveOptimisation
+    case copyToClipboard
+    case showInFinder
+    case quickLook
+    case saveAs
+    case addToShelf
+    case targetSize
+    /// Runs a saved pipeline on the result's file, one pipeline per file type so a single button can
+    /// do the right thing for images, videos, audio and PDFs. Stored as `pipeline:image=<id>;video=<id>`
+    /// so the action lists stay plain string arrays in Defaults.
+    case pipeline(PipelineSet)
+
+    init?(rawValue: String) {
+        if rawValue.hasPrefix(Self.pipelinePrefix) {
+            guard let set = PipelineSet(raw: String(rawValue.dropFirst(Self.pipelinePrefix.count))) else { return nil }
+            self = .pipeline(set)
+            return
+        }
+        guard let action = Self.allCases.first(where: { $0.rawValue == rawValue }) else { return nil }
+        self = action
+    }
+
+    init(from decoder: Decoder) throws {
+        let raw = try String(from: decoder)
+        guard let action = Self(rawValue: raw) else {
+            throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "Unknown floating action \(raw)"))
+        }
+        self = action
+    }
+
+    static let pipelinePrefix = "pipeline:"
+    static let pipelinesMenuIcon = "flowchart"
+    static let maxFloatingButtons = 5
+    static let maxCompactButtons = 9
+    static let defaultFloating: [FloatingAction] = [.downscale, .restoreOptimise, .compression, .aggressiveOptimisation, .share]
+    static let defaultCompact: [FloatingAction] = [.downscale, .compression, .crop, .quickLook, .restoreOptimise, .showInFinder, .saveAs, .copyToClipboard, .share]
+
+    /// Built-in actions only; pipeline actions come from the saved pipelines library.
+    static let allCases: [FloatingAction] = [
+        .downscale, .compression, .crop, .share, .restoreOptimise, .aggressiveOptimisation, .copyToClipboard,
+        .showInFinder, .quickLook, .saveAs, .addToShelf, .targetSize,
+    ]
+
+    var rawValue: String {
+        switch self {
+        case .downscale: "downscale"
+        case .compression: "compression"
+        case .crop: "crop"
+        case .share: "share"
+        case .restoreOptimise: "restoreOptimise"
+        case .aggressiveOptimisation: "aggressiveOptimisation"
+        case .copyToClipboard: "copyToClipboard"
+        case .showInFinder: "showInFinder"
+        case .quickLook: "quickLook"
+        case .saveAs: "saveAs"
+        case .addToShelf: "addToShelf"
+        case .targetSize: "targetSize"
+        case let .pipeline(set): Self.pipelinePrefix + set.raw
+        }
+    }
+
+    var id: String {
+        rawValue
+    }
+
+    var pipelineSet: PipelineSet? {
+        guard case let .pipeline(set) = self else { return nil }
+        return set
+    }
+
+    /// The first assigned pipeline that still exists, in file type order. Represents the button where no
+    /// file is in context (Settings, menus listing single-pipeline actions).
+    var savedPipeline: Pipeline? {
+        pipelineSet?.pipelines.first?.pipeline
+    }
+
+    var isPipeline: Bool {
+        if case .pipeline = self {
+            return true
+        }
+        return false
+    }
+
+    /// False for a pipeline action whose pipelines were all deleted from the library. Those stay in the
+    /// stored list but are never shown, so they don't turn into unlabelled buttons.
+    var resolves: Bool {
+        !isPipeline || savedPipeline != nil
+    }
+
+    var label: String {
+        switch self {
+        case let .pipeline(set): set.pipelines.map { $0.pipeline.name ?? $0.pipeline.id }.joined(separator: " · ")
+        case .downscale: "Downscale"
+        case .compression: "Compression"
+        case .crop: "Crop and resize"
+        case .share: "Share"
+        case .restoreOptimise: "Restore / Optimise"
+        case .aggressiveOptimisation: "Aggressive optimisation"
+        case .copyToClipboard: "Copy to clipboard"
+        case .showInFinder: "Show in Finder"
+        case .quickLook: "QuickLook"
+        case .saveAs: "Save as..."
+        case .addToShelf: "Add to shelf"
+        case .targetSize: "Fit under size"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .downscale: "minus"
+        case .compression: "slider.horizontal.3"
+        case .crop: "crop"
+        case .share: "square.and.arrow.up"
+        case .restoreOptimise: "arrow.uturn.backward"
+        case .aggressiveOptimisation: "bolt.horizontal"
+        case .copyToClipboard: "doc.on.doc"
+        case .showInFinder: "folder"
+        case .quickLook: "eye"
+        case .saveAs: "square.and.arrow.down"
+        case .addToShelf: "tray.and.arrow.down"
+        case .targetSize: "target"
+        case .pipeline: savedPipeline?.icon ?? "wand.and.sparkles"
+        }
+    }
+
+    /// Named saved pipelines that can be assigned to a new button, optionally limited to one file type,
+    /// each as a button holding just that pipeline. Pipelines already on one of `existing` are left out.
+    static func pipelineActions(for fileType: PolcFileType? = nil, excluding existing: [FloatingAction] = []) -> [FloatingAction] {
+        let used = Set(existing.compactMap(\.pipelineSet).flatMap(\.ids.values))
+        return Defaults[.savedPipelines]
+            .filter { p in
+                guard let name = p.name, !name.isEmpty, !used.contains(p.id) else { return false }
+                return fileType == nil || p.fileType == nil || p.fileType == fileType
+            }
+            .map { .pipeline(PipelineSet(pipeline: $0)) }
+    }
+
+    /// The pipeline this button runs on a file of this type: the type's own pipeline, else the Any type one.
+    func pipeline(for fileType: PolcFileType?) -> Pipeline? {
+        pipelineSet?.pipeline(for: fileType)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        try rawValue.encode(to: encoder)
+    }
+
+    func applies(to fileType: PolcFileType?) -> Bool {
+        !isPipeline || pipeline(for: fileType) != nil
+    }
+
+    func icon(for fileType: PolcFileType?) -> String {
+        guard isPipeline else { return icon }
+        return pipeline(for: fileType)?.icon ?? icon
+    }
+
+    func label(for type: ItemType) -> String {
+        switch self {
+        case .downscale where type.isAudio: "Downscale cover art"
+        case .downscale where type.isPDF: "Compression"
+        case .pipeline: pipeline(for: type.polcFileType).map { $0.name ?? $0.id } ?? label
+        default: label
+        }
+    }
+
+}
+
+/// The pipelines on one result action button, at most one per file type. Keys are `PolcFileType` raw
+/// values, or `any` for a pipeline that runs on every type.
+struct PipelineSet: Hashable {
+    init(ids: [String: String]) {
+        self.ids = ids
+    }
+
+    init(pipeline: Pipeline) {
+        ids = [Self.key(pipeline.fileType): pipeline.id]
+    }
+
+    /// `image=<id>;video=<id>` (`;` because the settings list itself is comma separated over MCP), or a bare `<id>` from 3.4.2b1, which held one pipeline per button and is
+    /// filed under that pipeline's own type.
+    init?(raw: String) {
+        guard !raw.isEmpty else { return nil }
+        guard raw.contains("=") else {
+            let type = Defaults[.savedPipelines].first { $0.id == raw }?.fileType
+            ids = [Self.key(type): raw]
+            return
+        }
+        var ids: [String: String] = [:]
+        for pair in raw.split(separator: ";") {
+            let parts = pair.split(separator: "=", maxSplits: 1).map(String.init)
+            guard parts.count == 2, Self.keys.contains(parts[0]), !parts[1].isEmpty else { return nil }
+            ids[parts[0]] = parts[1]
+        }
+        guard !ids.isEmpty else { return nil }
+        self.ids = ids
+    }
+
+    static let keys = ["image", "video", "audio", "pdf", "any"]
+
+    var ids: [String: String]
+
+    var raw: String {
+        Self.keys.compactMap { key in ids[key].map { "\(key)=\($0)" } }.joined(separator: ";")
+    }
+
+    /// Assigned pipelines that still exist, in file type order.
+    var pipelines: [(key: String, pipeline: Pipeline)] {
+        let saved = Defaults[.savedPipelines]
+        return Self.keys.compactMap { key in
+            guard let id = ids[key], let p = saved.first(where: { $0.id == id }) else { return nil }
+            return (key, p)
+        }
+    }
+
+    static func key(_ fileType: PolcFileType?) -> String {
+        fileType?.rawValue ?? "any"
+    }
+
+    func pipeline(for fileType: PolcFileType?) -> Pipeline? {
+        let saved = Defaults[.savedPipelines]
+        for key in [fileType.map { Self.key($0) }, "any"].compactMap({ $0 }) {
+            if let id = ids[key], let p = saved.first(where: { $0.id == id }) {
+                return p
+            }
+        }
+        return nil
+    }
+
+    /// This set with `pipeline` assigned to its file type, or cleared from it when it is already the
+    /// assigned one. Nil when that leaves nothing assigned.
+    func toggling(_ pipeline: Pipeline) -> PipelineSet? {
+        var ids = ids
+        let key = Self.key(pipeline.fileType)
+        ids[key] = ids[key] == pipeline.id ? nil : pipeline.id
+        return ids.isEmpty ? nil : PipelineSet(ids: ids)
+    }
+}
+
+extension ItemType {
+    var polcFileType: PolcFileType? {
+        if isImage {
+            return .image
+        }
+        if isVideo {
+            return .video
+        }
+        if isAudio {
+            return .audio
+        }
+        if isPDF {
+            return .pdf
+        }
+        return nil
+    }
+}
+
+// MARK: - Overlay card button styles
+
+extension View {
+    /// Slightly warm-tinted material used by every control on the floating card (corner buttons,
+    /// grid buttons, name·format pill). Deliberately NOT Liquid Glass: glass picks up the colours
+    /// of whatever thumbnail sits under it, while a tinted material stays consistent. `stroke`
+    /// (not `strokeBorder`) because the shape is a generic `some Shape`, not `InsettableShape`.
+    func warmControlBackground(in shape: some Shape) -> some View {
+        background {
+            shape.fill(.regularMaterial)
+            // Near-opaque warm fill (warmWhite in light, warmBlack in dark) so the controls read as a
+            // clean white/black chip instead of the mushy gray that a thin tint over the material gave.
+            shape.fill(Color.bg.warm.opacity(0.92))
+        }
+        .overlay { shape.stroke(Color.primary.opacity(0.12), lineWidth: 0.5) }
+    }
+
+    /// Floating-card filename/extension chip: warm-white material (matching the other floating controls),
+    /// `.primary` text, and a very faint warm-gray hairline border on a capsule. Monochrome so it never
+    /// clashes with the thumbnail colours behind it; the border firms up on hover. Apply after the chip's
+    /// own padding.
+    func cardChip(hovering: Bool) -> some View {
+        foregroundColor(.primary)
+            .background {
+                Capsule().fill(.regularMaterial)
+                Capsule().fill(Color.bg.warm.opacity(0.92))
+            }
+            .overlay(Capsule().strokeBorder(Color.fg.warm.opacity(hovering ? 0.3 : 0.15), lineWidth: 0.5))
+    }
+
+    /// Compact-list filename/extension chip: a very translucent monochrome fill + hairline border on a 4pt
+    /// rounded rect. `.primary` text so it adapts to the list's color scheme; firms up on hover. Apply
+    /// after the chip's own (tight) padding.
+    func listChip(hovering: Bool) -> some View {
+        let shape = RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
+        return foregroundColor(.primary)
+            .background(shape.fill(Color.primary.opacity(hovering ? 0.1 : 0.05)))
+            .overlay(shape.strokeBorder(Color.primary.opacity(hovering ? 0.2 : 0.1), lineWidth: 0.5))
+    }
+}
+
+/// Small round button shared by the three floating-card corner controls (close, menu, crop).
+/// Warm-tinted material; cheap opacity/scale hover (no geometry change).
+struct FloatingCornerButtonStyle: ButtonStyle {
+    var size: CGFloat = 23
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.heavy(TextSize.caption)).foregroundStyle(.primary)
+            .frame(width: size, height: size)
+            .warmControlBackground(in: Circle())
+            .contentShape(Circle())
+            .brightness(hovering ? 0.08 : 0)
+            .scaleEffect(configuration.isPressed ? 0.9 : (hovering ? 1.08 : 1))
+            .onHover { h in withAnimation(.spring(response: 0.25, dampingFraction: 0.72)) { hovering = h } }
+    }
+
+    @State private var hovering = false
+}
+
+/// Larger squircle button for the floating-card action grid (r≈15, almost-but-not-quite round).
+struct FloatingGridButtonStyle: ButtonStyle {
+    var size: CGFloat = 34
+
+    func makeBody(configuration: Configuration) -> some View {
+        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
+        configuration.label
+            .font(.heavy(TextSize.subheadline)).foregroundStyle(.primary)
+            .frame(width: size, height: size)
+            .warmControlBackground(in: shape)
+            .contentShape(shape)
+            .brightness(hovering ? 0.08 : 0)
+            .scaleEffect(configuration.isPressed ? 0.92 : (hovering ? 1.06 : 1))
+            .onHover { h in withAnimation(.spring(response: 0.25, dampingFraction: 0.72)) { hovering = h } }
+    }
+
+    @State private var hovering = false
+}
+
+struct CloseStopButton: View {
+    @ObservedObject var optimiser: Optimiser
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        Button(
+            action: {
+                guard !preview else { return }
+
+                // Drop the expensive glass/thumbnail render immediately so the result visually
+                // vanishes on the click instead of paying for a full re-render during removal.
+                optimiser.dismissing = true
+                hoveredOptimiserID = nil
+                // animateRemoval: false skips the slide-out animation used for swipe gestures, so a
+                // button press dismisses on the next tick instead of sliding off-screen first.
+                optimiser.stop(remove: !OM.compactResults || !optimiser.running, animateRemoval: false)
+                optimiser.uiStop()
+            },
+            label: { SwiftUI.Image(systemName: optimiser.running ? "stop.fill" : "xmark") }
+        )
+        .buttonStyle(FloatingCornerButtonStyle())
+    }
+}
+
+struct RestoreOptimiseButton: View {
+    @ObservedObject var optimiser: Optimiser
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        if optimiser.isOriginal {
+            Button(
+                action: {
+                    if !preview {
+                        optimiser.optimise(allowLarger: false); optimiser.collapseHoverOverlay = true
+                    }
+                },
+                label: { SwiftUI.Image(systemName: "goforward.plus").font(.heavy(TextSize.micro)) }
+            )
+            .contentShape(Rectangle())
+        } else {
+            Button(
+                action: {
+                    if !preview {
+                        optimiser.restoreOriginal(); optimiser.overlayMessage = "Restored original"; optimiser.collapseHoverOverlay = true
+                    }
+                },
+                label: { SwiftUI.Image(systemName: "arrow.uturn.left").font(.semibold(TextSize.micro)) }
+            )
+            .contentShape(Rectangle())
+        }
+    }
+}
+
+struct ChangePlaybackSpeedButton: View {
+    @ObservedObject var optimiser: Optimiser
+
+    var body: some View {
+        let factor = optimiser.changePlaybackSpeedFactor.truncatingRemainder(dividingBy: 1) != 0
+            ? String(format: "%.\(optimiser.changePlaybackSpeedFactor == 1.5 ? 1 : 2)f", optimiser.changePlaybackSpeedFactor)
+            : optimiser.changePlaybackSpeedFactor.i.s
+        Menu("\(factor)x") {
+            ChangePlaybackSpeedMenu(optimiser: optimiser)
+        }
+        .menuButtonStyle(BorderlessButtonMenuButtonStyle())
+        .buttonStyle(FlatButton(color: .clear, textColor: .white, circle: optimiser.changePlaybackSpeedFactor >= 2))
+        .font(.round(TextSize.subheadline, weight: .bold))
+    }
+}
+
+struct DownscaleButton: View {
+    @ObservedObject var optimiser: Optimiser
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        Button(action: {}, label: { SwiftUI.Image(systemName: "minus").font(.heavy(TextSize.micro)) })
+            .contentShape(Rectangle())
+            .onMouseDown {
+                guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
+                optimiser.showDownscaleSlider = true
+            }
+            .onRightClick {
+                guard !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
+                optimiser.showDownscaleSlider = true
+            }
+    }
+}
+
+// MARK: - HorizontalDownscaleSlider
+
+struct HorizontalDownscaleSlider: View {
+    static let thresholds: [Double] = [1.0, 0.75, 0.5, 0.25, 0.1]
+
+    @ObservedObject var optimiser: Optimiser
+
+    var size: CGFloat
+
+    var displayFactor: Double {
+        dragFactor ?? optimiser.downscaleFactor
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let knobSize = size * 0.8
+            let trackLeft = knobSize / 2
+            let trackWidth = max(geo.size.width - knobSize, 1)
+            let centerY = geo.size.height / 2
+
+            ZStack {
+                // Track
+                RoundedRectangle(cornerRadius: Radius.hairline)
+                    .fill(.primary.opacity(0.15))
+                    .frame(width: trackWidth, height: 3)
+                    .position(x: geo.size.width / 2, y: centerY)
+
+                // Tick marks
+                ForEach(Self.thresholds, id: \.self) { threshold in
+                    let x = xPosition(for: threshold, trackLeft: trackLeft, trackWidth: trackWidth)
+                    let isActive = abs(displayFactor - threshold) < 0.01
+
+                    RoundedRectangle(cornerRadius: Radius.hairline)
+                        .fill(.primary.opacity(isActive ? 0.7 : 0.3))
+                        .frame(width: isActive ? 2 : 1.5, height: size * 0.55)
+                        .position(x: x, y: centerY)
+                }
+
+                // Knob with tooltip
+                let knobX = xPosition(for: displayFactor, trackLeft: trackLeft, trackWidth: trackWidth)
+                Circle()
+                    .fill(.white)
+                    .frame(width: knobSize, height: knobSize)
+                    .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                    .overlay(alignment: .top) {
+                        VStack(spacing: 0) {
+                            Text(downscaleFactorLabel(displayFactor))
+                                .font(.system(size: TextSize.caption, weight: .heavy, design: .rounded))
+                            if let res = downscaleResolutionString(for: optimiser, factor: displayFactor) {
+                                Text(res).font(.system(size: TextSize.micro, weight: .semibold, design: .rounded)).foregroundColor(.secondary)
+                            }
+                        }
+                        .foregroundColor(.primary)
+                        .fixedSize()
+                        .padding(.horizontal, Space.xs)
+                        .padding(.vertical, Space.xxs)
+                        .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
+                        .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+                        .offset(y: -knobSize - 10)
+                    }
+                    .position(x: knobX, y: centerY)
+            }
+            .background(.ultraThickMaterial, in: Capsule())
+            .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+        }
+        .overlay(
+            SliderEventOverlay(
+                buttonSize: size,
+                isHorizontal: true,
+                accessibilityName: "Downscale",
+                value: displayFactor,
+                valueDescription: "\((displayFactor * 100).intround)%",
+                onDrag: { factor in
+                    dragFactor = factor
+                    optimiser.stepIndicator = downscaleResolutionString(for: optimiser, factor: factor).map { "\(downscaleFactorLabel(factor)) · \($0)" } ?? downscaleFactorLabel(factor)
+                },
+                onRelease: { factor in
+                    let startFactor = optimiser.downscaleFactor
+                    dragFactor = nil
+                    optimiser.stepIndicator = ""
+                    optimiser.showDownscaleSlider = false
+                    if abs(factor - startFactor) > 0.01 {
+                        optimiser.downscale(toFactor: factor)
+                    }
+                },
+                onCancel: {
+                    dragFactor = nil
+                    optimiser.stepIndicator = ""
+                    optimiser.showDownscaleSlider = false
+                }
+            )
+        )
+    }
+
+    func xPosition(for factor: Double, trackLeft: CGFloat, trackWidth: CGFloat) -> CGFloat {
+        trackLeft + (1.0 - factor) / 0.9 * trackWidth
+    }
+
+    @State private var dragFactor: Double?
+}
+
+// MARK: - HorizontalCoverArtSlider
+
+/// Audio's downscale axis in the compact list: resizes the embedded cover art (NOT the bitrate, which
+/// lives on the compression button), mirroring the floating card's `CardCoverArtSlider`. Same geometry
+/// as `HorizontalDownscaleSlider`, but drives `coverDownscaleFactor` / `downscaleAudioCoverArt`.
+struct HorizontalCoverArtSlider: View {
+    static let thresholds: [Double] = [1.0, 0.75, 0.5, 0.25, 0.1]
+
+    @ObservedObject var optimiser: Optimiser
+
+    var size: CGFloat
+
+    var displayFactor: Double {
+        dragFactor ?? optimiser.coverDownscaleFactor
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let knobSize = size * 0.8
+            let trackLeft = knobSize / 2
+            let trackWidth = max(geo.size.width - knobSize, 1)
+            let centerY = geo.size.height / 2
+
+            ZStack {
+                RoundedRectangle(cornerRadius: Radius.hairline)
+                    .fill(.primary.opacity(0.15))
+                    .frame(width: trackWidth, height: 3)
+                    .position(x: geo.size.width / 2, y: centerY)
+
+                ForEach(Self.thresholds, id: \.self) { threshold in
+                    let x = xPosition(for: threshold, trackLeft: trackLeft, trackWidth: trackWidth)
+                    let isActive = abs(displayFactor - threshold) < 0.01
+                    RoundedRectangle(cornerRadius: Radius.hairline)
+                        .fill(.primary.opacity(isActive ? 0.7 : 0.3))
+                        .frame(width: isActive ? 2 : 1.5, height: size * 0.55)
+                        .position(x: x, y: centerY)
+                }
+
+                let knobX = xPosition(for: displayFactor, trackLeft: trackLeft, trackWidth: trackWidth)
+                Circle()
+                    .fill(.white)
+                    .frame(width: knobSize, height: knobSize)
+                    .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                    .overlay(alignment: .top) {
+                        VStack(spacing: 0) {
+                            Text(downscaleFactorLabel(displayFactor))
+                                .font(.system(size: TextSize.caption, weight: .heavy, design: .rounded))
+                            if let base = optimiser.coverArtSize, base.width > 0, base.height > 0 {
+                                Text("\(Int((base.width * displayFactor).rounded()))×\(Int((base.height * displayFactor).rounded()))")
+                                    .font(.system(size: TextSize.micro, weight: .semibold, design: .rounded)).foregroundColor(.secondary)
+                            }
+                        }
+                        .foregroundColor(.primary)
+                        .fixedSize()
+                        .padding(.horizontal, Space.xs)
+                        .padding(.vertical, Space.xxs)
+                        .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
+                        .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+                        .offset(y: -knobSize - 10)
+                    }
+                    .position(x: knobX, y: centerY)
+            }
+            .background(.ultraThickMaterial, in: Capsule())
+            .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+        }
+        .overlay(
+            SliderEventOverlay(
+                buttonSize: size,
+                isHorizontal: true,
+                accessibilityName: "Cover art size",
+                value: displayFactor,
+                valueDescription: "\((displayFactor * 100).intround)%",
+                onDrag: { factor in
+                    dragFactor = factor
+                    optimiser.stepIndicator = resolutionLabel(factor)
+                },
+                onRelease: { factor in
+                    let startFactor = optimiser.coverDownscaleFactor
+                    dragFactor = nil
+                    optimiser.stepIndicator = ""
+                    optimiser.showDownscaleSlider = false
+                    if abs(factor - startFactor) > 0.01 {
+                        downscaleAudioCoverArt(optimiser: optimiser, toFactor: factor)
+                    }
+                },
+                onCancel: {
+                    dragFactor = nil
+                    optimiser.stepIndicator = ""
+                    optimiser.showDownscaleSlider = false
+                }
+            )
+        )
+        .onAppear { loadAudioCoverArtSize(optimiser: optimiser) }
+    }
+
+    func resolutionLabel(_ factor: Double) -> String {
+        let f = downscaleFactorLabel(factor)
+        guard let base = optimiser.coverArtSize, base.width > 0, base.height > 0 else { return f }
+        let w = Int((base.width * factor).rounded())
+        let h = Int((base.height * factor).rounded())
+        return "\(f) · \(w)×\(h)"
+    }
+
+    func xPosition(for factor: Double, trackLeft: CGFloat, trackWidth: CGFloat) -> CGFloat {
+        trackLeft + (1.0 - factor) / 0.9 * trackWidth
+    }
+
+    @State private var dragFactor: Double?
+}
+
+// MARK: - Compression button + slider (per-result quality)
+
+/// Maps the compression slider's normalized position (0 = top = least compression / best quality,
+/// 1 = bottom = most compression / smallest file) to a `CompressionQuality` per item type, and back.
+/// Video flows through Lossless → Fast (hardware) → Smaller (software CRF). Image is Adaptive → factor.
+enum CompressionScale {
+    /// Position of each named tier on the slider track (0 = top = least compression / best quality). Drags
+    /// are continuous (no fixed stops); `magneticValues` makes the knob click onto these tiers and a few
+    /// round factor milestones while staying free to sit at any value in between. The factor ramp fills the
+    /// track below the last named tier, so the Fast / Adaptive regions end exactly where the ramp begins.
+    static let videoLossless = 0.0
+    static let videoFast = 0.12
+    static let videoFactorStart = 0.24
+    static let imageAdaptive = 0.0
+    static let imageFactorStart = 0.12
+
+    /// AV1/VP9 have no hardware encoder on macOS, so their track has no Fast anchor:
+    /// the factor ramp starts where Fast would have been.
+    static func hasHardwareAnchor(_ type: ItemType) -> Bool {
+        switch type {
+        case .video(.av1Video), .video(.webm): false
+        default: true
+        }
+    }
+
+    static func factorStart(for type: ItemType) -> Double {
+        hasHardwareAnchor(type) ? videoFactorStart : videoFast
+    }
+
+    /// Short codec name shown before the percentage while dragging a converted result's slider.
+    static func codecPrefix(_ type: ItemType) -> String? {
+        switch type {
+        case .video(.hevcVideo): "HEVC"
+        case .video(.av1Video): "AV1"
+        case .video(.webm): "VP9"
+        default: nil
+        }
+    }
+
+    /// Map a position within the factor ramp `[start, 1]` to a continuous 5…100% (whole-percent), so every
+    /// pixel of the track is a distinct value rather than snapping to coarse increments.
+    static func rampFactor(_ p: Double, start: Double) -> Int {
+        Int(max(5, min(100, 5 + (p - start) / (1 - start) * 95)).rounded())
+    }
+
+    static func quality(forPosition position: Double, type: ItemType) -> CompressionQuality {
+        let p = max(0, min(1, position))
+        // Tier boundaries are the midpoint between the tier's position and the factor ramp's start, so the
+        // ramp's 5% (which sits exactly at the start) is never misread as the tier by a hair of float error.
+        if type.isVideo {
+            let start = factorStart(for: type)
+            if p < videoFast / 2 {
+                return CompressionQuality(tier: .lossless, factor: 5)
+            }
+            if hasHardwareAnchor(type), p < (videoFast + videoFactorStart) / 2 {
+                return CompressionQuality(tier: .fast, factor: 50)
+            }
+            return CompressionQuality(tier: .smaller, factor: rampFactor(p, start: start))
+        }
+        // Audio has no Adaptive tier: a plain 5…100% quality maps to a bitrate via audioBitrate(for:).
+        if type.isAudio {
+            return CompressionQuality(tier: .custom, factor: Int((5 + p * 95).rounded()))
+        }
+        if p < imageFactorStart / 2 {
+            return CompressionQuality(tier: .adaptive, factor: 5)
+        }
+        return CompressionQuality(tier: .custom, factor: rampFactor(p, start: imageFactorStart))
+    }
+
+    static func position(for cq: CompressionQuality, type: ItemType) -> Double {
+        if type.isVideo {
+            let start = factorStart(for: type)
+            switch cq.tier {
+            case .lossless: return videoLossless
+            case .fast: return hasHardwareAnchor(type) ? videoFast : start
+            default: return start + Double(cq.factor - 5) / 95 * (1 - start)
+            }
+        }
+        if type.isAudio {
+            return Double(cq.factor - 5) / 95
+        }
+        if cq.tier == .adaptive {
+            return imageAdaptive
+        }
+        return imageFactorStart + Double(cq.factor - 5) / 95 * (1 - imageFactorStart)
+    }
+
+    static func label(for cq: CompressionQuality, type: ItemType) -> String {
+        if type.isVideo {
+            let prefix = codecPrefix(type).map { "\($0) · " } ?? ""
+            switch cq.tier {
+            case .lossless: return "\(prefix)Lossless"
+            case .fast: return "\(prefix)Fast"
+            default: return cq.videoUsesAutoCRF ? "\(prefix)Auto" : "\(prefix)\(cq.factor)%"
+            }
+        }
+        if type.isAudio {
+            return "\(cq.factor)%"
+        }
+        return cq.tier == .adaptive ? "Adaptive" : "\(cq.factor)%"
+    }
+
+    /// Spelled-out label shown in the centre of the result while dragging (the knob keeps the terse one).
+    static func stepLabel(for cq: CompressionQuality, type: ItemType) -> String {
+        if type.isVideo {
+            let prefix = codecPrefix(type).map { "\($0) · " } ?? ""
+            switch cq.tier {
+            case .lossless: return "\(prefix)Lossless"
+            case .fast: return "\(prefix)Fast"
+            default: return cq.videoUsesAutoCRF ? "\(prefix)Auto" : "\(prefix)\(cq.factor)% compression"
+            }
+        }
+        if type.isAudio {
+            return "\(cq.factor)% compression"
+        }
+        return cq.tier == .adaptive ? "Adaptive" : "\(cq.factor)% compression"
+    }
+
+    static func anchors(for type: ItemType) -> [Double] {
+        // Tick marks. The named tier(s) sit at the top; the factor ramp fills the rest, marked with a few
+        // evenly spread factor milestones (these line up with the magnetic snap targets below).
+        if type.isVideo {
+            let named = hasHardwareAnchor(type) ? [videoLossless, videoFast] : [videoLossless]
+            return named + [25, 50, 75, 100].map { position(for: CompressionQuality(tier: .smaller, factor: $0), type: type) }
+        }
+        if type.isAudio {
+            return [0.0, 0.25, 0.5, 0.75, 1.0]
+        }
+        return [imageAdaptive] + [25, 50, 75, 100].map { position(for: CompressionQuality(tier: .custom, factor: $0), type: type) }
+    }
+
+    /// Magnetic snap targets for the compression slider, in `SliderEventOverlay` value space
+    /// (`value = 1 - position*0.9`): the named tiers plus round factor milestones, so the knob clicks onto
+    /// Adaptive / Lossless / Fast and the common factors while staying free to sit anywhere between them.
+    static func magneticValues(for type: ItemType) -> [Double] {
+        func value(_ p: Double) -> Double {
+            1 - p * 0.9
+        }
+        // 5 is the minimum factor (right after the named tiers): including it makes the tier ↔ 5% boundary
+        // a clean snap, so the knob can't linger in the gap between e.g. Adaptive and 5%.
+        let factors = [5, 25, 50, 75, 100]
+        if type.isVideo {
+            let named = hasHardwareAnchor(type) ? [value(videoLossless), value(videoFast)] : [value(videoLossless)]
+            return named
+                + factors.map { value(position(for: CompressionQuality(tier: .smaller, factor: $0), type: type)) }
+        }
+        if type.isAudio {
+            return factors.map { value(Double($0 - 5) / 95) }
+        }
+        return [value(imageAdaptive)]
+            + factors.map { value(position(for: CompressionQuality(tier: .custom, factor: $0), type: type)) }
+    }
+}
+
+@MainActor func currentCompressionQuality(for optimiser: Optimiser) -> CompressionQuality {
+    if let override = optimiser.compressionOverride {
+        return override
+    }
+    if optimiser.type.isVideo {
+        return Defaults[.videoCompression]
+    }
+    if optimiser.type.isAudio {
+        return Defaults[.audioCompression]
+    }
+    return Defaults[.imageCompression]
+}
+
+/// Downscale factor as "1x", "0.5x", "0.1x" (rounded to 2 decimals), used in place of a percentage in
+/// every downscale readout.
+func downscaleFactorLabel(_ factor: Double) -> String {
+    String(format: "%gx", (factor * 100).rounded() / 100)
+}
+
+/// "W×H" the image/video would be at `factor` of its original size, for slider readouts. nil if the
+/// original size isn't known yet.
+@MainActor func downscaleResolutionString(for optimiser: Optimiser, factor: Double) -> String? {
+    guard let base = optimiser.oldSize, base.width > 0, base.height > 0 else { return nil }
+    return "\(Int((base.width * factor).rounded()))×\(Int((base.height * factor).rounded()))"
+}
+
+/// The compression value readout (tier/factor). The resulting format, and any PNG↔JPEG flip the
+/// Adaptive cross-test produced, is shown separately by `FormatChangeLine` so the transition (not just
+/// the landed format) is visible, which is what tells the user whether nudging the factor flips the
+/// format and changes the size tradeoff.
+@MainActor func compressionLabel(for optimiser: Optimiser, quality: CompressionQuality? = nil, terse: Bool = false) -> String {
+    let cq = quality ?? currentCompressionQuality(for: optimiser)
+    let base = terse ? CompressionScale.label(for: cq, type: optimiser.compressionSliderType) : CompressionScale.stepLabel(for: cq, type: optimiser.compressionSliderType)
+    // For audio, surface the resulting kbps next to the compression percentage (the same way the
+    // downscale slider shows the resulting resolution), since the actual bitrate for a given factor
+    // differs per codec (Opus < AAC < MP3).
+    if let kbps = resultingAudioBitrate(for: optimiser, quality: cq) {
+        return "\(base) · \(kbps) kbps"
+    }
+    return base
+}
+
+/// The kbps the compression value `cq` produces for this audio result, using the format it will be
+/// encoded to: the converted format when a conversion is in effect, otherwise the user's audio-format
+/// setting resolved for the current file. Returns nil for non-audio or lossless formats (no bitrate axis).
+@MainActor func resultingAudioBitrate(for optimiser: Optimiser, quality cq: CompressionQuality) -> Int? {
+    guard optimiser.type.isAudio else { return nil }
+    let format: AudioFormat = if let cur = optimiser.currentAudioFormat, cur.bitrateRange != nil {
+        cur
+    } else {
+        optimiser.audioFormat
+    }
+    return cq.audioBitrate(for: format)
+}
+
+/// The format a compression value produces for an image, as `(original, result)`. The original is the
+/// format the file had before Adaptive's PNG↔JPEG cross-test (the one a literal factor preserves), read
+/// from the pristine source reference: `startingURL` for clipboard, `originalURL` for file drops (set once
+/// and never overwritten, so it survives slider re-optimisations), then `convertedFromURL`. A literal
+/// factor disables the format change and keeps that original; only the Adaptive tier can flip the format,
+/// and its choice only lands in `url`, so the result is taken from the output only when Adaptive is the
+/// selected quality. Returns nil for non-images (where the compression value never changes the format).
+@MainActor func compressionFormatDisplay(for optimiser: Optimiser, selectedQuality: CompressionQuality?) -> (original: String, result: String)? {
+    guard optimiser.type.isImage else { return nil }
+    func fmt(_ ext: String) -> String {
+        ["jpg", "jpeg"].contains(ext.lowercased()) ? "JPEG" : ext.uppercased()
+    }
+    let originalURL = optimiser.startingURL ?? optimiser.originalURL ?? optimiser.convertedFromURL
+    guard let origExt = originalURL?.filePath?.extension ?? optimiser.url?.filePath?.extension else { return nil }
+    let original = fmt(origExt)
+    let cq = selectedQuality ?? currentCompressionQuality(for: optimiser)
+    let result = (cq.tier == .adaptive ? optimiser.url?.filePath?.extension.map(fmt) : nil) ?? original
+    return (original, result)
+}
+
+/// The format line shown under a compression value. When the selected quality keeps the format it shows a
+/// single token (the resulting format, e.g. `PNG`); when Adaptive flips it, it shows the transition with
+/// original (secondary) → (tertiary) result (primary). `onDark` switches the hierarchy to a white scale for
+/// dark pills; otherwise it uses the adaptive primary/secondary scale. `selectedQuality` is the value the
+/// slider currently points at (nil = the committed value), so the format tracks the dragged position.
+struct FormatChangeLine: View {
+    @ObservedObject var optimiser: Optimiser
+
+    var selectedQuality: CompressionQuality?
+    var onDark = false
+
+    var body: some View {
+        if let display = compressionFormatDisplay(for: optimiser, selectedQuality: selectedQuality) {
+            let primary: Color = onDark ? .white : .primary
+            let secondary: Color = onDark ? .white.opacity(0.65) : .secondary
+            let tertiary: Color = onDark ? .white.opacity(0.4) : .primary.opacity(0.35)
+            Group {
+                if display.original == display.result {
+                    Text(display.result).foregroundColor(primary)
+                } else {
+                    Text(display.original).foregroundColor(secondary)
+                        + Text(" → ").foregroundColor(tertiary)
+                        + Text(display.result).foregroundColor(primary)
+                }
+            }
+            .font(.system(size: TextSize.micro, weight: .bold, design: .rounded))
+            .fixedSize()
+        }
+    }
+}
+
+struct CompressionButton: View {
+    @ObservedObject var optimiser: Optimiser
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        Button(action: {}, label: { SwiftUI.Image(systemName: "slider.horizontal.3").font(.heavy(TextSize.micro)) })
+            .contentShape(Rectangle())
+            .onMouseDown {
+                guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
+                optimiser.showCompressionSlider = true
+            }
+            .onRightClick {
+                guard !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
+                optimiser.showCompressionSlider = true
+            }
+    }
+}
+
+struct HorizontalCompressionSlider: View {
+    @ObservedObject var optimiser: Optimiser
+
+    var size: CGFloat
+
+    var displayPosition: Double {
+        // Snap the knob to the canonical position of whatever value the drag resolves to, so it can't rest
+        // in the gap between a named tier and the first factor (e.g. Adaptive ↔ 5%) on a non-value.
+        CompressionScale.position(for: displayQuality ?? currentCompressionQuality(for: optimiser), type: optimiser.compressionSliderType)
+    }
+
+    var displayQuality: CompressionQuality? {
+        dragPosition.map { CompressionScale.quality(forPosition: $0, type: optimiser.compressionSliderType) }
+    }
+    var displayLabel: String {
+        compressionLabel(for: optimiser, quality: displayQuality, terse: true)
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let knobSize = size * 0.8
+            let trackLeft = knobSize / 2
+            let trackWidth = max(geo.size.width - knobSize, 1)
+            let centerY = geo.size.height / 2
+
+            ZStack {
+                RoundedRectangle(cornerRadius: Radius.hairline)
+                    .fill(.primary.opacity(0.15))
+                    .frame(width: trackWidth, height: 3)
+                    .position(x: geo.size.width / 2, y: centerY)
+
+                ForEach(CompressionScale.anchors(for: optimiser.compressionSliderType), id: \.self) { anchor in
+                    let x = xPosition(for: anchor, trackLeft: trackLeft, trackWidth: trackWidth)
+                    RoundedRectangle(cornerRadius: Radius.hairline)
+                        .fill(.primary.opacity(0.3))
+                        .frame(width: 1.5, height: size * 0.55)
+                        .position(x: x, y: centerY)
+                }
+
+                let knobX = xPosition(for: displayPosition, trackLeft: trackLeft, trackWidth: trackWidth)
+                Circle()
+                    .fill(.white)
+                    .frame(width: knobSize, height: knobSize)
+                    .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                    .overlay {
+                        VStack(spacing: 1) {
+                            Text(displayLabel)
+                                .font(.system(size: TextSize.caption, weight: .heavy, design: .rounded))
+                                .foregroundColor(.primary)
+                            FormatChangeLine(optimiser: optimiser, selectedQuality: displayQuality)
+                        }
+                        .fixedSize()
+                        .padding(.horizontal, Space.xs)
+                        .padding(.vertical, Space.xxs)
+                        .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
+                        .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+                        .offset(y: -knobSize / 2 - 16)
+                    }
+                    .position(x: knobX, y: centerY)
+            }
+            .background(.ultraThickMaterial, in: Capsule())
+            .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+        }
+        .overlay(
+            SliderEventOverlay(
+                buttonSize: size,
+                isHorizontal: true,
+                snapPoints: CompressionScale.magneticValues(for: optimiser.compressionSliderType),
+                accessibilityName: "Compression",
+                value: displayPosition,
+                valueDescription: displayLabel,
+                onDrag: { value in
+                    let p = (1.0 - value) / 0.9
+                    dragPosition = p
+                    optimiser.stepIndicator = CompressionScale.stepLabel(for: CompressionScale.quality(forPosition: p, type: optimiser.compressionSliderType), type: optimiser.compressionSliderType)
+                },
+                onRelease: { value in
+                    let p = (1.0 - value) / 0.9
+                    let startCQ = currentCompressionQuality(for: optimiser)
+                    dragPosition = nil
+                    optimiser.stepIndicator = ""
+                    optimiser.showCompressionSlider = false
+                    let cq = CompressionScale.quality(forPosition: p, type: optimiser.compressionSliderType)
+                    if cq != startCQ {
+                        optimiser.reoptimise(compression: cq)
+                    }
+                },
+                onCancel: {
+                    dragPosition = nil
+                    optimiser.stepIndicator = ""
+                    optimiser.showCompressionSlider = false
+                }
+            )
+        )
+    }
+
+    func xPosition(for position: Double, trackLeft: CGFloat, trackWidth: CGFloat) -> CGFloat {
+        trackLeft + position * trackWidth
+    }
+
+    @State private var dragPosition: Double?
+
+}
+
+// MARK: - Thin card sliders (overlay-grid floating result)
+
+/// Hairline horizontal slider for the in-thumbnail card: a value hint on top (the same descriptive
+/// label the old external slider showed) and a thin track + small knob below — no thick capsule,
+/// no on-knob tooltip. Reuses SliderEventOverlay so a press-and-drag from the grid button is one
+/// continuous gesture. Position/anchors are normalised 0(left)…1(right); the overlay reports the
+/// shared downscale-style factor (0.1…1.0) which each wrapper maps to its own domain.
+struct CardSlider: View {
+    let hint: String
+    /// What the slider sets, for VoiceOver and computer-use agents; `hint` is its current value.
+    var accessibilityName = ""
+    var formatChangeOptimiser: Optimiser?
+    var formatChangeQuality: CompressionQuality?
+    var snapPoints: [Double] = [1.0, 0.75, 0.5, 0.25, 0.1]
+    let position: Double
+    let anchors: [Double]
+    let onDrag: (Double) -> Void
+    let onRelease: (Double) -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        VStack(spacing: Space.xs) {
+            // White text on a dark blurred pill. Everything is clipped to the capsule so the blur
+            // doesn't show as a rectangle behind a smaller rounded background.
+            VStack(spacing: 1) {
+                Text(hint)
+                    .font(.system(size: TextSize.caption, weight: .heavy, design: .rounded))
+                    .foregroundColor(.white)
+                if let optimiser = formatChangeOptimiser {
+                    FormatChangeLine(optimiser: optimiser, selectedQuality: formatChangeQuality, onDark: true)
+                }
+            }
+            .padding(.horizontal, Space.m).padding(.vertical, Space.xxs)
+            .background(
+                ZStack {
+                    VisualEffectBlur(material: .hudWindow, blendingMode: .withinWindow, state: .active, appearance: .vibrantDark)
+                    Color.black.opacity(0.4)
+                }
+                .clipShape(Capsule())
+            )
+            .fixedSize()
+            GeometryReader { geo in
+                let knob: CGFloat = 11
+                let left = knob / 2
+                let w = max(geo.size.width - knob, 1)
+                let cy = geo.size.height / 2
+                let p = min(max(position, 0), 1)
+                ZStack {
+                    Capsule().fill(.primary.opacity(0.25)).frame(height: 2.5).position(x: geo.size.width / 2, y: cy)
+                    ForEach(anchors, id: \.self) { a in
+                        Capsule().fill(.primary.opacity(0.4)).frame(width: 1.5, height: 6).position(x: left + min(max(a, 0), 1) * w, y: cy)
+                    }
+                    Circle().fill(.white).frame(width: knob, height: knob)
+                        .shadow(color: .black.opacity(0.35), radius: 1.5, y: 0.5)
+                        .position(x: left + p * w, y: cy)
+                }
+            }
+            .frame(height: 12)
+        }
+        .overlay(SliderEventOverlay(
+            buttonSize: 11, isHorizontal: true, snapPoints: snapPoints,
+            // The knob runs 0...1 left to right; the overlay's space is 1...0.1 over the same track.
+            accessibilityName: accessibilityName, value: 1.0 - min(max(position, 0), 1) * 0.9, valueDescription: hint,
+            onDrag: onDrag, onRelease: onRelease, onCancel: onCancel
+        ))
+        // Escape bails out without committing. The floating panel is non-activating, so it has to
+        // be made key first for the keyboard shortcut (and the overlay's keyDown monitor) to fire.
+        .background {
+            Button("") { onCancel() }
+                .keyboardShortcut(.escape, modifiers: [])
+                .opacity(0)
+                .frame(width: 0, height: 0)
+                .accessibilityHidden(true)
+        }
+        .onAppear {
+            guard !SWIFTUI_PREVIEW else { return }
+            floatingResultsWindow.allowToBecomeKey = true
+            floatingResultsWindow.makeKeyAndOrderFront(nil)
+            floatingResultsWindow.orderFrontRegardless()
+        }
+    }
+}
+
+struct CardDownscaleSlider: View {
+    @ObservedObject var optimiser: Optimiser
+
+    var factor: Double {
+        dragFactor ?? optimiser.downscaleFactor
+    }
+    var hint: String {
+        let f = downscaleFactorLabel(factor)
+        if let res = downscaleResolutionString(for: optimiser, factor: factor) {
+            return "\(f) · \(res)"
+        }
+        return "\(f) scale"
+    }
+
+    var body: some View {
+        CardSlider(
+            hint: hint,
+            accessibilityName: "Downscale",
+            position: (1.0 - factor) / 0.9,
+            anchors: [1.0, 0.75, 0.5, 0.25, 0.1].map { (1.0 - $0) / 0.9 },
+            onDrag: { f in dragFactor = f },
+            onRelease: { f in
+                let start = optimiser.downscaleFactor
+                dragFactor = nil
+                optimiser.showDownscaleSlider = false
+                if abs(f - start) > 0.01 {
+                    optimiser.downscale(toFactor: f)
+                    optimiser.collapseHoverOverlay = true
+                }
+            },
+            onCancel: { dragFactor = nil; optimiser.showDownscaleSlider = false }
+        )
+    }
+
+    @State private var dragFactor: Double?
+}
+
+/// Audio cover-art resize slider for the card. Reuses the downscale geometry but drives the
+/// cover-only resize and labels itself clearly with the target resolution.
+struct CardCoverArtSlider: View {
+    @ObservedObject var optimiser: Optimiser
+
+    var factor: Double {
+        dragFactor ?? optimiser.coverDownscaleFactor
+    }
+    var hint: String {
+        let f = downscaleFactorLabel(factor)
+        guard let base = optimiser.coverArtSize, base.width > 0, base.height > 0 else { return "Cover art \(f)" }
+        let w = Int((base.width * factor).rounded())
+        let h = Int((base.height * factor).rounded())
+        return "\(f) · \(w)×\(h)"
+    }
+
+    var body: some View {
+        CardSlider(
+            hint: hint,
+            accessibilityName: "Cover art size",
+            position: (1.0 - factor) / 0.9,
+            anchors: [1.0, 0.75, 0.5, 0.25, 0.1].map { (1.0 - $0) / 0.9 },
+            onDrag: { f in dragFactor = f },
+            onRelease: { f in
+                let start = optimiser.coverDownscaleFactor
+                dragFactor = nil
+                optimiser.showDownscaleSlider = false
+                if abs(f - start) > 0.01 {
+                    downscaleAudioCoverArt(optimiser: optimiser, toFactor: f)
+                    optimiser.collapseHoverOverlay = true
+                }
+            },
+            onCancel: { dragFactor = nil; optimiser.showDownscaleSlider = false }
+        )
+        .onAppear { loadAudioCoverArtSize(optimiser: optimiser) }
+    }
+
+    @State private var dragFactor: Double?
+
+}
+
+struct CardCompressionSlider: View {
+    @ObservedObject var optimiser: Optimiser
+
+    var pos: Double {
+        dragPosition ?? CompressionScale.position(for: currentCompressionQuality(for: optimiser), type: optimiser.compressionSliderType)
+    }
+    var displayQuality: CompressionQuality? {
+        dragPosition.map { CompressionScale.quality(forPosition: $0, type: optimiser.compressionSliderType) }
+    }
+    var hint: String {
+        compressionLabel(for: optimiser, quality: displayQuality, terse: false)
+    }
+
+    var body: some View {
+        CardSlider(
+            hint: hint,
+            accessibilityName: "Compression",
+            formatChangeOptimiser: optimiser,
+            formatChangeQuality: displayQuality,
+            snapPoints: CompressionScale.magneticValues(for: optimiser.compressionSliderType),
+            position: pos,
+            anchors: CompressionScale.anchors(for: optimiser.compressionSliderType),
+            onDrag: { v in dragPosition = (1.0 - v) / 0.9 },
+            onRelease: { v in
+                let p = (1.0 - v) / 0.9
+                let start = currentCompressionQuality(for: optimiser)
+                dragPosition = nil
+                optimiser.showCompressionSlider = false
+                let cq = CompressionScale.quality(forPosition: p, type: optimiser.compressionSliderType)
+                if cq != start {
+                    optimiser.reoptimise(compression: cq)
+                    optimiser.collapseHoverOverlay = true
+                }
+            },
+            onCancel: { dragPosition = nil; optimiser.showCompressionSlider = false }
+        )
+    }
+
+    @State private var dragPosition: Double?
+}
+
+struct CardPDFDPISlider: View {
+    @ObservedObject var optimiser: Optimiser
+
+    var stops: [Int] {
+        PDF_DPI_STOPS
+    }
+    var current: Int {
+        dragDPI ?? optimiser.pdfDPIOverride ?? optimiser.effectiveBasePDFDPI
+    }
+
+    var body: some View {
+        CardSlider(
+            hint: "\(current) DPI",
+            accessibilityName: "DPI",
+            position: nearestIndex(for: current).map { position(forIndex: $0) } ?? 0,
+            anchors: stops.indices.map { position(forIndex: $0) },
+            onDrag: { f in dragDPI = stops[index(forFactor: f)] },
+            onRelease: { f in
+                let newDPI = stops[index(forFactor: f)]
+                let start = optimiser.pdfDPIOverride ?? optimiser.effectiveBasePDFDPI
+                dragDPI = nil
+                optimiser.showDownscaleSlider = false
+                if newDPI != start {
+                    optimiser.lowerPDFDPI(to: newDPI)
+                    optimiser.collapseHoverOverlay = true
+                }
+            },
+            onCancel: { dragDPI = nil; optimiser.showDownscaleSlider = false }
+        )
+    }
+
+    func position(forIndex idx: Int) -> Double {
+        stops.count > 1 ? Double(idx) / Double(stops.count - 1) : 0
+    }
+    func index(forFactor factor: Double) -> Int {
+        let c = stops.count
+        guard c > 1 else { return 0 }
+        let n = (1.0 - factor) / 0.9
+        return max(0, min(c - 1, Int(round(n * Double(c - 1)))))
+    }
+    func nearestIndex(for dpi: Int) -> Int? {
+        guard !stops.isEmpty else { return nil }
+        return stops.indices.min(by: { abs(stops[$0] - dpi) < abs(stops[$1] - dpi) })
+    }
+
+    @State private var dragDPI: Int?
+}
+
+// MARK: - HorizontalPDFDPISlider
+
+struct HorizontalPDFDPISlider: View {
+    @ObservedObject var optimiser: Optimiser
+
+    var size: CGFloat
+
+    @Default(.pdfDPI) var defaultDPI
+
+    var stops: [Int] {
+        PDF_DPI_STOPS
+    }
+    var currentDPI: Int {
+        dragDPI ?? optimiser.pdfDPIOverride ?? optimiser.effectiveBasePDFDPI
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let knobSize = size * 0.8
+            let trackLeft = knobSize / 2
+            let trackWidth = max(geo.size.width - knobSize, 1)
+            let centerY = geo.size.height / 2
+
+            ZStack {
+                RoundedRectangle(cornerRadius: Radius.hairline)
+                    .fill(.primary.opacity(0.15))
+                    .frame(width: trackWidth, height: 3)
+                    .position(x: geo.size.width / 2, y: centerY)
+
+                ForEach(Array(stops.enumerated()), id: \.offset) { index, dpi in
+                    let x = xPosition(for: index, trackLeft: trackLeft, trackWidth: trackWidth)
+                    let isActive = dpi == currentDPI
+
+                    RoundedRectangle(cornerRadius: Radius.hairline)
+                        .fill(.primary.opacity(isActive ? 0.7 : 0.3))
+                        .frame(width: isActive ? 2 : 1.5, height: size * 0.55)
+                        .position(x: x, y: centerY)
+                }
+
+                if let index = nearestStopIndex(for: currentDPI) {
+                    let knobX = xPosition(for: index, trackLeft: trackLeft, trackWidth: trackWidth)
+                    Circle()
+                        .fill(.white)
+                        .frame(width: knobSize, height: knobSize)
+                        .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                        .overlay(alignment: .top) {
+                            Text("\(currentDPI) DPI")
+                                .font(.system(size: TextSize.subheadline, weight: .heavy, design: .rounded))
+                                .foregroundColor(.primary)
+                                .fixedSize()
+                                .padding(.horizontal, Space.xs)
+                                .padding(.vertical, Space.xxs)
+                                .background(.ultraThickMaterial, in: RoundedRectangle(cornerRadius: Radius.small))
+                                .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+                                .offset(y: -knobSize - 4)
+                        }
+                        .position(x: knobX, y: centerY)
+                }
+            }
+            .background(.ultraThickMaterial, in: Capsule())
+            .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
+        }
+        .overlay(
+            SliderEventOverlay(
+                buttonSize: size,
+                isHorizontal: true,
+                accessibilityName: "DPI",
+                value: stops.count > 1 ? 1.0 - Double(stops.firstIndex(of: currentDPI) ?? 0) / Double(stops.count - 1) * 0.9 : 1.0,
+                valueDescription: "\(currentDPI) DPI",
+                accessibilitySteps: stops.indices.map { 1.0 - Double($0) / Double(max(stops.count - 1, 1)) * 0.9 },
+                onDrag: { factor in
+                    let dpi = stops[dpiIndex(for: factor)]
+                    dragDPI = dpi
+                    optimiser.stepIndicator = "\(dpi) DPI"
+                },
+                onRelease: { factor in
+                    let newDPI = stops[dpiIndex(for: factor)]
+                    let startDPI = optimiser.pdfDPIOverride ?? optimiser.effectiveBasePDFDPI
+                    dragDPI = nil
+                    optimiser.stepIndicator = ""
+                    optimiser.showDownscaleSlider = false
+                    if newDPI != startDPI {
+                        optimiser.lowerPDFDPI(to: newDPI)
+                    }
+                },
+                onCancel: {
+                    dragDPI = nil
+                    optimiser.stepIndicator = ""
+                    optimiser.showDownscaleSlider = false
+                }
+            )
+        )
+    }
+
+    func xPosition(for index: Int, trackLeft: CGFloat, trackWidth: CGFloat) -> CGFloat {
+        let count = stops.count
+        guard count > 1 else { return trackLeft }
+        // Highest DPI on the LEFT (factor 1.0), lowest DPI on the RIGHT, matching "minus button" UX.
+        return trackLeft + CGFloat(index) / CGFloat(count - 1) * trackWidth
+    }
+
+    func dpiIndex(for factor: Double) -> Int {
+        let count = stops.count
+        guard count > 1 else { return 0 }
+        // factor 1.0 (left) → index 0 (highest DPI); factor 0.1 (right) → last index (lowest DPI).
+        let normalized = (1.0 - factor) / 0.9
+        return max(0, min(count - 1, Int(round(normalized * Double(count - 1)))))
+    }
+
+    func nearestStopIndex(for dpi: Int) -> Int? {
+        guard !stops.isEmpty else { return nil }
+        return stops.indices.min(by: { abs(stops[$0] - dpi) < abs(stops[$1] - dpi) })
+    }
+
+    @State private var dragDPI: Int?
+}
+
+// MARK: - Slider AppKit event handler
+
+private struct SliderEventOverlay: NSViewRepresentable {
+    class SliderEventView: NSView {
+        static let snapDistance = 0.04
+
+        override var isFlipped: Bool {
+            true
+        }
+        override var acceptsFirstResponder: Bool {
+            true
+        }
+
+        /// Magnetic snap targets in factor/value space. The drag is otherwise continuous; the knob clicks
+        /// onto one of these only while within `snapDistance`. Defaults to the downscale factor anchors;
+        /// compression sliders override with their tier + round-factor values.
+        var snapPoints: [Double] = [1.0, 0.75, 0.5, 0.25, 0.1]
+
+        var buttonSize: CGFloat = 24
+        var isHorizontal = false
+        var onDrag: ((Double) -> Void)?
+        var onRelease: ((Double) -> Void)?
+        var onCancel: (() -> Void)?
+
+        var directTracking = false
+        var didDrag = false
+        var dragMonitor: Any?
+
+        // MARK: Accessibility
+
+        // The slider is drawn in SwiftUI and driven by the mouse through this view, so neither half
+        // was visible to VoiceOver or a computer-use agent. This view stands in as the slider: it
+        // reports the knob's value in the same 0.1...1 space the drag uses, steps between the snap
+        // points, and commits through `onRelease` exactly like letting go of a drag.
+
+        var accessibilityName = ""
+        var currentValue = 1.0
+        var valueDescription: String?
+        var accessibilitySteps: [Double]?
+
+        override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+            true
+        }
+
+        /// Direct interaction (user clicks on the slider itself)
+        override func mouseDown(with event: NSEvent) {
+            directTracking = true
+            didDrag = false
+            let loc = convert(event.locationInWindow, from: nil)
+            onDrag?(factorForLocation(loc))
+        }
+
+        override func mouseDragged(with event: NSEvent) {
+            guard directTracking else { return }
+            didDrag = true
+            let loc = convert(event.locationInWindow, from: nil)
+            onDrag?(factorForLocation(loc))
+        }
+
+        override func mouseUp(with event: NSEvent) {
+            guard directTracking else { return }
+            directTracking = false
+            let loc = convert(event.locationInWindow, from: nil)
+            onRelease?(factorForLocation(loc))
+        }
+
+        override func rightMouseDown(with event: NSEvent) {
+            onCancel?()
+        }
+
+        override func keyDown(with event: NSEvent) {
+            if event.keyCode == 53 {
+                onCancel?()
+            } else {
+                super.keyDown(with: event)
+            }
+        }
+
+        /// Monitor for drags that started outside (on the button)
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard window != nil, dragMonitor == nil else { return }
+            didDrag = false
+            dragMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .keyDown]) { [weak self] event in
+                guard let self, window != nil else { return event }
+
+                if event.type == .keyDown {
+                    guard event.keyCode == 53 else { return event } // Esc bails out of the drag without committing
+                    directTracking = false
+                    didDrag = false
+                    onCancel?()
+                    return nil
+                }
+
+                // A fresh press outside the slider dismisses it without applying. The press-drag that
+                // opened the slider fired its mouse-down before this monitor mounted, so it's not caught here.
+                if event.type == .leftMouseDown {
+                    let loc = convert(event.locationInWindow, from: nil)
+                    if !bounds.contains(loc) {
+                        directTracking = false
+                        didDrag = false
+                        onCancel?()
+                        return nil
+                    }
+                    return event
+                }
+
+                guard !directTracking else { return event }
+
+                let location = convert(event.locationInWindow, from: nil)
+                let f = factorForLocation(location)
+
+                switch event.type {
+                case .leftMouseDragged:
+                    didDrag = true
+                    onDrag?(f)
+                case .leftMouseUp:
+                    if didDrag {
+                        onRelease?(f)
+                    }
+                    didDrag = false
+                default:
+                    break
+                }
+                return event
+            }
+        }
+
+        override func removeFromSuperview() {
+            if let dragMonitor {
+                NSEvent.removeMonitor(dragMonitor)
+            }
+            dragMonitor = nil
+            super.removeFromSuperview()
+        }
+
+        override func isAccessibilityElement() -> Bool {
+            true
+        }
+        override func accessibilityRole() -> NSAccessibility.Role? {
+            .slider
+        }
+        override func accessibilityLabel() -> String? {
+            accessibilityName
+        }
+        override func accessibilityValue() -> Any? {
+            currentValue
+        }
+        override func accessibilityValueDescription() -> String? {
+            valueDescription
+        }
+        override func accessibilityMinValue() -> Any? {
+            0.1
+        }
+        override func accessibilityMaxValue() -> Any? {
+            1.0
+        }
+        override func setAccessibilityValue(_ accessibilityValue: Any?) {
+            guard let v = (accessibilityValue as? NSNumber)?.doubleValue else { return }
+            onRelease?(max(0.1, min(1.0, v)))
+        }
+        override func accessibilityPerformIncrement() -> Bool {
+            let next = (accessibilitySteps ?? snapPoints).filter { $0 > currentValue + 0.001 }.min() ?? min(1.0, currentValue + 0.05)
+            onRelease?(next)
+            return true
+        }
+        override func accessibilityPerformDecrement() -> Bool {
+            let next = (accessibilitySteps ?? snapPoints).filter { $0 < currentValue - 0.001 }.max() ?? max(0.1, currentValue - 0.05)
+            onRelease?(next)
+            return true
+        }
+        override func accessibilityPerformCancel() -> Bool {
+            onCancel?()
+            return true
+        }
+
+        func factorForLocation(_ loc: CGPoint) -> Double {
+            isHorizontal ? factor(forX: loc.x) : factor(forY: loc.y)
+        }
+
+        func factor(forY y: CGFloat) -> Double {
+            let knobSize = buttonSize * 0.8
+            let trackTop = knobSize / 2
+            let trackHeight = max(bounds.height - knobSize, 1)
+            let normalized = (y - trackTop) / trackHeight
+            let raw = 1.0 - normalized * 0.9
+            let clamped = max(0.1, min(1.0, raw))
+            for t in snapPoints where abs(clamped - t) < Self.snapDistance {
+                return t
+            }
+            return clamped
+        }
+
+        func factor(forX x: CGFloat) -> Double {
+            let knobSize = buttonSize * 0.8
+            let trackLeft = knobSize / 2
+            let trackWidth = max(bounds.width - knobSize, 1)
+            let normalized = (x - trackLeft) / trackWidth
+            let raw = 1.0 - normalized * 0.9
+            let clamped = max(0.1, min(1.0, raw))
+            for t in snapPoints where abs(clamped - t) < Self.snapDistance {
+                return t
+            }
+            return clamped
+        }
+
+    }
+
+    var buttonSize: CGFloat
+    var isHorizontal = false
+    var snapPoints: [Double] = [1.0, 0.75, 0.5, 0.25, 0.1]
+    var accessibilityName = ""
+    var value = 1.0
+    var valueDescription: String?
+    /// Values an accessibility increment or decrement moves between, when they are not the
+    /// drag's snap points (the bitrate and DPI sliders step one stop at a time).
+    var accessibilitySteps: [Double]?
+    var onDrag: (Double) -> Void
+    var onRelease: (Double) -> Void
+    var onCancel: () -> Void
+
+    func makeNSView(context: Context) -> SliderEventView {
+        let view = SliderEventView()
+        view.buttonSize = buttonSize
+        view.isHorizontal = isHorizontal
+        view.snapPoints = snapPoints
+        view.accessibilityName = accessibilityName
+        view.currentValue = value
+        view.valueDescription = valueDescription
+        view.accessibilitySteps = accessibilitySteps
+        view.onDrag = onDrag
+        view.onRelease = onRelease
+        view.onCancel = onCancel
+        return view
+    }
+
+    func updateNSView(_ nsView: SliderEventView, context: Context) {
+        nsView.buttonSize = buttonSize
+        nsView.isHorizontal = isHorizontal
+        nsView.snapPoints = snapPoints
+        nsView.accessibilityName = accessibilityName
+        nsView.currentValue = value
+        nsView.valueDescription = valueDescription
+        nsView.accessibilitySteps = accessibilitySteps
+        nsView.onDrag = onDrag
+        nsView.onRelease = onRelease
+        nsView.onCancel = onCancel
+    }
+
+}
+
+// MARK: - Right-click handler
+
+private struct RightClickCatcher: NSViewRepresentable {
+    class RightClickNSView: NSView {
+        var action: (() -> Void)?
+        var monitor: Any?
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard monitor == nil, window != nil else { return }
+            monitor = NSEvent.addLocalMonitorForEvents(matching: .rightMouseDown) { [weak self] event in
+                guard let self, window != nil else { return event }
+                let locationInView = convert(event.locationInWindow, from: nil)
+                if bounds.contains(locationInView) {
+                    action?()
+                    return nil
+                }
+                return event
+            }
+        }
+
+        override func removeFromSuperview() {
+            if let monitor {
+                NSEvent.removeMonitor(monitor)
+            }
+            monitor = nil
+            super.removeFromSuperview()
+        }
+
+        /// Transparent to all normal hit testing (left clicks pass through to SwiftUI)
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            nil
+        }
+    }
+
+    var action: () -> Void
+
+    func makeNSView(context: Context) -> RightClickNSView {
+        let view = RightClickNSView()
+        view.action = action
+        return view
+    }
+
+    func updateNSView(_ nsView: RightClickNSView, context: Context) {
+        nsView.action = action
+    }
+
+}
+
+private struct MouseDownCatcher: NSViewRepresentable {
+    class MouseDownNSView: NSView {
+        var action: (() -> Void)?
+        var monitor: Any?
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard monitor == nil, window != nil else { return }
+            monitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
+                guard let self, window != nil else { return event }
+                let locationInView = convert(event.locationInWindow, from: nil)
+                if bounds.contains(locationInView) {
+                    action?()
+                }
+                return event
+            }
+        }
+
+        override func removeFromSuperview() {
+            if let monitor {
+                NSEvent.removeMonitor(monitor)
+            }
+            monitor = nil
+            super.removeFromSuperview()
+        }
+
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            nil
+        }
+    }
+
+    var action: () -> Void
+
+    func makeNSView(context: Context) -> MouseDownNSView {
+        let view = MouseDownNSView()
+        view.action = action
+        return view
+    }
+
+    func updateNSView(_ nsView: MouseDownNSView, context: Context) {
+        nsView.action = action
+    }
+}
+
+extension View {
+    func onMouseDown(perform action: @escaping () -> Void) -> some View {
+        overlay(MouseDownCatcher(action: action))
+    }
+
+    func onRightClick(perform action: @escaping () -> Void) -> some View {
+        overlay(RightClickCatcher(action: action))
+    }
+
+    /// Drag a whole set of files out as a real multi-item drag, so the drop lands EVERY file.
+    ///
+    /// SwiftUI's `.onDrag` can only return one `NSItemProvider`, and a single provider is a single item:
+    /// registering several file URLs on it just stacks competing representations of that one item, so a
+    /// "drag all" drop lands a single file. The only fix is an AppKit `NSDraggingSession` with one
+    /// `NSDraggingItem` per file. Overlaid on the SwiftUI handle like `onMouseDown`, but it owns the
+    /// press-drag (its `hitTest` returns self) so the session starts from the handle.
+    ///
+    /// When `optimisers()` is empty the overlay is fully transparent (its `hitTest` returns nil), so it
+    /// can be gated to only intercept in certain states (e.g. only while a row is part of a multi-row
+    /// selection). `onTap` forwards a press that did NOT turn into a drag, so an intercepted view keeps
+    /// its click behaviour (e.g. toggling a row's selection) while a press-drag pulls the whole set out.
+    func onDragAllFiles(help: String? = nil, onTap: (() -> Void)? = nil, _ optimisers: @escaping () -> [Optimiser]) -> some View {
+        overlay(MultiFileDragSource(help: help, onTap: onTap, optimisers: optimisers))
+    }
+}
+
+/// AppKit drag source that drops a whole set of files (one `NSDraggingItem` per file). See `onDragAllFiles`.
+final class MultiFileDragView: NSView, NSDraggingSource {
+    var optimisers: () -> [Optimiser] = { [] }
+    /// Called when an intercepted press is released WITHOUT having turned into a drag, so the host view
+    /// keeps its click behaviour (e.g. toggling a row's selection) even though this overlay owns the press.
+    var onTap: (() -> Void)?
+
+    /// Own the press only when there's something to drag; otherwise stay transparent so the handle (and
+    /// anything beneath it) behaves normally.
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        draggableOptimisers.isEmpty ? nil : super.hitTest(point)
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        mouseDownEvent = event
+    }
+    override func mouseUp(with event: NSEvent) {
+        // A press that never crossed the drag threshold is a plain click: forward it. (A started drag
+        // clears `mouseDownEvent` in `mouseDragged`, so this won't fire after a drag.)
+        let wasClick = mouseDownEvent != nil
+        mouseDownEvent = nil
+        if wasClick {
+            onTap?()
+        }
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        guard let down = mouseDownEvent else { return }
+        let moved = hypot(
+            event.locationInWindow.x - down.locationInWindow.x,
+            event.locationInWindow.y - down.locationInWindow.y
+        )
+        guard moved >= 4 else { return }
+        mouseDownEvent = nil
+        beginFileDrag(with: down)
+    }
+
+    func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+        // Export copies; never move/relinquish the result files out from under the floating cards.
+        .copy
+    }
+
+    private var mouseDownEvent: NSEvent?
+
+    /// File-backed optimisers in the current set; the bare drag handle only deals in on-disk files.
+    private var draggableOptimisers: [Optimiser] {
+        optimisers().filter { $0.url?.isFileURL ?? false }
+    }
+
+    private func beginFileDrag(with event: NSEvent) {
+        let center = convert(event.locationInWindow, from: nil)
+        let side: CGFloat = 52
+        let frame = NSRect(x: center.x - side / 2, y: center.y - side / 2, width: side, height: side)
+        let items: [NSDraggingItem] = draggableOptimisers.compactMap { optimiser in
+            guard let url = optimiser.url, url.isFileURL else { return nil }
+            let item = NSDraggingItem(pasteboardWriter: url as NSURL)
+            // A per-file thumbnail (cover art for audio, generic icon as a fallback) so the system pile
+            // shows the real files plus its own count badge, matching the old SwiftUI preview.
+            item.setDraggingFrame(frame, contents: optimiser.thumbnail ?? NSWorkspace.shared.icon(forFile: url.path))
+            return item
+        }
+        guard !items.isEmpty else { return }
+        let session = beginDraggingSession(with: items, event: event, source: self)
+        session.draggingFormation = .pile
+    }
+
+}
+
+struct MultiFileDragSource: NSViewRepresentable {
+    var help: String?
+    var onTap: (() -> Void)?
+    var optimisers: () -> [Optimiser]
+
+    func makeNSView(context: Context) -> MultiFileDragView {
+        let view = MultiFileDragView()
+        view.optimisers = optimisers
+        view.onTap = onTap
+        view.toolTip = help
+        return view
+    }
+
+    func updateNSView(_ nsView: MultiFileDragView, context: Context) {
+        nsView.optimisers = optimisers
+        nsView.onTap = onTap
+        nsView.toolTip = help
+    }
+}
+
+/// Audio's downscale button, repurposed to resize the embedded cover art. Opens the cover-art
+/// slider band (the bitrate axis lives on the compression button now).
+struct CoverArtDownscaleButton: View {
+    @ObservedObject var optimiser: Optimiser
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        Button(action: {}, label: { SwiftUI.Image(systemName: "minus").font(.heavy(TextSize.micro)) })
+            .contentShape(Rectangle())
+            .onMouseDown {
+                guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
+                optimiser.showDownscaleSlider = true
+            }
+            .onRightClick {
+                guard !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
+                optimiser.showDownscaleSlider = true
+            }
+    }
+}
+
+struct LowerPDFDPIButton: View {
+    @ObservedObject var optimiser: Optimiser
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        Button(action: {}, label: { SwiftUI.Image(systemName: "slider.horizontal.3").font(.heavy(TextSize.micro)) })
+            .contentShape(Rectangle())
+            .onMouseDown {
+                guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
+                optimiser.showDownscaleSlider = true
+            }
+            .onRightClick {
+                guard !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
+                optimiser.showDownscaleSlider = true
+            }
+    }
+}
+
+struct QuickLookButton: View {
+    @ObservedObject var optimiser: Optimiser
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        Button(
+            action: {
+                if !preview {
+                    optimiser.quicklook()
+                }
+            },
+            label: { SwiftUI.Image(systemName: "eye").font(.heavy(TextSize.micro)) }
+        )
+        .contentShape(Rectangle())
+    }
+}
+
+struct ShowInFinderButton: View {
+    @ObservedObject var optimiser: Optimiser
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        Button(
+            action: {
+                if !preview {
+                    optimiser.showInFinder()
+                }
+            },
+            label: { SwiftUI.Image(systemName: "folder").font(.heavy(TextSize.micro)) }
+        )
+        .contentShape(Rectangle())
+    }
+}
+
+let SHARING_MANAGER = SharingManager()
+
+struct ShareButton: View {
+    @ObservedObject var optimiser: Optimiser
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        Button(
+            action: {
+                guard !preview else { return }
+                optimiser.sharing = true
+            },
+            label: { SwiftUI.Image(systemName: "square.and.arrow.up").font(.heavy(TextSize.micro)) }
+        )
+        .contentShape(Rectangle())
+        .background(SharingsPicker(isPresented: $optimiser.sharing, sharingItems: [optimiser.url as Any]))
+    }
+}
+
+struct AggressiveOptimisationButton: View {
+    @ObservedObject var optimiser: Optimiser
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        Button(
+            action: {
+                guard !preview else { return }
+
+                if optimiser.running {
+                    optimiser.stop(remove: false)
+                    optimiser.url = optimiser.originalURL
+                    optimiser.finish(oldBytes: optimiser.oldBytes ?! optimiser.path?.fileSize() ?? 0, newBytes: -1)
+                }
+
+                optimiser.compressionOverride = nil
+                let newAggressive = !optimiser.aggressive
+                if optimiser.downscaleFactor < 1 {
+                    optimiser.downscale(toFactor: optimiser.downscaleFactor, aggressiveOptimisation: newAggressive)
+                } else {
+                    optimiser.optimise(allowLarger: false, aggressiveOptimisation: newAggressive, fromOriginal: true)
+                }
+                optimiser.collapseHoverOverlay = true
+            },
+            label: {
+                SwiftUI.Image(systemName: optimiser.aggressive ? "bolt.fill" : "bolt")
+                    .font(.heavy(TextSize.micro))
+                    .foregroundColor(optimiser.aggressive ? Palette.savingOnThumbnail : nil)
+                    // The pale "glow" yellow washes out on light thumbnails/backgrounds; a dark drop
+                    // shadow keeps it legible on any background without losing the yellow identity.
+                    .shadow(color: optimiser.aggressive ? .black.opacity(0.6) : .clear, radius: 1, y: 0.5)
+            }
+        )
+        .contentShape(Rectangle())
+    }
+}
+
+struct VideoEncoderButton: View {
+    @ObservedObject var optimiser: Optimiser
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        Button(
+            action: {
+                guard !preview else { return }
+                optimiser.reoptimiseWithEncoder(.slowHighQuality)
+            },
+            label: { SwiftUI.Image(systemName: "bolt").font(.heavy(TextSize.micro)) }
+        )
+        .contentShape(Rectangle())
+    }
+}
+
+/// Preset size limits shared by the "Fit under size" action button and the right-click submenu.
+let TARGET_SIZE_PRESETS: [(label: String, bytes: Int)] = [
+    ("500 KB", 500_000),
+    ("1 MB", 1_000_000),
+    ("2 MB", 2_000_000),
+    ("5 MB", 5_000_000),
+    ("8 MB (Discord)", 8_000_000),
+    ("10 MB", 10_000_000),
+    ("25 MB", 25_000_000),
+    ("50 MB", 50_000_000),
+]
+
+/// Run an inline `targetSize` pipeline on the result: probes compression factors and encoder
+/// settings first, downscaling only as a last resort.
+@MainActor func fitUnderSize(_ bytes: Int, label: String, optimiser: Optimiser) {
+    guard let url = optimiser.url, let path = url.existingFilePath else { return }
+    let fileType: PolcFileType? = switch optimiser.type {
+    case .image: .image
+    case .video: .video
+    case .audio: .audio
+    case .pdf: .pdf
+    default: nil
+    }
+    guard let fileType else { return }
+
+    let pipeline = Pipeline(steps: [.targetSize(bytes: bytes)], name: "Fit under \(label)")
+    optimiser.tempPipeline = pipeline.resolved.steps.filter { !$0.isFilter }
+    optimiser.automationPipeline = pipeline
+
+    Task { @MainActor in
+        optimiser.running = true
+        optimiser.operation = "Fitting under \(label)"
+        do {
+            let (resultFile, _, _) = try await executePipeline(
+                pipeline, file: path,
+                source: optimiser.source ?? .cli,
+                optimiser: optimiser,
+                fileType: fileType
+            )
+            optimiser.url = resultFile.url
+            optimiser.finish(oldBytes: optimiser.oldBytes, newBytes: resultFile.fileSize() ?? optimiser.newBytes, oldSize: optimiser.oldSize)
+        } catch {
+            optimiser.finish(error: "Failed to fit under \(label): \(error.localizedDescription)")
+        }
+    }
+}
+
+/// Menu items for the size presets; embedded in the action button's menu and the right-click submenu.
+struct TargetSizeMenuItems: View {
+    @ObservedObject var optimiser: Optimiser
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        let currentBytes = optimiser.newBytes > 0 ? optimiser.newBytes : optimiser.oldBytes
+        ForEach(TARGET_SIZE_PRESETS, id: \.bytes) { preset in
+            Button(preset.label) {
+                if !preview {
+                    fitUnderSize(preset.bytes, label: preset.label, optimiser: optimiser)
+                }
+            }
+            .disabled(currentBytes > 0 && currentBytes <= preset.bytes)
+        }
+    }
+}
+
+/// In the floating card, press-and-drag opens the in-card target-size slider (continuous with
+/// magnetic preset stops); elsewhere (compact) it opens a menu of the presets instead.
+struct TargetSizeButton: View {
+    @ObservedObject var optimiser: Optimiser
+    var inFloatingCard = false
+
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        if inFloatingCard {
+            Button(action: {}, label: { SwiftUI.Image(systemName: "target").font(.heavy(TextSize.micro)) })
+                .contentShape(Rectangle())
+                .onMouseDown {
+                    guard !preview, !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
+                    optimiser.showTargetSizeSlider = true
+                }
+                .onRightClick {
+                    guard !optimiser.showDownscaleSlider, !optimiser.showCompressionSlider, !optimiser.showTargetSizeSlider else { return }
+                    optimiser.showTargetSizeSlider = true
+                }
+        } else {
+            Menu {
+                TargetSizeMenuItems(optimiser: optimiser)
+            } label: {
+                SwiftUI.Image(systemName: "target").font(.heavy(TextSize.micro))
+            }
+            .accessibilityLabel("Target size")
+            .menuButtonStyle(BorderlessButtonMenuButtonStyle())
+            .disabled(optimiser.running)
+        }
+    }
+}
+
+/// Target-size slider for the card: log-scaled from the current file size down to ~1/200th of it,
+/// continuous but with magnetic stops on the common size limits. Releasing runs an inline
+/// `targetSize` pipeline that probes compression factors before resorting to downscaling.
+struct CardTargetSizeSlider: View {
+    @ObservedObject var optimiser: Optimiser
+
+    var maxBytes: Int {
+        max(optimiser.newBytes > 0 ? optimiser.newBytes : optimiser.oldBytes, 100_000)
+    }
+    var minBytes: Int {
+        max(50000, maxBytes / 200)
+    }
+    var bytes: Int {
+        dragBytes ?? maxBytes
+    }
+    var hint: String {
+        "fit under \(bytes.humanSize)"
+    }
+    var presetPositions: [Double] {
+        TARGET_SIZE_PRESETS.map(\.bytes).filter { $0 > minBytes && $0 < maxBytes }.map { position(forBytes: $0) }
+    }
+
+    var body: some View {
+        CardSlider(
+            hint: hint,
+            accessibilityName: "Target size",
+            snapPoints: presetPositions.map { 1.0 - 0.9 * $0 },
+            position: position(forBytes: bytes),
+            anchors: presetPositions,
+            onDrag: { v in dragBytes = bytes(forPosition: (1.0 - v) / 0.9) },
+            onRelease: { v in
+                let target = bytes(forPosition: (1.0 - v) / 0.9)
+                dragBytes = nil
+                optimiser.showTargetSizeSlider = false
+                if target < Int(Double(maxBytes) * 0.98) {
+                    fitUnderSize(target, label: target.humanSize, optimiser: optimiser)
+                    optimiser.collapseHoverOverlay = true
+                }
+            },
+            onCancel: { dragBytes = nil; optimiser.showTargetSizeSlider = false }
+        )
+    }
+
+    func position(forBytes bytes: Int) -> Double {
+        log(Double(maxBytes) / Double(bytes)) / log(Double(maxBytes) / Double(minBytes))
+    }
+    func bytes(forPosition p: Double) -> Int {
+        Int(Double(maxBytes) * pow(Double(minBytes) / Double(maxBytes), min(max(p, 0), 1)))
+    }
+
+    @State private var dragBytes: Int?
+
+}
+
+struct ActionButton: View {
+    let action: FloatingAction
+    @ObservedObject var optimiser: Optimiser
+    /// Passed on to `TargetSizeButton`, which opens its slider in the floating card and a menu elsewhere.
+    var inFloatingCard = false
+
+    @Environment(\.preview) var preview
+
+    var body: some View {
+        switch action {
+        case .downscale:
+            if optimiser.type.isAudio {
+                CoverArtDownscaleButton(optimiser: optimiser)
+            } else if optimiser.type.isPDF {
+                LowerPDFDPIButton(optimiser: optimiser)
+            } else if !optimiser.type.isAudio {
+                DownscaleButton(optimiser: optimiser)
+            }
+        case .compression:
+            CompressionButton(optimiser: optimiser)
+        case .crop:
+            Button(action: {
+                if !preview {
+                    optimiser.showCropWindow()
+                }
+            }) {
+                SwiftUI.Image(systemName: "crop").font(.heavy(TextSize.micro))
+            }
+            .contentShape(Rectangle())
+        case .share:
+            ShareButton(optimiser: optimiser)
+        case .restoreOptimise:
+            RestoreOptimiseButton(optimiser: optimiser)
+                .disabled(optimiser.url == nil || optimiser.running)
+        case .aggressiveOptimisation:
+            if optimiser.type.isVideo {
+                VideoEncoderButton(optimiser: optimiser)
+            } else {
+                AggressiveOptimisationButton(optimiser: optimiser)
+            }
+        case .copyToClipboard:
+            Button(action: {
+                if !preview {
+                    optimiser.copyToClipboard(); optimiser.overlayMessage = "Copied"
+                }
+            }) {
+                SwiftUI.Image(systemName: "doc.on.doc").font(.heavy(TextSize.micro))
+            }
+            .contentShape(Rectangle())
+        case .showInFinder:
+            ShowInFinderButton(optimiser: optimiser)
+        case .quickLook:
+            QuickLookButton(optimiser: optimiser)
+        case .saveAs:
+            Button(action: {
+                if !preview {
+                    optimiser.save()
+                }
+            }) {
+                SwiftUI.Image(systemName: "square.and.arrow.down").font(.heavy(TextSize.micro))
+            }
+            .contentShape(Rectangle())
+        case .addToShelf:
+            Button(action: {
+                if !preview, let app = runningShelfApp() {
+                    app.open(optimiser: optimiser)
+                }
+            }) {
+                SwiftUI.Image(systemName: "tray.and.arrow.down").font(.heavy(TextSize.micro))
+            }
+            .contentShape(Rectangle())
+        case .targetSize:
+            TargetSizeButton(optimiser: optimiser, inFloatingCard: inFloatingCard)
+        case .pipeline:
+            Button(action: {
+                if !preview, let pipeline = action.pipeline(for: optimiser.fileType) {
+                    optimiser.runPipeline(pipeline)
+                    optimiser.collapseHoverOverlay = true
+                }
+            }) {
+                SwiftUI.Image(systemName: action.icon(for: optimiser.fileType)).font(.heavy(TextSize.micro))
+            }
+            .contentShape(Rectangle())
+            .disabled(optimiser.url == nil || optimiser.running)
+        }
+    }
+
+    func isAvailable() -> Bool {
+        switch action {
+        // For audio the downscale button resizes the embedded cover art, so it only makes sense when the
+        // file actually has cover art (coverArtSize is populated lazily by loadAudioCoverArtSize).
+        case .downscale: optimiser.type.isAudio ? (optimiser.coverArtSize != nil) : optimiser.canDownscale()
+        case .compression: optimiser.canCompress()
+        case .crop: optimiser.canCrop()
+        case .aggressiveOptimisation: optimiser.canReoptimise()
+        case .addToShelf: runningShelfApp() != nil
+        case .targetSize: optimiser.url != nil
+        case .pipeline: action.applies(to: optimiser.fileType)
+        default: true
+        }
+    }
+}
+
+/// A floating-result grid action button that shows our custom HelpTag with the action name on hover.
+struct FloatingGridActionButton: View {
+    let action: FloatingAction
+    @ObservedObject var optimiser: Optimiser
+
+    let onRemove: () -> Void
+
+    @Default(.hideFloatingResultTooltips) var hideFloatingResultTooltips
+
+    var body: some View {
+        let button = ActionButton(action: action, optimiser: optimiser, inFloatingCard: true)
+        button
+            .buttonStyle(FloatingGridButtonStyle())
+            .disabled(!button.isAvailable())
+            .opacity(button.isAvailable() ? 1 : 0.4)
+            .onHover { hovering = $0 }
+            .topHelpTag(isPresented: .init(get: { hovering && !hideFloatingResultTooltips }, set: { hovering = $0 }), action.label(for: optimiser.type))
+            .contextMenu {
+                Button("Remove from buttons", action: onRemove)
+                Divider()
+                Toggle("Hide tooltip", isOn: $hideFloatingResultTooltips)
+            }
+    }
+
+    @State private var hovering = false
+
+}
+
+/// The faint dashed "+" slot shown where a grid button was removed. Clicking pops a menu of
+/// addable actions; unlike a SwiftUI `Menu` (which opens on mouse-down and would swallow the
+/// press), the NSMenu pops on mouse-UP, so a press-drag starting on the slot can pull the file
+/// out of the floating result like the other grid buttons.
+struct FloatingAddActionSlot: View {
+    let actions: [FloatingAction]
+    var pipelines: [FloatingAction] = []
+    let add: (FloatingAction) -> Void
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
+        Button(action: popUpMenu) {
+            SwiftUI.Image(systemName: "plus").font(.heavy(TextSize.caption)).foregroundStyle(.primary.opacity(0.45))
+                .frame(width: 34, height: 34)
+                .background(Color.primary.opacity(0.05), in: shape)
+                .overlay { shape.stroke(Color.primary.opacity(0.25), style: StrokeStyle(lineWidth: 1, dash: [3, 2])) }
+                .contentShape(shape)
+        }
+        .accessibilityLabel("Add action")
+        .buttonStyle(.plain)
+        .background(MenuAnchor(holder: anchor))
+        .fixedSize()
+        .disabled(actions.isEmpty && pipelines.isEmpty)
+    }
+
+    @State private var anchor = MenuAnchorHolder()
+
+    private func popUpMenu() {
+        guard let view = anchor.view else { return }
+
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+        if #available(macOS 14.0, *) {
+            menu.addItem(.sectionHeader(title: "Assign to a button"))
+        } else {
+            let header = NSMenuItem(title: "Assign to a button", action: nil, keyEquivalent: "")
+            header.isEnabled = false
+            menu.addItem(header)
+        }
+
+        let target = MenuItemTarget { item in
+            guard let action = item.representedObject as? FloatingAction else { return }
+            add(action)
+        }
+        for action in actions {
+            let item = NSMenuItem(title: action.label, action: #selector(MenuItemTarget.fire(_:)), keyEquivalent: "")
+            item.target = target
+            item.representedObject = action
+            item.image = NSImage(systemSymbolName: action.icon, accessibilityDescription: nil)
+            menu.addItem(item)
+        }
+        if !pipelines.isEmpty {
+            menu.addItem(.separator())
+            let submenu = NSMenu()
+            submenu.autoenablesItems = false
+            addPipelineSections(to: submenu, pipelines.compactMap { action in action.savedPipeline.map { ($0, action) } }, target: target)
+            let parent = NSMenuItem(title: "Pipelines", action: nil, keyEquivalent: "")
+            parent.image = NSImage(systemSymbolName: FloatingAction.pipelinesMenuIcon, accessibilityDescription: nil)
+            parent.submenu = submenu
+            menu.addItem(parent)
+        }
+
+        // NSMenuItem.target is weak and popUp tracks synchronously, so the target only needs
+        // to stay alive for the duration of this call.
+        withExtendedLifetime(target) {
+            if view.window != nil {
+                menu.popUp(positioning: nil, at: NSPoint(x: 0, y: view.isFlipped ? view.bounds.maxY + 4 : -4), in: view)
+            } else {
+                // The floating result window can close between the click and this call, leaving the
+                // anchor view detached; popUp(in:) then asserts "View is not in any window" (CLOP-2B2).
+                // Fall back to the cursor location in screen coordinates.
+                menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
+            }
+        }
+    }
+}
+
+/// Appends pipeline rows under the Pipelines settings tab's file type headers: icon, name and
+/// description, each carrying `represented` for the target. Rows in `checked` get a checkmark.
+@MainActor
+private func addPipelineSections(to menu: NSMenu, _ rows: [(pipeline: Pipeline, represented: Any)], target: MenuItemTarget, checked: Set<String> = []) {
+    for (title, fileType) in PipelinesSettingsView.sections {
+        let group = rows.filter { $0.pipeline.fileType == fileType }
+        guard !group.isEmpty else { continue }
+        if #available(macOS 14.0, *) {
+            menu.addItem(.sectionHeader(title: title))
+        } else {
+            let header = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+            header.isEnabled = false
+            menu.addItem(header)
+        }
+        for row in group {
+            let pipeline = row.pipeline
+            let item = NSMenuItem(title: pipeline.name ?? pipeline.id, action: #selector(MenuItemTarget.fire(_:)), keyEquivalent: "")
+            item.target = target
+            item.representedObject = row.represented
+            item.image = NSImage(systemSymbolName: pipeline.icon.flatMap { $0.isEmpty ? nil : $0 } ?? "wand.and.sparkles", accessibilityDescription: nil)
+            item.state = checked.contains(pipeline.id) ? .on : .off
+            if #available(macOS 14.4, *) {
+                item.subtitle = pipeline.details.flatMap { $0.isEmpty ? nil : $0 } ?? "No description"
+            }
+            menu.addItem(item)
+        }
+    }
+}
+
+/// Menu for a pipeline button in Settings: every saved pipeline under its file type, the ones on this
+/// button checked. Picking a pipeline assigns it to its type (replacing that type's current one), picking
+/// a checked one clears it. `onChange` gets the edited button, or nil when it should be removed.
+@MainActor
+private func popUpPipelineButtonMenu(for action: FloatingAction, in view: NSView?, onChange: @escaping (FloatingAction?) -> Void) {
+    guard let set = action.pipelineSet else { return }
+
+    let menu = NSMenu()
+    menu.autoenablesItems = false
+    let target = MenuItemTarget { item in
+        if let pipeline = item.representedObject as? Pipeline {
+            onChange(set.toggling(pipeline).map { .pipeline($0) })
+        } else {
+            onChange(nil)
+        }
+    }
+    let hint = NSMenuItem(title: "You can choose multiple pipelines, one per type, so the button adapts per file", action: nil, keyEquivalent: "")
+    hint.isEnabled = false
+    menu.addItem(hint)
+    menu.addItem(.separator())
+
+    let saved = Defaults[.savedPipelines].filter { !($0.name ?? "").isEmpty }
+    addPipelineSections(to: menu, saved.map { ($0, $0 as Any) }, target: target, checked: Set(set.ids.values))
+    menu.addItem(.separator())
+    let remove = NSMenuItem(title: "Remove from buttons", action: #selector(MenuItemTarget.fire(_:)), keyEquivalent: "")
+    remove.target = target
+    menu.addItem(remove)
+
+    withExtendedLifetime(target) {
+        if let view, view.window != nil {
+            menu.popUp(positioning: nil, at: NSPoint(x: 0, y: view.isFlipped ? view.bounds.maxY + 4 : -4), in: view)
+        } else {
+            menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
+        }
+    }
+}
+
+/// Weakly holds the AppKit view behind a SwiftUI view so a click can anchor an NSMenu to it.
+@MainActor
+private final class MenuAnchorHolder {
+    weak var view: NSView?
+}
+
+private struct MenuAnchor: NSViewRepresentable {
+    let holder: MenuAnchorHolder
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView(frame: .zero)
+        holder.view = view
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        holder.view = nsView
+    }
+}
+
+/// Forwards an NSMenuItem action to a closure.
+private final class MenuItemTarget: NSObject {
+    init(_ handler: @escaping (NSMenuItem) -> Void) {
+        self.handler = handler
+    }
+
+    let handler: (NSMenuItem) -> Void
+
+    @objc func fire(_ item: NSMenuItem) {
+        handler(item)
+    }
+}
+
+struct ActionPickerButton: View {
+    let action: FloatingAction
+    let size: CGFloat
+    /// Called with the edited action, or nil to remove it. Built-in actions only ever remove; pipeline
+    /// buttons open their per file type menu instead.
+    let onChange: (FloatingAction?) -> Void
+
+    @State var hovering = false
+
+    var body: some View {
+        Button(action: {
+            if action.isPipeline {
+                popUpPipelineButtonMenu(for: action, in: anchor.view, onChange: onChange)
+            } else {
+                onChange(nil)
+            }
+        }) {
+            SwiftUI.Image(systemName: action.icon)
+                .font(.heavy(TextSize.micro))
+        }
+        .buttonStyle(FlatButton(color: .clear, textColor: .black.opacity(0.7), width: size, height: size, circle: true))
+        .background(MenuAnchor(holder: anchor))
+        .onHover { hovering = $0 }
+        .topHelpTag(isPresented: $hovering, action.label)
+    }
+
+    @State private var anchor = MenuAnchorHolder()
+}
+
+/// Settings editor for the full floating result's action grid: the same 2×3 squircle layout and
+/// metrics as the hover overlay, with a solid `Color.bg.warm` chip per button (the settings window is
+/// opaque, so the overlay's translucent material is swapped for the equivalent solid). Tap a slot to
+/// change it — filled slots offer Remove, empty slots a dashed `+` that assigns an action. Crop stays
+/// out of the grid (it's a fixed corner button in the overlay), matching the overlay's handling.
+struct FloatingActionGridPicker: View {
+    @Binding var actions: [FloatingAction]
+
+    var body: some View {
+        VStack(spacing: Space.s) {
+            VStack(spacing: 1) {
+                Text("Action buttons").medium(TextSize.callout).foregroundColor(.secondary)
+                    .searchAnchor("floating.main.floatingResultActions")
+                Text("Tap a button to change it").regular(TextSize.micro).foregroundColor(.secondary.opacity(0.5))
+            }
+            let cols = Array(repeating: GridItem(.fixed(side), spacing: Space.m), count: 3)
+            LazyVGrid(columns: cols, spacing: Space.m) {
+                ForEach(Array(slots.enumerated()), id: \.offset) { _, slot in
+                    if let action = slot {
+                        GridPickerButton(action: action, side: side) { replace(action, with: $0) }
+                    } else {
+                        addPlaceholder
+                    }
+                }
+            }
+            .fixedSize()
+
+            if actions != FloatingAction.defaultFloating {
+                Button("Reset to default") { actions = FloatingAction.defaultFloating }
+                    .buttonStyle(.plain)
+                    .font(.medium(TextSize.caption))
+                    .foregroundColor(.secondary)
+                    .padding(.top, Space.xxs)
+            }
+        }
+    }
+
+    /// Observed so the Pipelines submenu follows library edits while Settings is open.
+    @Default(.savedPipelines) private var savedPipelines
+
+    /// Same metrics as the overlay grid (FloatingGridButtonStyle: 34pt cells, 8pt gaps).
+    private let side: CGFloat = 34
+
+    private var configured: [FloatingAction] {
+        actions.filter { $0 != .crop && $0.resolves }
+    }
+    private var slots: [FloatingAction?] {
+        var s: [FloatingAction?] = Array(configured.prefix(6)).map { Optional($0) }
+        while s.count < 6 {
+            s.append(nil)
+        }
+        return s
+    }
+    private var addable: [FloatingAction] {
+        FloatingAction.allCases.filter { $0 != .crop && !configured.contains($0) }
+    }
+    private var addablePipelines: [FloatingAction] {
+        FloatingAction.pipelineActions(excluding: configured)
+    }
+
+    private var addPlaceholder: some View {
+        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
+        return Menu {
+            Section("Assign to a button") {
+                ForEach(addable) { a in
+                    Button(action: { actions.append(a) }) {
+                        Label(a.label, systemImage: a.icon).labelStyle(.titleAndIcon)
+                    }
+                }
+            }
+            pipelineActionsMenu(addablePipelines) { actions.append($0) }
+        } label: {
+            SwiftUI.Image(systemName: "plus").font(.heavy(TextSize.caption)).foregroundStyle(.primary.opacity(0.45))
+                .frame(width: side, height: side)
+                .background(Color.primary.opacity(0.05), in: shape)
+                .overlay { shape.stroke(Color.primary.opacity(0.25), style: StrokeStyle(lineWidth: 1, dash: [3, 2])) }
+                .contentShape(shape)
+        }
+        .accessibilityLabel("Add action")
+        // .button, not .borderlessButton: the legacy borderless style drops menu item subtitles, which the
+        // Pipelines submenu needs (same style as the preset zone menus in DropZone).
+        .menuStyle(.button)
+        .menuIndicator(.hidden)
+        .buttonStyle(.plain)
+        .fixedSize()
+        .disabled(addable.isEmpty && addablePipelines.isEmpty)
+    }
+
+    private func replace(_ action: FloatingAction, with new: FloatingAction?) {
+        guard let i = actions.firstIndex(of: action) else { return }
+        if let new {
+            actions[i] = new
+        } else {
+            actions.remove(at: i)
+        }
+    }
+
+}
+
+/// "Pipelines" submenu of the add-button menus in Settings, sectioned by file type like the preset zone
+/// menus. Kept a @ViewBuilder function with one literal Section per type, the same shape as
+/// DropZone.zoneMenuContent: SwiftUI reads menu items from the view tree heuristically, and a Section
+/// generated by ForEach or content behind a custom View struct loses the item subtitle.
+@ViewBuilder
+func pipelineActionsMenu(_ pipelines: [FloatingAction], add: @escaping (FloatingAction) -> Void) -> some View {
+    if !pipelines.isEmpty {
+        let image = pipelines.filter { $0.savedPipeline?.fileType == .image }
+        let video = pipelines.filter { $0.savedPipeline?.fileType == .video }
+        let audio = pipelines.filter { $0.savedPipeline?.fileType == .audio }
+        let pdf = pipelines.filter { $0.savedPipeline?.fileType == .pdf }
+        let any = pipelines.filter { $0.savedPipeline != nil && $0.savedPipeline?.fileType == nil }
+        // Its own Section so a separator sets the submenu apart from the built-in actions.
+        Section {
+            Menu {
+                if !image.isEmpty {
+                    Section("Image") {
+                        ForEach(image) { action in
+                            Button { add(action) } label: { pipelineActionMenuLabel(action) }
+                        }
+                    }
+                }
+                if !video.isEmpty {
+                    Section("Video") {
+                        ForEach(video) { action in
+                            Button { add(action) } label: { pipelineActionMenuLabel(action) }
+                        }
+                    }
+                }
+                if !audio.isEmpty {
+                    Section("Audio") {
+                        ForEach(audio) { action in
+                            Button { add(action) } label: { pipelineActionMenuLabel(action) }
+                        }
+                    }
+                }
+                if !pdf.isEmpty {
+                    Section("PDF") {
+                        ForEach(pdf) { action in
+                            Button { add(action) } label: { pipelineActionMenuLabel(action) }
+                        }
+                    }
+                }
+                if !any.isEmpty {
+                    Section("Any type") {
+                        ForEach(any) { action in
+                            Button { add(action) } label: { pipelineActionMenuLabel(action) }
+                        }
+                    }
+                }
+            } label: {
+                Label("Pipelines", systemImage: FloatingAction.pipelinesMenuIcon).labelStyle(.titleAndIcon)
+            }
+        }
+    }
+}
+
+/// A Label (icon column + title) with the subtitle as a SIBLING Text, so the icon spans both lines.
+/// A Text inside the Label's title, or any stack, is not read as a subtitle. Menus hide Label icons
+/// unless the style asks for them.
+/// Shared by every menu that lists saved pipelines (result action buttons, preset zones).
+@ViewBuilder
+func pipelineMenuLabel(_ pipeline: Pipeline) -> some View {
+    let symbol = pipeline.icon.flatMap { $0.isEmpty ? nil : $0 } ?? "wand.and.sparkles"
+    Label {
+        Text(pipeline.name ?? pipeline.id)
+    } icon: {
+        SwiftUI.Image(systemName: symbol)
+    }
+    .labelStyle(.titleAndIcon)
+    Text(pipeline.details.flatMap { $0.isEmpty ? nil : $0 } ?? "No description")
+}
+
+@ViewBuilder
+func pipelineActionMenuLabel(_ action: FloatingAction) -> some View {
+    if let pipeline = action.savedPipeline {
+        pipelineMenuLabel(pipeline)
+    }
+}
+
+/// One filled slot in the settings action grid: same squircle/metrics as the hover overlay, with our
+/// custom HelpTag showing the action name on hover. It's a plain Button (a borderless Menu label
+/// wouldn't render the chip background). The opaque settings window can't blur, so the chip uses a
+/// solid `Color.bg.warm` fill plus a contrasting outline for separation. Tap removes a built-in action,
+/// or opens the per file type menu of a pipeline button.
+private struct GridPickerButton: View {
+    let action: FloatingAction
+    let side: CGFloat
+    /// Called with the edited action, or nil to remove it.
+    let onChange: (FloatingAction?) -> Void
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: Radius.panel, style: .continuous)
+        // A plain Button renders the label's background; a borderless Menu label did not, which is
+        // why earlier fill changes were invisible. Tap removes the action (re-add via the + slot).
+        return Button(action: {
+            if action.isPipeline {
+                popUpPipelineButtonMenu(for: action, in: anchor.view, onChange: onChange)
+            } else {
+                onChange(nil)
+            }
+        }) {
+            SwiftUI.Image(systemName: action.icon)
+                .font(.heavy(TextSize.subheadline))
+                .foregroundStyle(Color.fg.primary)
+                .frame(width: side, height: side)
+                .background(Color.bg.warm, in: shape)
+                // A contrasting outline so the warm chip (warmBlack in dark mode) still separates from
+                // the same-shade settings panel behind it.
+                .overlay { shape.stroke(Color.fg.primary.opacity(0.5), lineWidth: 1) }
+                .contentShape(shape)
+        }
+        .buttonStyle(.plain)
+        .background(MenuAnchor(holder: anchor))
+        .fixedSize()
+        .onHover { hovering = $0 }
+        .topHelpTag(isPresented: $hovering, action.label)
+    }
+
+    @State private var hovering = false
+    @State private var anchor = MenuAnchorHolder()
+
+}
+
+struct ActionListPicker: View {
+    let label: String
+    let vertical: Bool
+
+    @Binding var actions: [FloatingAction]
+
+    var available: [FloatingAction] {
+        FloatingAction.allCases.filter { !actions.contains($0) }
+    }
+    var availablePipelines: [FloatingAction] {
+        FloatingAction.pipelineActions(excluding: actions)
+    }
+    var shownActions: [FloatingAction] {
+        actions.filter(\.resolves)
+    }
+
+    var buttonSize: CGFloat {
+        vertical ? 22 : 18
+    }
+
+    var addMenu: some View {
+        Menu {
+            ForEach(available) { action in
+                Button(action: { actions.append(action) }) {
+                    Label(action.label, systemImage: action.icon).labelStyle(.titleAndIcon)
+                }
+            }
+            pipelineActionsMenu(availablePipelines) { actions.append($0) }
+        } label: {
+            SwiftUI.Image(systemName: "plus.circle.fill")
+                .font(.regular(TextSize.body))
+                .foregroundColor(.secondary.opacity(0.5))
+        }
+        .accessibilityLabel("Add action")
+        // See FloatingActionGridPicker: .borderlessButton drops the Pipelines item subtitles.
+        .menuStyle(.button)
+        .menuIndicator(.hidden)
+        .buttonStyle(.plain)
+        .fixedSize()
+    }
+
+    var body: some View {
+        VStack(spacing: Space.s) {
+            VStack(spacing: 1) {
+                Text(label).medium(TextSize.callout)
+                    .foregroundColor(.secondary)
+                Text("To remove an icon, click on it").regular(TextSize.micro)
+                    .foregroundColor(.secondary.opacity(0.5))
+            }
+
+            HStack(spacing: Space.s) {
+                let layout = vertical ? AnyLayout(VStackLayout(spacing: Space.xxs)) : AnyLayout(HStackLayout(spacing: Space.xxs))
+                layout {
+                    ForEach(shownActions) { action in
+                        ActionPickerButton(action: action, size: buttonSize) { new in
+                            if let i = actions.firstIndex(of: action) {
+                                if let new {
+                                    actions[i] = new
+                                } else {
+                                    actions.remove(at: i)
+                                }
+                            }
+                        }
+                    }
+                }
+                .sideButtonBackground(preview: true)
+
+                let maxButtons = vertical ? FloatingAction.maxFloatingButtons : FloatingAction.maxCompactButtons
+                if shownActions.count < maxButtons, !available.isEmpty || !availablePipelines.isEmpty {
+                    addMenu
+                }
+            }
+        }
+    }
+
+    /// Observed so the Pipelines submenu follows library edits while Settings is open.
+    @Default(.savedPipelines) private var savedPipelines
+
+}
+
+struct ActionButtons: View {
+    @ObservedObject var optimiser: Optimiser
+    var size: CGFloat
+    /// When false (row at rest), the icons are translucent and the capsule background is hidden; when
+    /// true (row hovered) the icons go full-strength and the background fades in. Buttons keep their
+    /// place either way, so the row never gains/loses height.
+    var revealed = true
+
+    @Environment(\.preview) var preview
+    @Default(.compactResultActions) var compactResultActions
+    @Default(.hideFloatingResultTooltips) var hideFloatingResultTooltips
+
+    @State var hoveringAction: FloatingAction?
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(compactResultActions) { action in
+                let btn = ActionButton(action: action, optimiser: optimiser)
+                if btn.isAvailable() {
+                    btn
+                        .hfill()
+                        .onHover { h in hoveringAction = h ? action : nil }
+                        .topHelpTag(
+                            isPresented: .init(get: { hoveringAction == action && !hideFloatingResultTooltips && !optimiser.showDownscaleSlider && !optimiser.showCompressionSlider }, set: {
+                                if !$0 {
+                                    hoveringAction = nil
+                                }
+                            }),
+                            action.label(for: optimiser.type)
+                        )
+                }
+            }
+        }
+        .buttonStyle(FlatButton(
+            color: (preview ? Color.black : Color.primary).opacity(0.02),
+            textColor: (preview ? Color.black : Color.primary).opacity(0.7),
+            hoverColor: (preview ? Color.black : Color.primary).opacity(0.1),
+            width: size,
+            height: size,
+            circle: true
+        ))
+        // Translucent icons at rest, full on hover.
+        .opacity(revealed ? 1 : 0.5)
+        .allowsHitTesting(!optimiser.showDownscaleSlider && !optimiser.showCompressionSlider)
+        // Capsule background fades in only on hover (or while a slider is open), so resting rows stay
+        // clean — without hiding the buttons, which would leave an empty gap.
+        .background {
+            let showBg = revealed || optimiser.showDownscaleSlider || optimiser.showCompressionSlider
+            // Opaque, modern control surface (no muddy translucent material): a clean light/dark fill with
+            // a hairline border, so the capsule reads as a crisp toolbar instead of dark-gray glass.
+            Capsule()
+                .fill(Color(light: Color.white, dark: Color(white: 0.19)))
+                .overlay(Capsule().strokeBorder(Color(light: Color.black.opacity(0.1), dark: Color.white.opacity(0.12)), lineWidth: 1))
+                .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
+                .opacity(showBg ? 1 : 0)
+        }
+        .animation(.easeOut(duration: 0.15), value: revealed)
+        .overlay {
+            if optimiser.showDownscaleSlider {
+                if optimiser.type.isAudio {
+                    // Audio's "downscale" axis resizes the embedded cover art (the bitrate axis lives on
+                    // the compression button), matching the floating card and the button's own label.
+                    HorizontalCoverArtSlider(optimiser: optimiser, size: size)
+                } else if optimiser.type.isPDF {
+                    HorizontalPDFDPISlider(optimiser: optimiser, size: size)
+                } else {
+                    HorizontalDownscaleSlider(optimiser: optimiser, size: size)
+                }
+            } else if optimiser.showCompressionSlider {
+                HorizontalCompressionSlider(optimiser: optimiser, size: size)
+            }
+        }
+        .hfill()
+        .animation(.fastSpring, value: optimiser.aggressive)
+        .onHover {
+            if !$0 {
+                hoveringAction = nil
+            }
+        }
+    }
+}

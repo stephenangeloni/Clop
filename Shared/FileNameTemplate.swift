@@ -170,7 +170,7 @@ func generateFilePath(template rawTemplate: FilePath, for path: FilePath? = nil,
         let dir = (name.last == "/" || !name.contains(".")) ? newpath : newpath.dir
         guard dir.mkdir(withIntermediateDirectories: true) else {
             log.error("Could not create output directory '\(dir.string)'")
-            throw ClopError.couldNotCreateOutputDirectory(dir.string)
+            throw PolcError.couldNotCreateOutputDirectory(dir.string)
         }
     }
 
@@ -205,7 +205,7 @@ func generateFilePath(template: String, for path: FilePath? = nil, autoIncrement
         let dir = (name.last == "/" || !name.contains(".")) ? newpath : newpath.dir
         guard dir.mkdir(withIntermediateDirectories: true) else {
             log.error("Could not create output directory '\(dir.string)'")
-            throw ClopError.couldNotCreateOutputDirectory(dir.string)
+            throw PolcError.couldNotCreateOutputDirectory(dir.string)
         }
     }
     do {

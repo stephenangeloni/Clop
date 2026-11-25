@@ -1,0 +1,552 @@
+import Cocoa
+import Defaults
+import Foundation
+import Lowtech
+import os
+import System
+import UniformTypeIdentifiers
+
+private let log = Logger(subsystem: LOG_SUBSYSTEM, category: "ImagePipeline")
+
+@MainActor func applyImageConversionBehaviour(original img: Image, converted: Image, originalPath: inout FilePath?, overrides: PlacementOverride? = nil) throws -> Image {
+    // A file whose extension already names the new format (a WebP saved as `logo.png`, converted to a
+    // real PNG) keeps its name, so a same-folder `%f` template writes the result over the original.
+    // Keep a copy of it first; in-place placement moves it to the same backup path anyway.
+    if converted.path.extension?.lowercased() == img.path.extension?.lowercased(), let backupPath = img.path.polcBackupPath {
+        img.path.backup(path: backupPath, force: true, operation: .copy)
+    }
+    let placed = try placeOutput(produced: converted.path, original: img.path, type: .image, kind: .autoConvert, overrides: overrides)
+    if placed.originalRemoved || placed.path != converted.path {
+        originalPath = img.path
+    }
+    guard placed.path != converted.path else { return converted }
+    return Image(data: converted.data, path: placed.path, nsImage: converted.image, type: converted.type, optimised: converted.optimised, retinaDownscaled: converted.retinaDownscaled)
+}
+
+func decrementedDownscaleFactor(_ factor: Double) -> Double {
+    max(factor > 0.5 ? factor - 0.25 : factor - 0.1, 0.1)
+}
+
+/// Compute the downscale factor for an image, handling auto-decrement when no explicit factor is given.
+@MainActor func computeImageDownscaleFactor(id: String?, factor: Double?, cropSize: CropSize?, imageSize: NSSize) -> Double {
+    if let cropSize {
+        let f = cropSize.factor(from: imageSize)
+        // A "max long edge" is a cap: never enlarge a file that's already smaller than the target.
+        return cropSize.longEdge ? min(f, 1.0) : f
+    }
+    if let factor {
+        return factor
+    }
+    let pathID = id ?? ""
+    if let currentFactor = opt(pathID)?.downscaleFactor {
+        return decrementedDownscaleFactor(currentFactor)
+    }
+    if let current = OM.current, current.id == pathID {
+        let f = decrementedDownscaleFactor(current.downscaleFactor)
+        current.downscaleFactor = f
+        return f
+    }
+    return decrementedDownscaleFactor(scalingFactor)
+}
+
+/// Compute the downscale factor for a video.
+@MainActor func computeVideoDownscaleFactor(id: String?, factor: Double?, cropSize: CropSize?, videoSize: CGSize) -> Double {
+    if let cropSize {
+        let f = cropSize.factor(from: videoSize)
+        return cropSize.longEdge ? min(f, 1.0) : f
+    }
+    if let factor {
+        return factor
+    }
+    if let currentFactor = opt(id ?? "")?.downscaleFactor {
+        return decrementedDownscaleFactor(currentFactor)
+    }
+    return decrementedDownscaleFactor(scalingFactor)
+}
+
+/// Compute the speed change factor for a video.
+@MainActor func computeSpeedFactor(id: String?, factor: Double?) -> Double {
+    if let factor {
+        return factor
+    }
+    if let currentFactor = opt(id ?? "")?.changePlaybackSpeedFactor {
+        return min(currentFactor < 2 ? currentFactor + 0.25 : currentFactor + 1.0, 10)
+    }
+    return 1.25
+}
+
+/// Build the operation label for the optimiser UI.
+@MainActor func operationLabel(
+    for actions: [PipelineAction],
+    filename: String,
+    imageSize: NSSize? = nil,
+    videoSize: CGSize? = nil,
+    aggressive: Bool
+) -> String {
+    let showFilename = false
+
+    if let downscale = actions.first(where: \.isDownscale), case let .downscale(factor, cropSize) = downscale {
+        let size = imageSize ?? videoSize ?? .zero
+        let scaleString = if let cs = cropSize?.computedSize(from: size) {
+            "\(cs.width > 0 ? cs.width.i.s : "Auto")×\(cs.height > 0 ? cs.height.i.s : "Auto")"
+        } else if let factor {
+            "\((factor * 100).intround)%"
+        } else {
+            "?"
+        }
+        return "Scaling to \(scaleString)" + (aggressive ? " (aggressive)" : "")
+    }
+
+    if let speed = actions.first(where: \.isChangePlaybackSpeed), case let .changePlaybackSpeed(factor, _) = speed {
+        let label = if factor > 1 {
+            "Speeding up by \(factor < 2 ? factor.str(decimals: 2) : factor.i.s)x"
+        } else if factor == 1 {
+            "Reverting to original speed"
+        } else {
+            "Slowing down to \(factor != 0.5 ? factor.str(decimals: 2) : "0.5")x"
+        }
+        return label + (aggressive ? " (aggressive)" : "")
+    }
+
+    let base = showFilename ? "Optimising \(filename)" : "Optimising"
+    return base + (aggressive ? " (aggressive)" : "")
+}
+
+// MARK: - Image Pipeline
+
+/// Unified image pipeline replacing `optimiseImage()` and `downscaleImage()`.
+///
+/// Handles: auto-conversion from settings, cache lookup, debouncing, backup creation,
+/// sequential action execution (convert → optimise → downscale → shortcut),
+/// error handling, finalization, clipboard copy, and cache update.
+@discardableResult
+@MainActor func runImagePipeline(
+    _ img: Image,
+    actions: [PipelineAction],
+    id: String? = nil,
+    debounceMS: Int = 0,
+    saveTo savePath: FilePath? = nil,
+    copyToClipboard: Bool = false,
+    allowTiff: Bool? = nil,
+    allowLarger: Bool = false,
+    hideFloatingResult: Bool = false,
+    aggressiveOptimisation: Bool? = nil,
+    adaptiveOptimisation: Bool? = nil,
+    source: OptimisationSource? = nil,
+    skipCache: Bool = false,
+    compression: CompressionQuality? = nil,
+    batchOptimiser: Optimiser? = nil,
+    optimiseFollows: Bool = false
+) async throws -> Image? {
+    let path = img.path
+    var img = img
+
+    // Guard: already optimised
+    guard !img.optimised else {
+        throw PolcError.alreadyOptimised(path)
+    }
+    var pathString = path.string
+
+    // Guard: TIFF setting
+    guard img.type != .tiff || (allowTiff ?? Defaults[.optimiseTIFF]) else {
+        log.debug("Skipping image \(pathString) because TIFF optimisation is disabled")
+        throw PolcError.skippedType("TIFF optimisation is disabled")
+    }
+
+    // Guard: clipboard pause
+    if id == Optimiser.IDs.clipboardImage, pauseForNextClipboardEvent {
+        log.debug("Skipping image \(pathString) because it was paused")
+        pauseForNextClipboardEvent = false
+        throw PolcError.optimisationPaused(path)
+    }
+
+    var allowLarger = allowLarger
+    var originalPath: FilePath?
+
+    let hasDownscale = actions.contains(where: \.isDownscale)
+
+    // Auto-detect conversion from settings (unless explicit .convert action exists).
+    // Never auto-convert an animated GIF or WebP to a still image format; it would drop every frame
+    // but one, and WebP is converted to JPEG by default.
+    let hasExplicitConvert = actions.contains(where: \.isConvert)
+    let autoConversionFormat: UTType? = if hasExplicitConvert || img.path.isAnimatedGIF || img.path.isAnimatedWebP {
+        nil
+    } else {
+        Defaults[.formatsToConvertToJPEG].contains(img.type)
+            ? .jpeg
+            : (Defaults[.formatsToConvertToPNG].contains(img.type) ? .png : nil)
+    }
+
+    if let autoConversionFormat {
+        // The settings match on what the bytes are, not on the name, so a WebP saved as `logo.png` is
+        // converted like any other WebP.
+        if let ext = img.path.extension, let named = UTType(filenameExtension: ext), !img.type.conforms(to: named) {
+            log.warning("\(pathString) is named .\(ext) but holds \(img.type.identifier) data")
+        }
+        // Conversion can re-encode an HDR photo with its gain maps and decode the result with NSImage;
+        // run it off the main actor so a large/HDR image doesn't block the main thread for tens of
+        // seconds and trip the ANR watchdog. The transparency check decodes every pixel's alpha, so it
+        // runs there too.
+        let imageToConvert = img
+        let preregistered = opt(id ?? pathString)
+        let keepHDR = hdrAllowed(optimiser: preregistered, cq: compression ?? preregistered?.compressionOverride)
+        let converted = try await Task.detached {
+            try imageToConvert.convert(to: imageToConvert.formatKeepingTransparency(autoConversionFormat), asTempFile: true, keepHDR: keepHDR)
+        }.value
+        // The optimiser may already be pre-registered in OM by the CLI request handler so
+        // placementOverride is available here, before the optimiser is formally set up below.
+        let placementOverride = opt(id ?? pathString)?.placementOverride
+        img = try applyImageConversionBehaviour(original: img, converted: converted, originalPath: &originalPath, overrides: placementOverride)
+        pathString = img.path.string
+        allowLarger = true
+    } else if !skipCache, !hasExplicitConvert, !hasDownscale, let optImg = try getCachedOptimisedImage(img: img, id: id, retinaDownscaled: false) {
+        log.debug("Using cached optimised image \(optImg.path)")
+        return optImg
+    }
+
+    // Compute effective downscale factor (including auto-decrement for repeated presses)
+    var effectiveDownscaleFactor: Double?
+    if hasDownscale, case let .downscale(factor, cropSize) = actions.first(where: \.isDownscale)! {
+        effectiveDownscaleFactor = computeImageDownscaleFactor(id: id ?? pathString, factor: factor, cropSize: cropSize, imageSize: img.size)
+        scalingFactor = effectiveDownscaleFactor!
+    }
+
+    let aggressive = aggressiveOptimisation ?? opt(id ?? pathString)?.aggressive ?? false
+
+    // Build operation label
+    var effectiveActions = actions
+    if let effectiveDownscaleFactor, hasDownscale {
+        // Replace downscale action with computed factor
+        effectiveActions = actions.map { action in
+            if case let .downscale(_, cropSize) = action {
+                return .downscale(factor: effectiveDownscaleFactor, cropSize: cropSize)
+            }
+            return action
+        }
+    }
+    let opLabel = operationLabel(for: effectiveActions, filename: img.path.lastComponent?.string ?? "", imageSize: img.size, aggressive: aggressive)
+
+    let pipelineId = id ?? pathString
+
+    // Serialize per id: terminate the in-flight pipeline's running process and wait for it to unwind.
+    // Prevents concurrent downscale passes from racing on the same cache paths (for-resize/<hash>.png, images/<hash>.png).
+    if let previousPipeline = imagePipelineInFlight[pipelineId] {
+        opt(pipelineId)?.stop(remove: false)
+        await previousPipeline.value
+
+        // A duplicate plain-optimise request (e.g. several file-watcher events for one download)
+        // queues up here behind the first pass. The cache checks above ran before the await, so
+        // re-check now instead of re-optimising content the awaited pass just finished.
+        if !skipCache, !copyToClipboard, aggressiveOptimisation == nil, actions.allSatisfy(\.isOptimise),
+           let cachedPath = OM.optimisedFilesByHash[img.hash], cachedPath.exists,
+           let optImg = Image(path: cachedPath, optimised: true, retinaDownscaled: img.retinaDownscaled)
+        {
+            log.debug("Image \(pathString) was already optimised by the in-flight pipeline, using cached result \(cachedPath.string)")
+            return optImg
+        }
+    }
+
+    // Set up optimiser. In batch mode a transient hidden optimiser is supplied by the engine and is
+    // never registered in OM, so the heavy floating-result machinery is skipped entirely.
+    let optimiser = batchOptimiser ?? OM.optimiser(
+        id: pipelineId, type: .image(img.type),
+        operation: opLabel,
+        hidden: hideFloatingResult, source: source, indeterminateProgress: true
+    )
+    if let compression {
+        optimiser.compressionOverride = compression
+    }
+    if !hideFloatingResult {
+        optimiser.thumbnail = img.image
+    }
+    if hasDownscale {
+        optimiser.downscaleFactor = effectiveDownscaleFactor ?? scalingFactor
+        optimiser.remover = nil
+        optimiser.inRemoval = false
+        optimiser.stop(remove: false)
+    } else {
+        optimiser.downscaleFactor = 1.0
+    }
+    optimiser.newSize = nil
+    optimiser.newBytes = -1
+    if let url = originalPath?.url {
+        optimiser.convertedFromURL = url
+    }
+
+    var done = false
+    var result: Image?
+
+    // Cancel existing debouncers for this path
+    imageOptimiseDebouncers[pathString]?.cancel()
+    imageResizeDebouncers[pathString]?.cancel()
+
+    let workItem = mainAsyncAfter(ms: debounceMS) {
+        if !hasDownscale {
+            scalingFactor = 1.0
+        }
+        optimiser.stop(remove: false)
+        optimiser.operation = optimiser.manualAdjustmentOperation ?? opLabel
+        if optimiser.originalURL == nil {
+            optimiser.originalURL = img.path.backup(path: img.path.polcBackupPath, force: false, operation: .copy)?.url ?? img.path.url
+        }
+        optimiser.url = (savePath ?? img.path).url
+        if id == Optimiser.IDs.clipboardImage, optimiser.startingURL == nil {
+            optimiser.startingURL = optimiser.url
+        }
+        if !hideFloatingResult {
+            OM.current = optimiser
+        }
+
+        if batchOptimiser == nil {
+            OM.optimisers = OM.optimisers.without(optimiser).with(optimiser)
+            showFloatingThumbnails()
+        }
+
+        let img = img
+        let pathString = pathString
+        let allowLarger = allowLarger
+        let effectiveActions = effectiveActions
+        var previouslyCached = true
+
+        imageOptimisationQueue.addOperation {
+            defer {
+                mainActor { done = true }
+            }
+
+            var currentImage: Image? = img
+            var shortcutChanged = false
+            do {
+                log.debug("Running image pipeline \(effectiveActions) for \(pathString)")
+
+                for (actionIndex, action) in effectiveActions.enumerated() {
+                    guard let ci = currentImage else { break }
+
+                    switch action {
+                    case let .convert(format):
+                        var converted = try ci.convert(to: format, asTempFile: true, cq: optimiser.compressionOverride, keepHDR: hdrAllowed(optimiser: optimiser, cq: optimiser.compressionOverride))
+
+                        // JPEG/PNG/GIF leave `convert` at maximum quality because the system encoder
+                        // has no quality knob, so compress them here to honour the compression
+                        // setting. Skipped when an `optimise` runs later, either further down this
+                        // same pass or as a following pipeline step, so that a file the user asked to
+                        // optimise themselves is only lossily encoded once.
+                        let optimiseRunsLater = optimiseFollows
+                            || effectiveActions.dropFirst(actionIndex + 1).contains(where: \.isOptimise)
+                        if !optimiseRunsLater, !QUALITY_AWARE_CONVERT_FORMATS.contains(format),
+                           let compressed = try? converted.optimise(
+                               optimiser: optimiser,
+                               allowLarger: true,
+                               aggressiveOptimisation: aggressiveOptimisation,
+                               adaptiveSize: false
+                           )
+                        {
+                            converted = compressed
+                        }
+
+                        var placedImage = converted
+                        if id != Optimiser.IDs.clipboardImage {
+                            let placed = try placeOutput(produced: converted.path, original: savePath ?? img.path, type: .image, kind: .manualConvert, overrides: optimiser.placementOverride)
+                            if placed.path != converted.path {
+                                placedImage = try converted.copyWithPath(placed.path)
+                            }
+                        }
+                        currentImage = placedImage
+                        mainActor {
+                            optimiser.operation = "Converting to \(format.preferredFilenameExtension?.uppercased() ?? "?")"
+                            optimiser.url = placedImage.path.url
+                            optimiser.type = .image(placedImage.type)
+                        }
+
+                    case .optimise:
+                        mainActor {
+                            optimiser.operation = optimiser.manualAdjustmentOperation ?? ("Optimising" + (aggressive ? " (aggressive)" : ""))
+                        }
+                        // A file that can't get smaller is not a failure of the whole pipeline:
+                        // keep the current image and let the remaining actions (e.g. a later
+                        // downscale in a compiled batch) still run.
+                        do {
+                            currentImage = try ci.optimise(
+                                optimiser: optimiser,
+                                allowLarger: allowLarger,
+                                aggressiveOptimisation: aggressiveOptimisation,
+                                adaptiveSize: adaptiveOptimisation ?? (effectiveImageCompression(aggressiveOptimisation, override: optimiser.compressionOverride).tier == .adaptive)
+                            )
+                        } catch PolcError.imageSizeLarger, PolcError.alreadyOptimised {
+                            mainActor { optimiser.info = "File already fully compressed" }
+                            currentImage = ci
+                            continue
+                        }
+                        if currentImage!.type == img.type {
+                            if id == Optimiser.IDs.clipboardImage {
+                                // clipboard has no on-disk original to replace; keep temp behaviour
+                            } else if let cur = currentImage {
+                                let placed = try placeOutput(produced: cur.path, original: savePath ?? img.path, type: .image, kind: .optimised, overrides: optimiser.placementOverride)
+                                currentImage = try cur.copyWithPath(placed.path)
+                            }
+                        } else {
+                            // Adaptive optimisation converted the format (e.g. PNG→JPEG). The encoder saved it
+                            // next to the source; in the temp pipeline that source dir is the backup/cache, so
+                            // relocate the converted file to the destination where the user expects it.
+                            if id != Optimiser.IDs.clipboardImage, let savePath, let ext = currentImage!.path.extension {
+                                currentImage = try currentImage?.copyWithPath(currentImage!.path.copy(to: savePath.withExtension(ext), force: true))
+                            }
+                            // The encoder wrote the new format next to its input. When that input is the
+                            // copy Polc made at the templated destination ("same folder" with `%f-optimised`),
+                            // nothing points at it any more, so it would sit in the user's folder as a stale
+                            // `img-optimised.png` beside the `img-optimised.jpg` that replaced it.
+                            if id != Optimiser.IDs.clipboardImage, let newPath = currentImage?.path, newPath != ci.path,
+                               ci.path.exists, !ci.path.starts(with: FilePath.workdir),
+                               isTemplatedCopy(type: .image, path: ci.path, overrides: optimiser.placementOverride)
+                            {
+                                try? ci.path.delete()
+                            }
+                            mainActor {
+                                optimiser.url = currentImage!.path.url
+                                optimiser.type = .image(currentImage!.type)
+                            }
+                        }
+
+                    case let .downscale(_, cropSize):
+                        if let cropSize, cropSize.width > 0, cropSize.height > 0 {
+                            currentImage = try ci.resize(
+                                toSize: cropSize,
+                                optimiser: optimiser,
+                                aggressiveOptimisation: aggressive,
+                                adaptiveSize: adaptiveOptimisation ?? false
+                            )
+                        } else {
+                            if let s = cropSize?.ns {
+                                scalingFactor = s.width == 0 ? s.height / ci.size.height : s.width / ci.size.width
+                            }
+                            currentImage = try ci.resize(
+                                toFraction: effectiveDownscaleFactor ?? scalingFactor,
+                                optimiser: optimiser,
+                                aggressiveOptimisation: aggressive,
+                                adaptiveSize: adaptiveOptimisation ?? false
+                            )
+                        }
+                        // Copy result to target path
+                        if id != Optimiser.IDs.clipboardImage, currentImage!.type == img.type, let cur = currentImage {
+                            let placed = try placeOutput(produced: cur.path, original: savePath ?? img.path, type: .image, kind: .optimised, overrides: optimiser.placementOverride)
+                            currentImage = try cur.copyWithPath(placed.path)
+                            mainActor {
+                                optimiser.url = placed.path.url
+                                optimiser.type = .image(cur.type)
+                            }
+                        }
+
+                    case let .runShortcut(shortcut):
+                        if let changedImage = try? ci.runThroughShortcut(
+                            shortcut: shortcut, optimiser: optimiser,
+                            allowLarger: allowLarger,
+                            aggressiveOptimisation: aggressive,
+                            source: source
+                        ) {
+                            currentImage = changedImage
+                            mainActor {
+                                optimiser.url = changedImage.path.url
+                                optimiser.type = .image(changedImage.type)
+                            }
+                            shortcutChanged = true
+                        }
+
+                    default:
+                        break // skip video-only actions
+                    }
+                }
+
+                // Save optimised image path to cache to avoid re-optimising it after it is saved to file
+                if let currentImage {
+                    mainActor {
+                        if OM.optimisedFilesByHash[img.hash] == nil {
+                            previouslyCached = false
+                            OM.optimisedFilesByHash[img.hash] = currentImage.path
+                        }
+                    }
+                }
+            } catch let PolcProcError.processError(proc) {
+                if proc.terminated {
+                    log.debug("Process terminated by us: \(proc.commandLine)")
+                } else {
+                    log.error("Error in image pipeline \(pathString): \(proc.commandLine)\nOUT: \(proc.out)\nERR: \(proc.err)")
+                    mainActor { optimiser.finish(processError: proc) }
+                }
+            } catch PolcError.imageSizeLarger, PolcError.videoSizeLarger, PolcError.pdfSizeLarger,
+                PolcError.alreadyOptimised, PolcError.alreadyResized
+            {
+                if currentImage == nil {
+                    currentImage = img
+                }
+                mainActor { optimiser.info = "File already fully compressed" }
+            } catch let error as PolcError {
+                log.error("Error in image pipeline \(pathString): \(error.description)")
+                mainActor { optimiser.finish(error: error.humanDescription) }
+            } catch {
+                log.error("Error in image pipeline \(pathString): \(error)")
+                mainActor { optimiser.finish(error: "Optimisation failed") }
+            }
+
+            guard let optimisedImage = currentImage else { return }
+
+            mainActor {
+                if !hideFloatingResult {
+                    OM.current = optimiser
+                }
+                // rect crops (full-frame ones included, those are plain downscales) run from
+                // the pristine original, so keep reporting the original bytes/size instead of
+                // the working (already optimised/cropped) file's
+                let rectCrop = effectiveActions.contains {
+                    if case let .downscale(_, cropSize) = $0, cropSize?.cropRect != nil {
+                        return true
+                    }
+                    return false
+                }
+                optimiser.finish(
+                    oldBytes: rectCrop && optimiser.oldBytes > 0 ? optimiser.oldBytes : img.data.count,
+                    newBytes: optimisedImage.data.count,
+                    oldSize: rectCrop ? (optimiser.oldSize ?? img.size) : img.size,
+                    newSize: optimisedImage.size,
+                    removeAfterMs: id == Optimiser.IDs.clipboardImage ? hideClipboardAfter : hideFilesAfter
+                )
+
+                if id == Optimiser.IDs.clipboardImage, Defaults[.copyImageFilePath], Defaults[.useCustomNameTemplateForClipboardImages] {
+                    optimiser.rename(to: generateFileName(template: Defaults[.customNameTemplateForClipboardImages] ?! DEFAULT_NAME_TEMPLATE, autoIncrementingNumber: &Defaults[.lastAutoIncrementingNumber]))
+                    if let path = optimiser.path {
+                        result = Image(data: optimisedImage.data, path: path, nsImage: optimisedImage.image, type: optimisedImage.type, optimised: optimisedImage.optimised, retinaDownscaled: optimisedImage.retinaDownscaled)
+                    } else {
+                        result = optimisedImage
+                    }
+                } else {
+                    result = optimisedImage
+                }
+
+                if copyToClipboard {
+                    // Several accumulated results only paste together as file URLs, so copyImageFilePath
+                    // is honoured while there is a single result and ignored once a second one arrives
+                    if Defaults[.appendClipboardResults], Defaults[.copyConsecutiveClipboardImages], OM.clipboardImageOptimisers.count > 1 {
+                        OM.copyAllClipboardImagesToClipboard()
+                    } else {
+                        (result ?? optimisedImage).copyToClipboard()
+                    }
+                }
+                if !shortcutChanged, !previouslyCached {
+                    OM.optimisedFilesByHash[img.hash] = (result ?? optimisedImage).path
+                }
+            }
+        }
+    }
+
+    imageOptimiseDebouncers[pathString] = workItem
+
+    let pipelineTask = Task<Void, Never> { @MainActor in
+        while !done, !workItem.isCancelled {
+            try? await Task.sleep(nanoseconds: 100_000_000)
+        }
+    }
+    imagePipelineInFlight[pipelineId] = pipelineTask
+    await pipelineTask.value
+    if imagePipelineInFlight[pipelineId] == pipelineTask {
+        imagePipelineInFlight.removeValue(forKey: pipelineId)
+    }
+    return result
+}

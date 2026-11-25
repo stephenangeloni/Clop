@@ -96,7 +96,7 @@ struct CropSize: Codable, Hashable, Identifiable {
 
     /// Parse a `W:H` aspect ratio such as `16:9`, `4:3` or `1.91:1`. Decimals are scaled up to whole
     /// numbers on both sides (`1.91:1` becomes `191:100`) so the ratio stays exact.
-    /// Mirrors what the CLI accepts for `clop crop 16:9`.
+    /// Mirrors what the CLI accepts for `polc crop 16:9`.
     init?(aspectRatio: String) {
         let sides = aspectRatio.split(separator: ":")
         guard sides.count == 2 else { return nil }

@@ -42,8 +42,8 @@ VIEW_TO_TAB = {
     "AboutSettingsView": "about",
 }
 
-FILES = ["Clop/SettingsView.swift", "Clop/PipelineEditorViews.swift", "Clop/MCPSettingsPane.swift",
-         "Clop/DropZone.swift", "Clop/BatchCropButton.swift"]
+FILES = ["Polc/SettingsView.swift", "Polc/PipelineEditorViews.swift", "Polc/MCPSettingsPane.swift",
+         "Polc/DropZone.swift", "Polc/BatchCropButton.swift"]
 
 STRUCT_RE = re.compile(r'^\s*struct (\w+)\s*:\s*View\b')
 SECTION_RE = re.compile(r'SectionHeader\(\s*title:\s*"((?:[^"\\]|\\.)*)"(?:\s*,\s*subtitle:\s*"((?:[^"\\]|\\.)*)")?')
@@ -71,7 +71,7 @@ def unescape(s):
 def label_after(lines, i):
     """The title and subtitle Texts belonging to the control starting on line i.
 
-    Clop writes them as one concatenated Text: `Text("Title")... + Text("\\nSubtitle")...`, so the
+    Polc writes them as one concatenated Text: `Text("Title")... + Text("\\nSubtitle")...`, so the
     first two string literals are what the user reads.
 
     Two shapes. A Toggle carries its label right after the opening brace. A Picker built as
@@ -108,7 +108,7 @@ def main():
     ap.add_argument("--report", action="store_true")
     args = ap.parse_args()
 
-    keys_src = strip_comments(open(os.path.join(ROOT, "Clop", "Settings.swift"), encoding="utf-8").read())
+    keys_src = strip_comments(open(os.path.join(ROOT, "Polc", "Settings.swift"), encoding="utf-8").read())
     all_keys = {}
     # Non-greedy up to `>("`, or `Key<Set<UTType>>` loses its last angle bracket.
     for m in re.finditer(r'static let (\w+) = Key<(.+?)>\("([^"]+)"', keys_src):

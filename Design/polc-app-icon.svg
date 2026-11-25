@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="c3tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3A3D45"/>
+      <stop offset="1" stop-color="#1C1D22"/>
+    </linearGradient>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#c3tile)"/>
+  <rect x="230" y="215" width="564" height="640" rx="72" fill="#F4EFE6"/>
+  <rect x="397" y="168" width="230" height="104" rx="38" fill="#FFB020"/>
+  <rect x="457" y="196" width="110" height="34" rx="17" fill="#F4EFE6"/>
+  <g fill="none" stroke="#1C1D22" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M305 340 L395 430"/><path d="M395 360 V430 H325"/>
+    <path d="M719 340 L629 430"/><path d="M629 360 V430 H699"/>
+    <path d="M305 780 L395 690"/><path d="M395 760 V690 H325"/>
+    <path d="M719 780 L629 690"/><path d="M629 760 V690 H699"/>
+  </g>
+  <path d="M452 480 H544 L580 516 V640 H452 Z" fill="#FFB020" stroke="#FFB020" stroke-width="16" stroke-linejoin="round"/>
+  <path d="M544 480 V516 H580" fill="#C98A10" stroke="#C98A10" stroke-width="16" stroke-linejoin="round"/>
+</svg>
