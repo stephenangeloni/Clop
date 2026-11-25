@@ -3,8 +3,8 @@ import Foundation
 enum FolderMerge {
     static func move(_ source: URL, into destination: URL) throws {
         let fm = FileManager.default
-        guard exists(source) else { return }
-        guard exists(destination) else {
+        guard try exists(source) else { return }
+        guard try exists(destination) else {
             try fm.moveItem(at: source, to: destination)
             return
         }
@@ -12,9 +12,9 @@ enum FolderMerge {
         for name in try fm.contentsOfDirectory(atPath: source.path) {
             let from = source.appendingPathComponent(name)
             let to = destination.appendingPathComponent(name)
-            if isDirectory(from), isDirectory(to) {
+            if try isDirectory(from), try isDirectory(to) {
                 try move(from, into: to)
-            } else if !exists(to) {
+            } else if try !exists(to) {
                 try fm.moveItem(at: from, to: to)
             }
         }
@@ -23,11 +23,19 @@ enum FolderMerge {
         }
     }
 
-    private static func exists(_ url: URL) -> Bool {
-        (try? FileManager.default.attributesOfItem(atPath: url.path)) != nil
+    private static func exists(_ url: URL) throws -> Bool {
+        try attributes(url) != nil
     }
 
-    private static func isDirectory(_ url: URL) -> Bool {
-        (try? FileManager.default.attributesOfItem(atPath: url.path))?[.type] as? FileAttributeType == .typeDirectory
+    private static func isDirectory(_ url: URL) throws -> Bool {
+        try attributes(url)?[.type] as? FileAttributeType == .typeDirectory
+    }
+
+    private static func attributes(_ url: URL) throws -> [FileAttributeKey: Any]? {
+        do {
+            return try FileManager.default.attributesOfItem(atPath: url.path)
+        } catch CocoaError.fileReadNoSuchFile, CocoaError.fileNoSuchFile {
+            return nil
+        }
     }
 }

@@ -77,7 +77,22 @@ test_missing_source_is_a_no_op() {
     check "missing source: merge succeeds" "[ $status -eq 0 ]"
 }
 
+test_unreadable_source_is_reported() {
+    local dir="$WORK/unreadable"
+    mkdir -p "$dir/locked/Clop" "$dir/Polc"
+    echo clop > "$dir/locked/Clop/a.png"
+    chmod 000 "$dir/locked"
+
+    merge "$dir/locked/Clop" "$dir/Polc"
+    local status=$?
+    chmod 755 "$dir/locked"
+
+    check "unreadable source: merge fails" "[ $status -ne 0 ]"
+    check "unreadable source: Clop file is kept" "[ \"\$(cat '$dir/locked/Clop/a.png')\" = clop ]"
+}
+
 test_vacant_destination_receives_whole_folder
+test_unreadable_source_is_reported
 test_existing_destination_receives_contents
 test_failed_move_is_reported
 test_missing_source_is_a_no_op
