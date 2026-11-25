@@ -19,6 +19,12 @@ make_bundle() {
 </dict></plist>
 EOF
     "$LSREGISTER" -f "$1"
+    for _ in $(seq 10); do
+        is_registered "$1" && return 0
+        sleep 0.5
+    done
+    echo "could not register $1"
+    exit 2
 }
 
 is_registered() {
