@@ -2104,8 +2104,9 @@ struct KeysSettingsView: View {
 }
 
 
-func settingLabel(_ title: LocalizedStringKey, _ detail: LocalizedStringKey) -> Text {
-    Text(title).regular(TextSize.body)
+func settingLabel(_ title: LocalizedStringKey, _ detail: LocalizedStringKey? = nil) -> Text {
+    guard let detail else { return Text(title).regular(TextSize.body) }
+    return Text(title).regular(TextSize.body)
         + Text("\n")
         + Text(detail).round(TextSize.subheadline, weight: .regular).foregroundColor(.secondary)
 }

@@ -386,7 +386,7 @@ struct BatchPrepContent: View {
                 Divider()
                 // Fixed-size inline panel (no scroll), like the results view's "Adjust optimisation
                 // parameters" panel. The window min height (set below) keeps the cards fully visible.
-                BatchParamColumns(form: form, present: present).padding(Space.xl)
+                BatchParamColumns(form: form, present: present)
             }
 
             Divider()
@@ -394,10 +394,10 @@ struct BatchPrepContent: View {
         }
         .onAppear {
             form.seedFromDefaults()
-            setWindowMinHeight(manager.items.isEmpty ? 500 : 650)
+            setWindowMinHeight(manager.items.isEmpty ? 500 : 700)
         }
         .onChange(of: manager.items.isEmpty) { empty in
-            setWindowMinHeight(empty ? 500 : 650)
+            setWindowMinHeight(empty ? 500 : 700)
         }
         .onDrop(of: [.fileURL], isTargeted: $dropTargeted) { providers in handleDrop(providers) }
         .overlay {
@@ -561,100 +561,109 @@ struct BatchParamColumns: View {
     let present: PresentTypes
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Space.xl) {
+        VStack(alignment: .leading, spacing: 0) {
             OutputRow(form: form)
-            HStack(alignment: .top, spacing: Space.xl) {
-                VStack(spacing: Space.xl) {
-                    imageCard
-                    pdfCard
+                .padding([.horizontal, .top], Space.xl)
+            HStack(alignment: .top, spacing: 0) {
+                column {
+                    imageSection
+                    pdfSection
                 }
-                videoCard
-                audioCard
+                .frame(width: 340)
+                column { videoSection }
+                    .frame(width: 370)
+                column { audioSection }
+                    .frame(width: 370)
             }
         }
     }
 
-    private var imageCard: some View {
-        ParamCard("Images", icon: "photo", dimmed: !present.image) {
-            ParamRow("Compression") { compressionSlider($form.imageCompression) }
-            Divider()
-            ParamRow("Convert to") { choicePicker("Convert to", $form.imageConvert, ImageConvertChoice.allCases) { $0.title } }
-            Divider()
-            ParamRow("Downscale", disabled: form.imageDownscaleDisabled) { downscaleSlider($form.imageDownscale) }
-            Divider()
-            ParamRow("Max long edge", disabled: form.imageLongEdgeDisabled) { numberSuffix($form.imageLongEdge, "px") }
-            Divider()
-            ToggleRow("Adaptive (PNG ↔ JPEG)", $form.imageAdaptive)
-            Divider()
-            ToggleRow("Keep if larger", $form.imageKeepIfLarger, disabled: form.imageKeepIfLargerDisabled)
-        }
-        .frame(width: 330)
+    private func column(@ViewBuilder _ sections: () -> some View) -> some View {
+        Form { sections() }
+            .formStyle(.grouped)
+            .scrollContentBackground(.hidden)
+            .scrollDisabled(true)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
-    private var pdfCard: some View {
-        ParamCard("PDF", icon: "doc.text", dimmed: !present.pdf) {
-            ParamRow("Resolution") { choicePicker("Resolution", $form.pdfDPI, PDFDPIChoice.allCases) { $0.title } }
+    private var imageSection: some View {
+        Section(header: SectionHeader(title: "Images")) {
+            LabeledContent { compressionSlider("Compression", $form.imageCompression) } label: { settingLabel("Compression") }
+            LabeledContent { choicePicker("Convert to", $form.imageConvert, ImageConvertChoice.allCases) { $0.title } } label: { settingLabel("Convert to") }
+            LabeledContent { downscaleSlider("Downscale", $form.imageDownscale) } label: { settingLabel("Downscale") }
+                .disabled(form.imageDownscaleDisabled)
+            LabeledContent { numberSuffix("Max long edge", $form.imageLongEdge, "px") } label: { settingLabel("Max long edge") }
+                .disabled(form.imageLongEdgeDisabled)
+            Toggle(isOn: $form.imageAdaptive) { settingLabel("Adaptive (PNG ↔ JPEG)") }
+            Toggle(isOn: $form.imageKeepIfLarger) { settingLabel("Keep if larger") }
+                .disabled(form.imageKeepIfLargerDisabled)
         }
-        .frame(width: 330)
+        .disabled(!present.image)
+        .opacity(present.image ? 1 : 0.5)
     }
 
-    private var videoCard: some View {
-        ParamCard("Video", icon: "film", dimmed: !present.video) {
-            ParamRow("Compression", disabled: form.videoCompressionDisabled) { compressionSlider($form.videoCompression) }
-            Divider()
-            ParamRow("Convert to") { choicePicker("Convert to", $form.videoConvert, VideoConvertChoice.allCases) { $0.title } }
-            Divider()
-            ParamRow("Downscale", disabled: form.videoDownscaleDisabled) { downscaleSlider($form.videoDownscale) }
-            Divider()
-            ParamRow("Max long edge", disabled: form.videoLongEdgeDisabled) { numberSuffix($form.videoLongEdge, "px") }
-            Divider()
-            ParamRow("Encoder") { choicePicker("Encoder", $form.videoEncoder, VideoEncoderChoice.allCases) { $0.title } }
-            Divider()
-            ParamRow("Frame rate") {
+    private var pdfSection: some View {
+        Section(header: SectionHeader(title: "PDF")) {
+            LabeledContent { choicePicker("Resolution", $form.pdfDPI, PDFDPIChoice.allCases) { $0.title } } label: { settingLabel("Resolution") }
+        }
+        .disabled(!present.pdf)
+        .opacity(present.pdf ? 1 : 0.5)
+    }
+
+    private var videoSection: some View {
+        Section(header: SectionHeader(title: "Video")) {
+            LabeledContent { compressionSlider("Compression", $form.videoCompression) } label: { settingLabel("Compression") }
+                .disabled(form.videoCompressionDisabled)
+            LabeledContent { choicePicker("Convert to", $form.videoConvert, VideoConvertChoice.allCases) { $0.title } } label: { settingLabel("Convert to") }
+            LabeledContent { downscaleSlider("Downscale", $form.videoDownscale) } label: { settingLabel("Downscale") }
+                .disabled(form.videoDownscaleDisabled)
+            LabeledContent { numberSuffix("Max long edge", $form.videoLongEdge, "px") } label: { settingLabel("Max long edge") }
+                .disabled(form.videoLongEdgeDisabled)
+            LabeledContent { choicePicker("Encoder", $form.videoEncoder, VideoEncoderChoice.allCases) { $0.title } } label: { settingLabel("Encoder") }
+            LabeledContent {
                 HStack(spacing: Space.s) {
-                    numberField($form.videoFPS).disabled(!form.videoFPSCap)
+                    numberField("Frame rate", $form.videoFPS).disabled(!form.videoFPSCap)
                     Text("fps").foregroundStyle(.tertiary)
                     Toggle("Frame rate", isOn: $form.videoFPSCap).labelsHidden().toggleStyle(.switch).controlSize(.mini)
                 }
-            }
-            Divider()
-            ToggleRow("Remove audio", $form.videoRemoveAudio)
-            Divider()
-            ToggleRow("Keep if larger", $form.videoKeepIfLarger, disabled: form.videoKeepIfLargerDisabled)
+            } label: { settingLabel("Frame rate") }
+            Toggle(isOn: $form.videoRemoveAudio) { settingLabel("Remove audio") }
+            Toggle(isOn: $form.videoKeepIfLarger) { settingLabel("Keep if larger") }
+                .disabled(form.videoKeepIfLargerDisabled)
         }
-        .frame(width: 350)
+        .disabled(!present.video)
+        .opacity(present.video ? 1 : 0.5)
     }
 
-    private var audioCard: some View {
-        ParamCard("Audio", icon: "music.note", dimmed: !present.audio) {
-            ParamRow("Compression", disabled: form.audioCompressionDisabled) { compressionSlider($form.audioCompression) }
-            Divider()
-            ParamRow("Format") { choicePicker("Format", $form.audioFormat, AudioFormatChoice.allCases) { $0.title } }
-            Divider()
-            ParamRow("Bitrate", disabled: form.audioBitrateDisabled) { bitrateSlider($form.audioBitrate, range: form.audioBitrateRange) }
-            Divider()
-            ParamRow("Loudness") { choicePicker("Loudness", $form.audioLoudness, LoudnessChoice.allCases) { $0.title } }
-            Divider()
-            ParamRow("Cover art", disabled: form.audioCoverDisabled) {
+    private var audioSection: some View {
+        Section(header: SectionHeader(title: "Audio")) {
+            LabeledContent { compressionSlider("Compression", $form.audioCompression) } label: { settingLabel("Compression") }
+                .disabled(form.audioCompressionDisabled)
+            LabeledContent { choicePicker("Format", $form.audioFormat, AudioFormatChoice.allCases) { $0.title } } label: { settingLabel("Format") }
+            LabeledContent { bitrateSlider("Bitrate", $form.audioBitrate, range: form.audioBitrateRange) } label: { settingLabel("Bitrate") }
+                .disabled(form.audioBitrateDisabled)
+            LabeledContent { choicePicker("Loudness", $form.audioLoudness, LoudnessChoice.allCases) { $0.title } } label: { settingLabel("Loudness") }
+            LabeledContent {
                 Picker("Cover art", selection: $form.audioCover) { ForEach(AudioCoverArtBehaviour.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) } }.labelsHidden().fixedSize()
-            }
-            Divider()
-            ParamRow("Cover size", disabled: form.audioCoverSizeDisabled) {
+            } label: { settingLabel("Cover art") }
+                .disabled(form.audioCoverDisabled)
+            LabeledContent {
                 HStack(spacing: Space.s) {
-                    numberSuffix($form.audioCoverSize, "px")
+                    numberSuffix("Cover size", $form.audioCoverSize, "px")
                     Picker("Cover size", selection: $form.audioCoverSquaring) {
                         Text("Square if landscape").tag(CoverArtSquaring.landscapeOnly)
                         Text("Square").tag(CoverArtSquaring.always)
                         Text("Long edge").tag(CoverArtSquaring.never)
                     }.labelsHidden().fixedSize()
                 }
-            }
-            Divider()
-            ToggleRow("Convert WAV / AIFF / FLAC", $form.audioConvertLossless)
-            Divider()
-            ToggleRow("Keep if larger", $form.audioKeepIfLarger, disabled: form.audioKeepIfLargerDisabled)
+            } label: { settingLabel("Cover size") }
+                .disabled(form.audioCoverSizeDisabled)
+            Toggle(isOn: $form.audioConvertLossless) { settingLabel("Convert WAV / AIFF / FLAC") }
+            Toggle(isOn: $form.audioKeepIfLarger) { settingLabel("Keep if larger") }
+                .disabled(form.audioKeepIfLargerDisabled)
         }
-        .frame(width: 350)
+        .disabled(!present.audio)
+        .opacity(present.audio ? 1 : 0.5)
         .onChange(of: form.audioFormat) { _ in form.clampAudioBitrateToFormat() }
     }
 }
@@ -695,95 +704,6 @@ private struct OutputRow: View {
 
 }
 
-// MARK: - Grouped card primitives (System Settings look)
-
-struct ParamCard<Content: View>: View {
-    init(_ title: String, icon: String, dimmed: Bool = false, @ViewBuilder content: @escaping () -> Content) {
-        self.title = title
-        self.icon = icon
-        self.dimmed = dimmed
-        self.content = content
-    }
-
-    let title: String
-    let icon: String
-    let dimmed: Bool
-    @ViewBuilder let content: () -> Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Space.m) {
-            HStack(spacing: Space.s) {
-                SwiftUI.Image(systemName: icon).foregroundStyle(dimmed ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.tint))
-                Text(title)
-            }
-            .font(.system(size: TextSize.body, weight: .semibold))
-            .padding(.leading, Space.xxs)
-
-            VStack(spacing: 0) { content() }
-                .frame(maxWidth: .infinity)
-                .background(Color(nsColor: .controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: Radius.xlarge))
-                .overlay(RoundedRectangle(cornerRadius: Radius.xlarge).strokeBorder(.quaternary, lineWidth: 1))
-        }
-        .disabled(dimmed)
-        .opacity(dimmed ? 0.5 : 1)
-    }
-}
-
-struct ParamRow<Control: View>: View {
-    init(_ label: String, disabled: Bool = false, @ViewBuilder control: @escaping () -> Control) {
-        self.label = label
-        self.disabled = disabled
-        self.control = control
-    }
-
-    let label: String
-    let disabled: Bool
-    @ViewBuilder let control: () -> Control
-
-    var body: some View {
-        HStack(spacing: Space.l) {
-            Text(label).foregroundStyle(.secondary)
-            Spacer(minLength: 12)
-            control()
-        }
-        .frame(maxWidth: .infinity, minHeight: 36)
-        .padding(.horizontal, Space.l)
-        .disabled(disabled)
-        .opacity(disabled ? 0.45 : 1)
-        // A group named after the row: the label sits beside the control but is never linked to
-        // it, so a slider or field in here was otherwise announced with no name.
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(label)
-    }
-}
-
-struct ToggleRow: View {
-    init(_ label: String, _ isOn: Binding<Bool>, disabled: Bool = false) {
-        self.label = label
-        _isOn = isOn
-        self.disabled = disabled
-    }
-
-    @Binding var isOn: Bool
-
-    let label: String
-    let disabled: Bool
-
-    var body: some View {
-        Toggle(isOn: $isOn) {
-            Text(label).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .accessibilityLabel(label)
-        .toggleStyle(.switch)
-        .controlSize(.small)
-        .frame(maxWidth: .infinity, minHeight: 36)
-        .padding(.horizontal, Space.l)
-        .disabled(disabled)
-        .opacity(disabled ? 0.45 : 1)
-    }
-}
-
 private func choicePicker<C: CaseIterable & Identifiable & Hashable>(
     _ label: String, _ selection: Binding<C>, _ cases: C.AllCases, _ title: @escaping (C) -> String
 ) -> some View where C.AllCases: RandomAccessCollection {
@@ -794,11 +714,15 @@ private func choicePicker<C: CaseIterable & Identifiable & Hashable>(
     .fixedSize()
 }
 
-private func compressionSlider(_ value: Binding<Double>) -> some View {
+private func compressionSlider(_ label: String, _ value: Binding<Double>) -> some View {
     CommitCompressionSlider(value: value)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(label)
 }
-private func downscaleSlider(_ value: Binding<Double>) -> some View {
+private func downscaleSlider(_ label: String, _ value: Binding<Double>) -> some View {
     CommitDownscaleSlider(value: value)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(label)
 }
 
 /// The batch parameter panel is a deep tree of Pickers/Toggles/styled cards, so binding a Slider straight
@@ -852,8 +776,9 @@ private struct CommitDownscaleSlider: View {
     @State private var drag: Double?
 }
 
-private func numberField(_ value: Binding<Int>) -> some View {
+private func numberField(_ label: String, _ value: Binding<Int>) -> some View {
     TextField("", value: value, format: .number.grouping(.never))
+        .accessibilityLabel(label)
         .multilineTextAlignment(.trailing)
         .frame(width: 56)
         .textFieldStyle(.roundedBorder)
@@ -861,8 +786,10 @@ private func numberField(_ value: Binding<Int>) -> some View {
 
 /// Continuous bitrate slider (2 kbps steps) that snaps to the common bitrates. 0 = Auto (use the
 /// compression factor instead). Range follows the chosen output format.
-private func bitrateSlider(_ value: Binding<Int>, range: ClosedRange<Int>) -> some View {
+private func bitrateSlider(_ label: String, _ value: Binding<Int>, range: ClosedRange<Int>) -> some View {
     CommitBitrateSlider(value: value, range: range)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(label)
 }
 
 private struct CommitBitrateSlider: View {
@@ -901,9 +828,9 @@ private func snapBitrate(_ v: Int, range: ClosedRange<Int>) -> Int {
     return clamped
 }
 
-private func numberSuffix(_ value: Binding<Int>, _ suffix: String) -> some View {
+private func numberSuffix(_ label: String, _ value: Binding<Int>, _ suffix: String) -> some View {
     HStack(spacing: Space.s) {
-        numberField(value)
+        numberField(label, value)
         Text(suffix).foregroundStyle(.tertiary)
     }
 }
@@ -938,7 +865,7 @@ struct BatchResultsContent: View {
             .hidden()
             .disabled(selection.count != 1 || !manager.canReapply)
         }
-        .onChange(of: showAdjust) { expanded in setWindowMinHeight(expanded ? 750 : 500) }
+        .onChange(of: showAdjust) { expanded in setWindowMinHeight(expanded ? 800 : 500) }
         .onAppear { installSpaceMonitor() }
         .onDisappear { removeSpaceMonitor() }
         .sheet(isPresented: $showFailures) {
@@ -1009,7 +936,7 @@ struct BatchResultsContent: View {
     /// Fixed-size inline panel (no scroll): the per-type cards fit the window width.
     private var adjustPanel: some View {
         VStack(spacing: 0) {
-            BatchParamColumns(form: adjustForm, present: PresentTypes(manager.items)).padding(Space.xl)
+            BatchParamColumns(form: adjustForm, present: PresentTypes(manager.items))
             Divider()
             HStack {
                 Text(affectedSummary).foregroundStyle(.secondary).font(.callout)
